@@ -98,7 +98,11 @@
 <svelte:head>
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
-
+<style>
+	.fontUse {
+		font-family: 'Noto Sans Thai';
+	}
+</style>
 <div class="fontUse flex min-h-screen w-full flex-col">
 	<header
 		class="sticky top-0 flex h-16 items-center gap-4 border-b bg-pink-200 px-2 text-black md:px-4"
@@ -151,7 +155,6 @@
 						<div class="text-2xl font-bold">{$totalCourses}</div>
 					</Card.Content>
 				</Card.Root>
-				<!-- Add more Cards as needed -->
 			</div>
 
 			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
@@ -177,26 +180,33 @@
 									<Table.Head class="text-right">See detail</Table.Head>
 								</Table.Row>
 							</Table.Header>
-							<Table.Body>
-								{#each $enrollCount as course}
-									<Table.Row>
-										<Table.Cell>
-											<div class="font-medium">{course.course_name}</div>
-											<div class="text-muted-foreground hidden text-sm md:inline">
-												{course.course_lecture}
-											</div>
-										</Table.Cell>
-										<Table.Cell>{course.course_type}</Table.Cell>
-										<Table.Cell>{course.course_date}</Table.Cell>
-										<Table.Cell>
-											<span>{course.enroll_count}</span>
-										</Table.Cell>
-										<Table.Cell class="text-right">
-											<Button size="sm" variant="outline">See detail</Button>
-										</Table.Cell>
-									</Table.Row>
-								{/each}
-							</Table.Body>
+              <Table.Body>
+                {#each $enrollCount as course}
+                  <Table.Row>
+                    <Table.Cell>
+                      <div class="font-medium">{course.course_name}</div>
+                      <div class="text-muted-foreground hidden text-sm md:inline">
+                        {course.course_lecture}
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>{course.course_type}</Table.Cell>
+                    <Table.Cell>{course.course_date}</Table.Cell>
+                    <Table.Cell>
+                      <span>{course.enroll_count}</span>
+                    </Table.Cell>
+                    <Table.Cell class="text-right">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        href={`/course/${course.course_id}`} 
+                      >
+                        See detail
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                {/each}
+              </Table.Body>
+              
 						</Table.Root>
 					</Card.Content>
 				</Card.Root>
@@ -205,8 +215,3 @@
 	</main>
 </div>
 
-<style>
-	.fontUse {
-		font-family: 'Noto Sans Thai';
-	}
-</style>
