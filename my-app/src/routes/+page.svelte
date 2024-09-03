@@ -155,6 +155,7 @@
 						<div class="text-2xl font-bold">{$totalCourses}</div>
 					</Card.Content>
 				</Card.Root>
+				<!-- Add more Cards as needed -->
 			</div>
 
 			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
