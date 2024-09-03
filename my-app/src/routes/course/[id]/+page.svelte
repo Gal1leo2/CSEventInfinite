@@ -110,7 +110,6 @@
 			showAlert.set(false);
 		}
 	};
-
 	onMount(() => {
 		fetchCoursesDetails(id);
 	});
