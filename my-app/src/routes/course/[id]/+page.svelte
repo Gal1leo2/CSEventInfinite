@@ -63,6 +63,7 @@
 	let std_id: string;
 	let Fname: string;
 	let Lname: string;
+	
 	//SUBMIT THE FORM
 	const submitform = async () => {
 		const laptop = $isChecked;
