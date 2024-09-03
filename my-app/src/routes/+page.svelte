@@ -123,7 +123,7 @@
 			<h1 class="text-2xl font-bold">CTRL your future</h1>
 			<h1 class="text-2xl font-bold">ALT your skill</h1>
 			<h1 class="text-2xl font-bold">SHIFT your potential</h1>			
-      <h1 class="text-2xl font-bold text-red-500">BETA VERSION (Ver 0.99.3)</h1>
+      <h1 class="text-2xl font-bold text-red-500">BETA VERSION (Ver 0.99.5)</h1>
 
 		</div>
 
