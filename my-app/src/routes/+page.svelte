@@ -181,7 +181,7 @@
                     <Table.Cell>{course.course_type}</Table.Cell>
                     <Table.Cell>{course.course_date}</Table.Cell>
                     <Table.Cell>
-                      <span>{course.enroll_count}</span>
+                      <span>{course}</span>
                     </Table.Cell>
                     <Table.Cell class="text-right">
                       <Button size="sm" variant="outline">See detail</Button>
