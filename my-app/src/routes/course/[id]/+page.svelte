@@ -9,7 +9,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import Search from 'lucide-svelte/icons/search';
-
+	import wretch from 'wretch'
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -51,6 +51,23 @@
 		} finally {
 			isLoading.set(false);
 		}
+	}
+	let std_id: string;
+	let Fname: string;
+	let Lname: string;
+	//SUBMIT THE FORM
+	const submitform = async () =>{
+		await wretch('https://nodejsbackend-ten.vercel.app/user/enroll')
+		.post({
+			student_id: std_id,
+			course_id: id,
+			fname: Fname,
+			lname: Lname,
+			laptop: true
+		})
+		.res((e)=>{
+			console.log(e.status)
+		})
 	}
 
 	onMount(() => {
@@ -133,24 +150,24 @@
 												<Label for="stuid" class="block text-sm font-medium text-gray-700"
 													>Student ID</Label
 												>
-												<Input id="stuid" value="" class="mt-1 block w-full" />
+												<Input id="stuid"  bind:value={std_id} class="mt-1 block w-full" />
 											</div>
 											<div>
 												<Label for="fname" class="block text-sm font-medium text-gray-700"
 													>Firstname (In Thai)</Label
 												>
-												<Input id="fname" value="" class="mt-1 block w-full" />
+												<Input id="fname" bind:value={Fname} class="mt-1 block w-full" />
 											</div>
 											<div>
 												<Label for="lname" class="block text-sm font-medium text-gray-700"
 													>Lastname (In Thai)</Label
 												>
-												<Input id="lname" value="" class="mt-1 block w-full" />
+												<Input id="lname" bind:value={Lname} class="mt-1 block w-full" />
 											</div>
 										</div>
 									</div>
 									<Dialog.Footer>
-										<Button type="submit">Enroll</Button>
+										<Button type="submit" on:click={submitform}>Enroll</Button>
 									</Dialog.Footer>
 								</Dialog.Content>
 							</Dialog.Root>
