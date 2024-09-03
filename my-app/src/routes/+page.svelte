@@ -89,6 +89,7 @@
 		});
 	});
 
+  
 	onMount(() => {
 		fetchCourses();
 		fetchStudents();
