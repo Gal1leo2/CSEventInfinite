@@ -11,7 +11,6 @@
 	import wretch from 'wretch';
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Alert from '$lib/components/ui/alert/index.js';
-	import errorMap from 'zod/locales/en.js';
 
 	interface Course {
 		course_id: string;
@@ -63,7 +62,7 @@
 	let std_id: string;
 	let Fname: string;
 	let Lname: string;
-	
+
 	//SUBMIT THE FORM
 	const submitform = async () => {
 		const laptop = $isChecked;
@@ -77,6 +76,7 @@
 					lname: Lname,
 					laptop: laptop
 				})
+				//ไอกัน ดูให้หน่อย กูอยากให้มัน โชว์ ว่า  Student ID is incorrect! ตามที่มึง return ค่าจาก 400 มา แต่แม่งไม่ยอมหวะ
 				.error(400, async (response) => {
 					console.log('400 Error');
 

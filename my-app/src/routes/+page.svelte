@@ -1,21 +1,8 @@
 <script lang="ts">
-	import Activity from 'lucide-svelte/icons/activity';
 	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
-	import CircleUser from 'lucide-svelte/icons/circle-user';
-	import { CalendarClock, Store } from 'lucide-svelte';
-	import Menu from 'lucide-svelte/icons/menu';
 	import { CalendarArrowDown } from 'lucide-svelte';
-	import { CalendarCheck } from 'lucide-svelte';
-	import Search from 'lucide-svelte/icons/search';
-	import { CalendarHeart } from 'lucide-svelte';
-	import { Skeleton } from '$lib/components/ui/skeleton';
-
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { onMount } from 'svelte';
 	import { writable, derived } from 'svelte/store';
