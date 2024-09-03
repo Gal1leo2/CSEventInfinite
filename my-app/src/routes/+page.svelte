@@ -26,8 +26,8 @@
 
 	let courses = writable<Course[]>([]);
 	let students = writable<Student[]>([]);
-	let isLoading = writable(true); // Loading state
-	let error = writable<string>(''); // Error state
+	let isLoading = writable(true); 
+	let error = writable<string>(''); 
 
 	function getErrorMessage(error: unknown): string {
 		if (error instanceof Error) return error.message;
@@ -50,7 +50,6 @@
 		}
 	}
 
-	// Fetch students data from API
 	async function fetchStudents() {
 		try {
 			isLoading.set(true);
