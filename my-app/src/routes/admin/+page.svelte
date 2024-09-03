@@ -28,7 +28,7 @@
 	let isLoading = writable(true); 
 	let error = writable<string>(''); 
 
-    // Fetch courses
+    // Fetch course
 	async function fetchCourses() {
 		try {
 			isLoading.set(true);
