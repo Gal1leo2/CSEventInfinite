@@ -103,7 +103,7 @@
 		font-family: 'Noto Sans Thai';
 	}
 </style>
-<div class="fontUse flex min-h-screen w-full flex-col">
+<div class="fontUse flex min-w-max	 flex-col">
 	<header
 		class="sticky top-0 flex h-16 items-center gap-4 border-b bg-orange-400	 px-2 text-black md:px-4"
 	>
@@ -147,7 +147,7 @@
 				<!-- Add more Cards as needed -->
 			</div>
 
-			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3 flex">
 				<Card.Root class="col-span-full">
 					<Card.Header class="flex flex-row items-center">
 						<div class="grid gap-2">
