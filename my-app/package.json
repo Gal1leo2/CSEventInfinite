@@ -36,6 +36,7 @@
 	"dependencies": {
 		"@internationalized/date": "^3.5.5",
 		"@supabase/supabase-js": "^2.45.1",
+		"@vercel/speed-insights": "^1.0.12",
 		"bits-ui": "^0.21.12",
 		"clsx": "^2.1.1",
 		"cmdk-sv": "^0.0.18",
