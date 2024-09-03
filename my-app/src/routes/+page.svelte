@@ -21,15 +21,20 @@
   import { writable ,derived } from "svelte/store";
 
   interface Course {
-    id: string;
+    course_id: string;
     course_name: string;
     course_lecture: string;
     course_type: string;
     course_date: string;
   }
+
   interface Student {
-    id: string;
+    id: number;
     name: string;
+    course_id:string;
+    Fname:String;
+    Lname:String;
+    laptop:boolean;
   }
 
 
@@ -75,8 +80,15 @@
       isLoading.set(false);
     }
   }
+
   let totalCourses = derived(courses, ($courses) => $courses.length);
 
+let enrollCount = derived([courses, students], ([$courses, $students]) => {
+  return $courses.map((course) => {
+    let count = $students.filter(student => student.course_id === course.course_id).length;
+    return { ...course, enroll_count: count };
+  });
+});
 
   onMount(() => {
     fetchCourses();
@@ -170,7 +182,7 @@
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {#each $courses as course}
+                {#each $enrollCount as course}
                   <Table.Row>
                     <Table.Cell>
                       <div class="font-medium">{course.course_name}</div>
@@ -194,5 +206,6 @@
         </Card.Root>
       </div>
     {/if}
+    
   </main>
 </div>
