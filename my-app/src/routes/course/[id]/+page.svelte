@@ -8,8 +8,11 @@
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import Search from 'lucide-svelte/icons/search';
-	import wretch from 'wretch'
+	import wretch from 'wretch';
+	import { Switch } from '$lib/components/ui/switch';
+	import * as Alert from '$lib/components/ui/alert/index.js';
+	import errorMap from 'zod/locales/en.js';
+
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -18,13 +21,18 @@
 		course_date: string;
 		course_description: string;
 		course_image: string;
+		course_location: string;
 	}
 
 	let courses = writable<Course[]>([]);
 	let isLoading = writable(true);
 	let error = writable<string>('');
+	let showAlert = writable(false);
+	let showAlertFail = writable(false);
+	let alertMessage = writable<string>('');
 
 	const { id } = $page.params;
+	let isChecked = writable(false);
 
 	function getErrorMessage(error: unknown): string {
 		if (error instanceof Error) return error.message;
@@ -56,19 +64,51 @@
 	let Fname: string;
 	let Lname: string;
 	//SUBMIT THE FORM
-	const submitform = async () =>{
-		await wretch('https://nodejsbackend-ten.vercel.app/user/enroll')
-		.post({
-			student_id: std_id,
-			course_id: id,
-			fname: Fname,
-			lname: Lname,
-			laptop: true
-		})
-		.res((e)=>{
-			console.log(e.status)
-		})
-	}
+	const submitform = async () => {
+		const laptop = $isChecked;
+
+		try {
+			await wretch('https://nodejsbackend-ten.vercel.app/user/enroll')
+				.post({
+					student_id: std_id,
+					course_id: id,
+					fname: Fname,
+					lname: Lname,
+					laptop: laptop
+				})
+				.error(400, async (response) => {
+					console.log('400 Error');
+
+					try {
+						const errorData = await response.json();
+						alertMessage.set(errorData.message || 'Enrollment failed due to invalid input.');
+					} catch (jsonError) {
+						// ถ้าไม่ได้ ให้ใช้ Enrollment failed due to invalid input
+
+						console.error('Failed to parse error JSON:', jsonError);
+						alertMessage.set('Enrollment failed due to invalid input.');
+					}
+
+					showAlertFail.set(true);
+					showAlert.set(false);
+				})
+				.res(async (response) => {
+					if (response.status === 200) {
+						showAlert.set(true);
+						showAlertFail.set(false);
+					} else {
+						alertMessage.set('An unexpected error occurred.');
+						showAlertFail.set(true);
+						showAlert.set(false);
+					}
+				});
+		} catch (error) {
+			console.error('Error submitting form:', error);
+			alertMessage.set('Network error. Please try again later.');
+			showAlertFail.set(true);
+			showAlert.set(false);
+		}
+	};
 
 	onMount(() => {
 		fetchCoursesDetails(id);
@@ -81,7 +121,7 @@
 
 <div class="fontUse flex min-h-screen w-full flex-col">
 	<header
-		class="sticky top-0 flex h-16 items-center gap-4 border-b bg-orange-400	 px-2 text-black md:px-4"
+		class="sticky top-0 flex h-16 items-center gap-4 border-b bg-orange-400 px-2 text-black md:px-4"
 	>
 		<nav
 			class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
@@ -90,8 +130,6 @@
 				CSEvent - Short Course Registration System
 			</a>
 		</nav>
-
-
 	</header>
 	<div class="fontUse flex min-h-screen w-full flex-col items-center justify-center bg-gray-100">
 		{#if $isLoading}
@@ -105,12 +143,11 @@
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
-            <img
-            src={course.course_image}
-            alt="Course Image"
-            class="mb-4 min-w-[200px] rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
-          />
-          
+						<img
+							src={course.course_image}
+							alt="Course Image"
+							class="mb-4 min-w-[200px] rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
+						/>
 
 						<!-- Top Right: Course Name -->
 						<div class="flex flex-1 flex-col justify-between">
@@ -144,13 +181,12 @@
 										</Dialog.Description>
 									</Dialog.Header>
 									<div class="py-4">
-										<!-- Form Fields with Labels on Top -->
 										<div class="space-y-4">
 											<div>
 												<Label for="stuid" class="block text-sm font-medium text-gray-700"
 													>Student ID</Label
 												>
-												<Input id="stuid"  bind:value={std_id} class="mt-1 block w-full" />
+												<Input id="stuid" bind:value={std_id} class="mt-1 block w-full" />
 											</div>
 											<div>
 												<Label for="fname" class="block text-sm font-medium text-gray-700"
@@ -164,11 +200,39 @@
 												>
 												<Input id="lname" bind:value={Lname} class="mt-1 block w-full" />
 											</div>
+											<div class="flex items-center">
+												<Switch
+													id="laptop"
+													bind:checked={$isChecked}
+													class="relative inline-flex h-6 w-11 items-center rounded-full"
+												></Switch>
+												<span class="ml-3 text-sm font-medium text-gray-700"
+													>Participants must bring their own computers.</span
+												>
+											</div>
 										</div>
 									</div>
+
 									<Dialog.Footer>
 										<Button type="submit" on:click={submitform}>Enroll</Button>
 									</Dialog.Footer>
+									<!-- Success Alert -->
+									{#if $showAlert}
+										<Alert.Root>
+											<Alert.Title>Enroll Successful</Alert.Title>
+											<Alert.Description>
+												Don't forget to come to the event on {course.course_date}.
+											</Alert.Description>
+										</Alert.Root>
+									{/if}
+
+									<!-- Error Alert -->
+									{#if $showAlertFail}
+										<Alert.Root variant="destructive">
+											<Alert.Title>Error</Alert.Title>
+											<Alert.Description>{$alertMessage}</Alert.Description>
+										</Alert.Root>
+									{/if}
 								</Dialog.Content>
 							</Dialog.Root>
 						</div>
@@ -181,7 +245,6 @@
 							<p class="text-base font-bold">Description</p>
 							{course.course_description}
 						</div>
-						<!-- Any additional content or space can be added here -->
 					</div>
 				</Card.Root>
 			{/each}

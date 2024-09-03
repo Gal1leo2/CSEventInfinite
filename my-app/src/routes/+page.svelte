@@ -89,7 +89,7 @@
 		});
 	});
 
-  
+
 	onMount(() => {
 		fetchCourses();
 		fetchStudents();
@@ -150,7 +150,7 @@
 				<!-- Add more Cards as needed -->
 			</div>
 
-			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3 flex">
+			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3 ">
 				<Card.Root class="col-span-full">
 					<Card.Header class="flex flex-row items-center">
 						<div class="grid gap-2">
