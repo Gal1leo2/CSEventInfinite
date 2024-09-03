@@ -115,18 +115,7 @@
 			</a>
 		</nav>
 
-		<div class="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-			<form class="ml-auto flex-1 sm:flex-initial">
-				<div class="relative">
-					<Search class="absolute left-2.5 top-2.5 h-5 w-4 text-gray-600" />
-					<Input
-						type="search"
-						placeholder="Search events..."
-						class="pl-8 text-black sm:w-[200px] md:w-[200px] lg:w-[200px]"
-					/>
-				</div>
-			</form>
-		</div>
+
 	</header>
 	<main class="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
 		<div class="flex flex-col items-center justify-center py-4 text-black">

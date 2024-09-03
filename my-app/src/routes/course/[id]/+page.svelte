@@ -74,18 +74,7 @@
 			</a>
 		</nav>
 
-		<div class="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-			<form class="ml-auto flex-1 sm:flex-initial">
-				<div class="relative">
-					<Search class="absolute left-2.5 top-2.5 h-5 w-4 text-gray-600" />
-					<Input
-						type="search"
-						placeholder="Search events..."
-						class="pl-8 text-black sm:w-[200px] md:w-[200px] lg:w-[200px]"
-					/>
-				</div>
-			</form>
-		</div>
+
 	</header>
 	<div class="fontUse flex min-h-screen w-full flex-col items-center justify-center bg-gray-100">
 		{#if $isLoading}
@@ -95,15 +84,16 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mt-6 flex w-full max-w-4xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
+					class="mt-6 flex max-w-7xl	 flex-col justify-center rounded-lg bg-white p-6 shadow-md"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
-						<img
-							src={course.course_image}
-							alt="Course Image"
-							class="mb-4 h-64 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
-						/>
+            <img
+            src={course.course_image}
+            alt="Course Image"
+            class="mb-4 min-w-[200px] rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
+          />
+          
 
 						<!-- Top Right: Course Name -->
 						<div class="flex flex-1 flex-col justify-between">
