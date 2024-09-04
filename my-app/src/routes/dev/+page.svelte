@@ -196,7 +196,6 @@
 			</Dialog.Root>
 		</div>
 	</div>
-
 	<!-- Right Box -->
 	<div class="m-5 flex w-full flex-col">
 		<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
