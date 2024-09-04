@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { CalendarArrowDown } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { onMount } from 'svelte';
@@ -83,7 +83,7 @@
 <svelte:head>
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
-<div class="fontUse flex min-w-max flex-col">
+<div class="fontUse flex min-w-max flex-col ">
 	<header
 		class="sticky top-0 flex h-16 items-center gap-4 border-b  px-2  md:px-4"
 	>
@@ -95,11 +95,11 @@
 			</a>
 		</nav>
 	</header>
-	<main class="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+	<main class="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-gray-50  ">
 		<div class="flex flex-col items-center justify-center py-4 text-black">
-			<h1 class="text-2xl font-bold">CTRL your future</h1>
-			<h1 class="text-2xl font-bold">ALT your skill</h1>
-			<h1 class="text-2xl font-bold">SHIFT your potential</h1>
+			<h1 class="text-2xl font-bold"><span style="color:#E35205">CTRL</span> your future</h1>
+			<h1 class="text-2xl font-bold"><span style="color:#E35205">ALT</span> your dream</h1>
+			<h1 class="text-2xl font-bold"><span style="color:#E35205">SHIFT</span> UP your skills</h1>
 		</div>
 
 		<!-- Display loading state -->
@@ -159,9 +159,9 @@
 											<span>{course.enroll_count}</span>
 										</Table.Cell>
 										<Table.Cell class="text-right">
-											<Button size="sm" variant="outline" href={`/course/${course.course_id}`}>
-												See detail
-											</Button>
+											<a href="/course/{course.course_id}" class={buttonVariants({ })}>
+												<b>See datails</b>
+											  </a>
 										</Table.Cell>
 									</Table.Row>
 								{/each}

@@ -109,17 +109,17 @@
 
 <div class="fontUse flex min-h-screen w-full flex-col">
 	<header
-		class="sticky top-0 flex h-16 items-center gap-4 border-b bg-orange-400 px-2 text-black md:px-4"
+		class="sticky top-0 flex h-16 items-center gap-4 border-b  px-2  md:px-4"
 	>
 		<nav
 			class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
 		>
-			<a href="##" class="font-bold text-black transition-colors hover:text-gray-800">
+			<a href="##" class="font-bold text-[#E35205] transition-colors ">
 				CSEvent - Short Course Registration System
 			</a>
 		</nav>
 	</header>
-	<div class="fontUse flex min-h-screen w-full flex-col items-center justify-center bg-gray-100">
+	<div class="fontUse flex min-h-screen w-full flex-col items-center justify-center bg-gray-50">
 		{#if $isLoading}
 			<p class="mt-4 text-gray-500">Loading course details...</p>
 		{:else if $error}
@@ -127,7 +127,7 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mt-6 flex max-w-7xl	 flex-col justify-center rounded-lg bg-white p-6 shadow-md"
+					class="mt-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
@@ -141,7 +141,7 @@
 						<div class="flex flex-1 flex-col justify-between">
 							<Card.Header>
 								<Card.Title class="mb-2 text-base font-semibold">{course.course_date}</Card.Title>
-								<Card.Title class="mb-2 text-2xl font-semibold">{course.course_name}</Card.Title>
+								<Card.Title class="mb-2 text-2xl font-semibold"><span style="color:#E35205">{course.course_name}</span></Card.Title>
 								<Card.Title class="mb-2 text-base font-semibold"
 									>{course.course_location}</Card.Title
 								>
@@ -157,8 +157,8 @@
 
 							<!-- Bottom Left: Course Description -->
 							<Dialog.Root>
-								<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-									Enroll this course
+								<Dialog.Trigger class={buttonVariants({ })}>
+									<span style="font-weight:bold;">Enroll this course.</span>
 								</Dialog.Trigger>
 								<Dialog.Content class="sm:max-w-[425px]">
 									<Dialog.Header>
