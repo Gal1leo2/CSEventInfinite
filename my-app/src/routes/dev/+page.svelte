@@ -1,5 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import CalendarIcon from 'lucide-svelte/icons/calendar';
+	import { DateFormatter, type DateValue, getLocalTimeZone } from '@internationalized/date';
+	import { cn } from '$lib/utils.js';
+	import { Calendar } from '$lib/components/ui/calendar/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import Wretch from 'wretch';
+
+	const df = new DateFormatter('en-US', {
+		dateStyle: 'long'
+	});
+
 	let datauser: getuser[] = [];
 	let datacourse: Course[] = [];
 	interface getuser {
@@ -15,6 +31,50 @@
 		course_type: string;
 		course_date: string;
 	}
+
+	//File
+	let pictureFile: File | null = null;
+	const readIMG = async (event: Event) => {
+		const target = event.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			pictureFile = target.files[0];
+			console.log('Selected file:', pictureFile);
+		}
+	};
+	//upload
+	const upload = async () => {
+		if (pictureFile) {
+			console.log('it ready!!!', pictureFile);
+		}
+	};
+
+	// create course
+	let courseName: string;
+	let courseType: string;
+	let courseDescription: string;
+	let selectedDate: DateValue | undefined = undefined;
+	let courseLecture: string;
+	let courseLocation: string;
+	const createCourse = async () => {
+		console.log(selectedDate?.toString())
+		await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+		.post({
+			course_name : courseName,
+            course_type: courseType,
+            course_date: selectedDate?.toString(),
+            course_description: courseDescription,
+            course_lecture: courseLecture,
+            course_location: courseLocation
+		})
+		.badRequest((e)=>{
+			console.log(e)
+		})
+		.res((e)=>{
+			console.log(e.status)
+		})
+	};
+
+
 	onMount(async () => {
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
 		const resCourse = await fetch('https://nodejsbackend-ten.vercel.app/user/getcourse');
@@ -25,8 +85,8 @@
 	});
 </script>
 
-<div class="flex h-screen w-full ">
-	<div class="m-5 flex w-full flex-col ">
+<div class="flex h-screen w-full">
+	<div class="m-5 flex w-full flex-col border border-[red]">
 		<h1 class="text-center text-2xl font-bold">API</h1>
 		<div class="grid grid-cols-3 justify-center gap-2">
 			<div class="m-3 rounded-sm bg-[#2f2f2f] p-3 text-white hover:shadow-xl">
@@ -54,9 +114,72 @@
 				>
 			</div>
 		</div>
+		<!-- post Blog -->
+		<div class="m-5 flex h-full border border-[red]">
+			<Dialog.Root>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Create Course</Dialog.Trigger
+				>
+				<Dialog.Content class="sm:max-w-[425px]">
+					<Dialog.Header>
+						<Dialog.Title>Create Course</Dialog.Title>
+						<Dialog.Description>
+							Create course here. Click save when you're done.
+						</Dialog.Description>
+					</Dialog.Header>
+					<div class="grid gap-4 py-4">
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="name" class="text-right">Name</Label>
+							<Input id="name" bind:value={courseName} class="col-span-3" />
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="type" class="text-right">Type</Label>
+							<Input id="type" bind:value={courseType} class="col-span-3" />
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="date" class="text-right">Date</Label>
+							<Popover.Root>
+								<Popover.Trigger asChild let:builder>
+									<Button
+										variant="outline"
+										class={cn(
+											'w-[280px] justify-start text-left font-normal',
+											!selectedDate && 'text-muted-foreground'
+										)}
+										builders={[builder]}
+									>
+										<CalendarIcon class="mr-2 h-4 w-4" />
+										{selectedDate
+											? df.format(selectedDate.toDate(getLocalTimeZone()))
+											: 'Pick a date'}
+									</Button>
+								</Popover.Trigger>
+								<Popover.Content class="w-auto p-0">
+									<Calendar bind:value={selectedDate} initialFocus />
+								</Popover.Content>
+							</Popover.Root>
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="des" class="text-right">Description</Label>
+							<Input id="des" bind:value={courseDescription} class="col-span-3" />
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="lec" class="text-right">Lecture</Label>
+							<Input id="lec" bind:value={courseLecture} class="col-span-3" />
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="local" class="text-right">Location</Label>
+							<Input id="local" bind:value={courseLocation} class="col-span-3" />
+						</div>
+					</div>
+					<Dialog.Footer>
+						<Button type="submit" on:click={createCourse}>Save changes</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+		</div>
 	</div>
 	<!-- Right Box -->
-	<div class="flex w-full flex-col m-5">
+	<div class="m-5 flex w-full flex-col">
 		<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
 			<div class="flex w-full justify-between">
 				<h1 class="font-mono font-bold">COURSE_ID</h1>
@@ -80,7 +203,7 @@
 	</div>
 </div>
 <div class="flex">
-	<div class="flex w-full flex-col m-5">
+	<div class="m-5 flex w-full flex-col">
 		<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
 			<div class="flex w-full justify-between">
 				<h1 class="font-mono font-bold">ID</h1>
@@ -100,4 +223,9 @@
 			</div>
 		{/each}
 	</div>
+</div>
+<div class="grid w-full max-w-sm items-center gap-1.5">
+	<Label for="picture">Picture</Label>
+	<Input id="picture" type="file" on:change={readIMG} />
+	<Button on:click={upload}>Click</Button>
 </div>
