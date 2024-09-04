@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
 	import { CalendarArrowDown } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -86,12 +85,12 @@
 </svelte:head>
 <div class="fontUse flex min-w-max flex-col">
 	<header
-		class="sticky top-0 flex h-16 items-center gap-4 border-b bg-orange-400 px-2 text-black md:px-4"
+		class="sticky top-0 flex h-16 items-center gap-4 border-b  px-2  md:px-4"
 	>
 		<nav
 			class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
 		>
-			<a href="##" class="font-bold text-black transition-colors hover:text-gray-800">
+			<a href="##" class="font-bold text-[#E35205] transition-colors hover:text-[#66666]">
 				CSEvent - Short Course Registration System
 			</a>
 		</nav>
@@ -101,7 +100,6 @@
 			<h1 class="text-2xl font-bold">CTRL your future</h1>
 			<h1 class="text-2xl font-bold">ALT your skill</h1>
 			<h1 class="text-2xl font-bold">SHIFT your potential</h1>
-			<h1 class="text-2xl font-bold text-red-500">BETA VERSION (Ver 0.99.7.2)</h1>
 		</div>
 
 		<!-- Display loading state -->
@@ -133,11 +131,7 @@
 						<div class="grid gap-2">
 							<Card.Title>Courses</Card.Title>
 							<Card.Description>Courses available for registration</Card.Description>
-						</div>
-						<Button href="##" size="sm" class="ml-auto gap-1">
-							View All
-							<ArrowUpRight class="h-4 w-4" />
-						</Button>
+
 					</Card.Header>
 					<Card.Content>
 						<Table.Root>
