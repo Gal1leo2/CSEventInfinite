@@ -35,18 +35,26 @@
 	}
 
 	//File
-	let pictureFile: File | null = null;
+	let file: File | null = null;
 	const readIMG = async (event: Event) => {
-		const target = event.target as HTMLInputElement;
-		if (target.files && target.files.length > 0) {
-			pictureFile = target.files[0];
-			console.log('Selected file:', pictureFile);
-		}
+		const input = event.target as HTMLInputElement;
+		file = input.files ? input.files[0] : null;
 	};
 	//upload
 	const upload = async () => {
-		if (pictureFile) {
-			console.log('it ready!!!', pictureFile);
+		if (!file) {
+			alert('Please select a file first.');
+			return;
+		}
+		const formData = new FormData();
+		formData.append('picture', file);
+		try {
+			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/upload')
+				.post(formData)
+				.json();
+			console.log('Upload successful:', response);
+		} catch (error) {
+			console.error('Upload error:', error);
 		}
 	};
 
@@ -57,33 +65,24 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
-    const createCourse = async () => {
-        try {
-            console.log(selectedDate?.toString());
-            const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-                .post({
-                    course_name: courseName,
-                    course_type: courseType,
-                    course_date: selectedDate?.toString(),
-                    course_description: courseDescription,
-                    course_lecture: courseLecture,
-                    course_location: courseLocation
-                })
-                .res();
-
-            if (response.status === 200) {
-				toast.success("Create course complete.");
-
-}
-        } catch (error) {
-            toast.error("This didn't work. Please try again.");
-            console.error(error);
-        }
-    };
-
-	//delete course
-	let selectedCourseIdToDelete: string = '';
-
+	const createCourse = async () => {
+		console.log(selectedDate?.toString())
+		await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+		.post({
+			course_name : courseName,
+            course_type: courseType,
+            course_date: selectedDate?.toString(),
+            course_description: courseDescription,
+            course_lecture: courseLecture,
+            course_location: courseLocation
+		})
+		.badRequest((e)=>{
+			console.log(e)
+		})
+		.res((e)=>{
+			console.log(e.status)
+		})
+	};
 
 
 	onMount(async () => {
@@ -122,6 +121,12 @@
 				<h1 class="font-mono font-bold">GetUsername</h1>
 				<span class="flex w-full rounded-md bg-black p-2 font-mono text-[#e8c34c]"
 					>/user/getuser</span
+				>
+			</div>
+			<div class="m-3 rounded-sm bg-[#2f2f2f] p-3 text-white shadow-xl">
+				<h1 class="font-mono font-bold">CreateCourse</h1>
+				<span class="flex w-full rounded-md bg-black p-2 font-mono text-[#e8c34c]"
+					>/course/create</span
 				>
 			</div>
 		</div>
@@ -181,6 +186,11 @@
 							<Label for="local" class="text-right">Location</Label>
 							<Input id="local" bind:value={courseLocation} class="col-span-3" />
 						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<!-- <Input id="local" bind:value={courseLocation}  /> -->
+							<Label for="picture" class="text-right">Picture</Label>
+							<Input id="picture" class="col-span-3" type="file" />
+						</div>
 					</div>
 					<Dialog.Footer>
 						<Button type="submit" on:click={createCourse}>Save changes</Button>
@@ -237,7 +247,7 @@
 </div>
 <div class="grid w-full max-w-sm items-center gap-1.5">
 	<Label for="picture">Picture</Label>
-	<Input id="picture" type="file" on:change={readIMG} />
+	<Input id="picture" type="file" accept="image/*" on:change={readIMG} />
 	<Button on:click={upload}>Click</Button>
 </div>
 <Toaster />

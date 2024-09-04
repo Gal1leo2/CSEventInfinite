@@ -77,9 +77,7 @@
 					laptop: laptop
 				})
 				//ไอกัน ดูให้หน่อย กูอยากให้มัน โชว์ ว่า  Student ID is incorrect! ตามที่มึง return ค่าจาก 400 มา แต่แม่งไม่ยอมหวะ
-				.error(400, async (response) => {
-					console.log('400 Error');
-
+				.badRequest(async (response) => {
 					try {
 						const errorData = await response.json();
 						alertMessage.set(errorData.message || 'Enrollment failed due to invalid input.');
