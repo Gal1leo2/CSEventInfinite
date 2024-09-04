@@ -1,6 +1,5 @@
-export async function load() {
-    return {
-      status: 302,
-      redirect: '/home'
-    };
-  }
+import { redirect } from '@sveltejs/kit';
+ 
+//redirect to /home
+export function load() {
+  redirect(302, '/home'); }
