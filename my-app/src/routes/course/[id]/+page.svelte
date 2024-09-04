@@ -145,7 +145,7 @@
 								>
 								<div class="flex flex-col justify-between lg:flex-row">
 									<div class="text-gray-700">
-										<p>Lecturer: {course.course_lecture}</p>
+										<p>Instructor: {course.course_lecture}</p>
 										<p>Type: {course.course_type}</p>
 									</div>
 								</div>
