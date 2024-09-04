@@ -11,7 +11,6 @@
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import Wretch from 'wretch';
-	import { Select } from 'bits-ui';
 	import toast, { Toaster } from 'svelte-french-toast';
 
 	const df = new DateFormatter('en-US', {
@@ -77,7 +76,7 @@
             course_location: courseLocation
 		})
 		.badRequest((e)=>{
-			console.log(e)
+			toast.error('e');
 		})
 		.res((e)=>{
 			console.log(e.status)
