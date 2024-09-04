@@ -160,7 +160,7 @@
 										</Table.Cell>
 										<Table.Cell class="text-right">
 											<a href="/course/{course.course_id}" class={buttonVariants({ })}>
-												<b>See datails</b>
+												<b>See details</b>
 											  </a>
 										</Table.Cell>
 									</Table.Row>
