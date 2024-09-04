@@ -12,6 +12,7 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import Wretch from 'wretch';
 	import toast, { Toaster } from 'svelte-french-toast';
+	import { string } from 'zod';
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -79,7 +80,7 @@
 			console.error(error);
 		}
 	};
-
+	let selectedCourseId : string ='';
 	const deleteCourse = async (courseId: string) => {
 		try {
 			const response = await Wretch(
@@ -209,6 +210,32 @@
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
+			<Dialog.Root>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Delete Course</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[425px]">
+					<Dialog.Header>
+						<Dialog.Title>Delete Course</Dialog.Title>
+						<Dialog.Description>
+							Select a course to delete. This action cannot be undone.
+						</Dialog.Description>
+					</Dialog.Header>
+					<div class="grid gap-4 py-4">
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="course" class="text-right">Course</Label>
+							<select id="course" bind:value={selectedCourseId} class="col-span-3">
+								<option value="" disabled selected>Select a course</option>
+								{#each datacourse as course (course.course_id)}
+									<option value={course.course_id}>{course.course_name}</option>
+								{/each}
+							</select>
+						</div>
+					</div>
+					<Dialog.Footer>
+						<Button type="button" on:click={() => deleteCourse(selectedCourseId)}>Delete</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			   </Dialog.Root>
+			   
 		</div>
 	</div>
 	<!-- Right Box -->
