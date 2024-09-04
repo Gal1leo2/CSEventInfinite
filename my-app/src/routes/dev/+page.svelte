@@ -80,6 +80,7 @@
 			console.error(error);
 		}
 	};
+	//Delete
 	let selectedCourseId : string ='';
 	const deleteCourse = async (courseId: string) => {
 		console.log(courseId);
@@ -93,21 +94,7 @@
 				toast.success('Course deleted successfully.');
 				datacourse = datacourse.filter((course) => course.course_id !== courseId);
 			});
-		// try {
-		// 	const response = await Wretch(
-		// 		`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`
-		// 	)
-		// 		.delete()
-		// 		.res();
 
-		// 	if (response.status === 200) {
-		// 		toast.success('Course deleted successfully.');
-		// 		datacourse = datacourse.filter((course) => course.course_id !== courseId);
-		// 	}
-		// } catch (error) {
-		// 	toast.error('Error deleting course. Please try again.');
-		// 	console.error('Error deleting course:', error);
-		// }
 	};
 	onMount(async () => {
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');

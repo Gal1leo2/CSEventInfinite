@@ -76,7 +76,6 @@
 					lname: Lname,
 					laptop: laptop
 				})
-				//ไอกัน ดูให้หน่อย กูอยากให้มัน โชว์ ว่า  Student ID is incorrect! ตามที่มึง return ค่าจาก 400 มา แต่แม่งไม่ยอมหวะ
 				.badRequest(async (e) => {
 					alertMessage.set(JSON.parse(e.message).message);
 					showAlertFail.set(true);

@@ -41,7 +41,7 @@
 			if (!response.ok) {
 				throw new Error('Failed to fetch courses');
 			}
-			const data: Course[] = await response.json(); // Type assertion
+			const data: Course[] = await response.json(); 
 			courses.set(data);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
@@ -57,7 +57,7 @@
 			if (!response.ok) {
 				throw new Error('Failed to fetch students');
 			}
-			const data: Student[] = await response.json(); // Type assertion
+			const data: Student[] = await response.json(); 
 			students.set(data);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
@@ -101,7 +101,7 @@
 			<h1 class="text-2xl font-bold">CTRL your future</h1>
 			<h1 class="text-2xl font-bold">ALT your skill</h1>
 			<h1 class="text-2xl font-bold">SHIFT your potential</h1>
-			<h1 class="text-2xl font-bold text-red-500">BETA VERSION (Ver 0.99.5)</h1>
+			<h1 class="text-2xl font-bold text-red-500">BETA VERSION (Ver 0.99.7.2)</h1>
 		</div>
 
 		<!-- Display loading state -->
