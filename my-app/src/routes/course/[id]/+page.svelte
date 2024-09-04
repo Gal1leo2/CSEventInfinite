@@ -77,17 +77,8 @@
 					laptop: laptop
 				})
 				//ไอกัน ดูให้หน่อย กูอยากให้มัน โชว์ ว่า  Student ID is incorrect! ตามที่มึง return ค่าจาก 400 มา แต่แม่งไม่ยอมหวะ
-				.badRequest(async (response) => {
-					try {
-						const errorData = await response.json();
-						alertMessage.set(errorData.message || 'Enrollment failed due to invalid input.');
-					} catch (jsonError) {
-						// ถ้าไม่ได้ ให้ใช้ Enrollment failed due to invalid input
-
-						console.error('Failed to parse error JSON:', jsonError);
-						alertMessage.set('Enrollment failed due to invalid input.');
-					}
-
+				.badRequest(async (e) => {
+					alertMessage.set(JSON.parse(e.message).message);
 					showAlertFail.set(true);
 					showAlert.set(false);
 				})
