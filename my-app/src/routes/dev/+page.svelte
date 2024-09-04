@@ -70,33 +70,44 @@
 					course_lecture: courseLecture,
 					course_location: courseLocation
 				})
-				.res();
-
-			if (response.status === 200) {
-				toast.success('Create course complete.');
-			}
+				.res(()=>{
+					toast.success('Create course complete.');
+				})
+				.catch(()=>{
+					toast.error("This didn't work. Please try again.");
+				})
 		} catch (error) {
-			toast.error("This didn't work. Please try again.");
 			console.error(error);
 		}
 	};
-	let selectedCourseId : string ='';
+	let selectedCourseId: string = '';
 	const deleteCourse = async (courseId: string) => {
-		try {
-			const response = await Wretch(
-				`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`
-			)
-				.delete()
-				.res();
+		console.log(courseId);
 
-			if (response.status === 200) {
+		await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
+			.delete()
+			.notFound(()=>{
+				toast.error('Error deleting course. Please try again.');
+			})
+			.res(() => {
 				toast.success('Course deleted successfully.');
 				datacourse = datacourse.filter((course) => course.course_id !== courseId);
-			}
-		} catch (error) {
-			toast.error('Error deleting course. Please try again.');
-			console.error('Error deleting course:', error);
-		}
+			});
+		// try {
+		// 	const response = await Wretch(
+		// 		`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`
+		// 	)
+		// 		.delete()
+		// 		.res();
+
+		// 	if (response.status === 200) {
+		// 		toast.success('Course deleted successfully.');
+		// 		datacourse = datacourse.filter((course) => course.course_id !== courseId);
+		// 	}
+		// } catch (error) {
+		// 	toast.error('Error deleting course. Please try again.');
+		// 	console.error('Error deleting course:', error);
+		// }
 	};
 	onMount(async () => {
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
@@ -211,7 +222,8 @@
 				</Dialog.Content>
 			</Dialog.Root>
 			<Dialog.Root>
-				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Delete Course</Dialog.Trigger>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Delete Course</Dialog.Trigger
+				>
 				<Dialog.Content class="sm:max-w-[425px]">
 					<Dialog.Header>
 						<Dialog.Title>Delete Course</Dialog.Title>
@@ -234,8 +246,7 @@
 						<Button type="button" on:click={() => deleteCourse(selectedCourseId)}>Delete</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
-			   </Dialog.Root>
-			   
+			</Dialog.Root>
 		</div>
 	</div>
 	<!-- Right Box -->
