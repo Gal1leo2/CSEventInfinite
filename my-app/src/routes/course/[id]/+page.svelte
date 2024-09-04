@@ -107,14 +107,12 @@
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
 
-<div class="fontUse flex min-h-screen w-full flex-col">
-	<header
-		class="sticky top-0 flex h-16 items-center gap-4 border-b  px-2  md:px-4"
-	>
+<div class="fontUse flex  w-full flex-col">
+	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
 		<nav
-			class="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
+			class="flex flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
 		>
-			<a href="/home" class="font-bold text-[#E35205] transition-colors ">
+			<a href="##" class="font-bold text-[#E35205] transition-colors">
 				CSEvent - Short Course Registration System
 			</a>
 		</nav>

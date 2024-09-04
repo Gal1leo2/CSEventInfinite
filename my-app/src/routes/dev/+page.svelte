@@ -12,7 +12,6 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import Wretch from 'wretch';
 	import toast, { Toaster } from 'svelte-french-toast';
-	import { string } from 'zod';
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -58,6 +57,7 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
+	//let courseTime:
 	const createCourse = async () => {
 		try {
 			console.log(selectedDate?.toString());
