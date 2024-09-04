@@ -55,7 +55,6 @@
 			</div>
 		</div>
 	</div>
-
 	<!-- Right Box -->
 	<div class="flex w-full flex-col m-5">
 		<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
