@@ -99,7 +99,7 @@
 		<div class="flex flex-col items-center justify-center py-4 text-black">
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">CTRL</span> your future</h1>
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">ALT</span> your dream</h1>
-			<h1 class="text-2xl font-bold"><span style="color:#E35205">SHIFT</span> UP your skills</h1>
+			<h1 class="text-2xl font-bold"><span style="color:#E35205">SHIFT UP</span> your skills</h1>
 		</div>
 
 		<!-- Display loading state -->
