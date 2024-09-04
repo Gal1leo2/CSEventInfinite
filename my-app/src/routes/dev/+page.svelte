@@ -47,8 +47,7 @@
 		}
 		const formData = new FormData();
 		formData.append('picture', file);
-		await Wretch('https://nodejsbackend-ten.vercel.app/course/upload')
-		.post(formData);
+		Wretch('https://nodejsbackend-ten.vercel.app/course/upload').post(formData);
 	};
 
 	// create course
@@ -59,30 +58,45 @@
 	let courseLecture: string;
 	let courseLocation: string;
 	const createCourse = async () => {
-        try {
-            console.log(selectedDate?.toString());
-            const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-                .post({
-                    course_name: courseName,
-                    course_type: courseType,
-                    course_date: selectedDate?.toString(),
-                    course_description: courseDescription,
-                    course_lecture: courseLecture,
-                    course_location: courseLocation
-                })
-                .res();
+		try {
+			console.log(selectedDate?.toString());
+			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+				.post({
+					course_name: courseName,
+					course_type: courseType,
+					course_date: selectedDate?.toString(),
+					course_description: courseDescription,
+					course_lecture: courseLecture,
+					course_location: courseLocation
+				})
+				.res();
 
-            if (response.status === 200) {
-				toast.success("Create course complete.");
+			if (response.status === 200) {
+				toast.success('Create course complete.');
+			}
+		} catch (error) {
+			toast.error("This didn't work. Please try again.");
+			console.error(error);
+		}
+	};
 
-}
-        } catch (error) {
-            toast.error("This didn't work. Please try again.");
-            console.error(error);
-        }
-    };
+	const deleteCourse = async (courseId: string) => {
+		try {
+			const response = await Wretch(
+				`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`
+			)
+				.delete()
+				.res();
 
-
+			if (response.status === 200) {
+				toast.success('Course deleted successfully.');
+				datacourse = datacourse.filter((course) => course.course_id !== courseId);
+			}
+		} catch (error) {
+			toast.error('Error deleting course. Please try again.');
+			console.error('Error deleting course:', error);
+		}
+	};
 	onMount(async () => {
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
 		const resCourse = await fetch('https://nodejsbackend-ten.vercel.app/user/getcourse');
@@ -249,4 +263,3 @@
 	<Button on:click={upload}>Click</Button>
 </div>
 <Toaster />
-
