@@ -46,14 +46,8 @@
 		}
 		const formData = new FormData();
 		formData.append('picture', file);
-		try {
-			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/upload')
-				.post(formData)
-				.json();
-			console.log('Upload successful:', response);
-		} catch (error) {
-			console.error('Upload error:', error);
-		}
+		await Wretch('https://nodejsbackend-ten.vercel.app/course/upload')
+		.post(formData);
 	};
 
 	// create course
