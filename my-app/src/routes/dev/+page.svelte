@@ -11,6 +11,8 @@
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import Wretch from 'wretch';
+	import { Select } from 'bits-ui';
+	import toast, { Toaster } from 'svelte-french-toast';
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -55,24 +57,33 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
-	const createCourse = async () => {
-		console.log(selectedDate?.toString())
-		await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-		.post({
-			course_name : courseName,
-            course_type: courseType,
-            course_date: selectedDate?.toString(),
-            course_description: courseDescription,
-            course_lecture: courseLecture,
-            course_location: courseLocation
-		})
-		.badRequest((e)=>{
-			console.log(e)
-		})
-		.res((e)=>{
-			console.log(e.status)
-		})
-	};
+    const createCourse = async () => {
+        try {
+            console.log(selectedDate?.toString());
+            const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+                .post({
+                    course_name: courseName,
+                    course_type: courseType,
+                    course_date: selectedDate?.toString(),
+                    course_description: courseDescription,
+                    course_lecture: courseLecture,
+                    course_location: courseLocation
+                })
+                .res();
+
+            if (response.status === 200) {
+				toast.success("Create course complete.");
+
+}
+        } catch (error) {
+            toast.error("This didn't work. Please try again.");
+            console.error(error);
+        }
+    };
+
+	//delete course
+	let selectedCourseIdToDelete: string = '';
+
 
 
 	onMount(async () => {
@@ -229,3 +240,5 @@
 	<Input id="picture" type="file" on:change={readIMG} />
 	<Button on:click={upload}>Click</Button>
 </div>
+<Toaster />
+
