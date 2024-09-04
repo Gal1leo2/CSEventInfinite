@@ -80,6 +80,7 @@
 			console.error(error);
 		}
 	};
+	//Delete
 	let selectedCourseId : string ='';
 	const deleteCourse = async (courseId: string) => {
 		try {
