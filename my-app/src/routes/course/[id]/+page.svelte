@@ -195,7 +195,7 @@
 													class="relative inline-flex h-6 w-11 items-center rounded-full"
 												></Switch>
 												<span class="ml-3 text-sm font-medium text-gray-700"
-													>Participants must bring their own computers.</span
+													>Participants can bring their own computers.</span
 												>
 											</div>
 										</div>
@@ -213,7 +213,6 @@
 											</Alert.Description>
 										</Alert.Root>
 									{/if}
-
 									<!-- Error Alert -->
 									{#if $showAlertFail}
 										<Alert.Root variant="destructive">
@@ -223,6 +222,7 @@
 									{/if}
 								</Dialog.Content>
 							</Dialog.Root>
+							
 						</div>
 					</div>
 
