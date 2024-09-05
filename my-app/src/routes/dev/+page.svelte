@@ -302,44 +302,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
-						>Add Course Description</Dialog.Trigger
-					>
-					<Dialog.Content class="sm:max-w-[1080px]">
-						<Dialog.Header>
-							<Dialog.Title>Add Course Description</Dialog.Title>
-							<Dialog.Description>
-								Provide a description for the selected course. Markdown is supported.
-							</Dialog.Description>
-						</Dialog.Header>
-						<div class="grid gap-4 py-4">
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="course" class="text-right">Course</Label>
-								<select id="course" bind:value={selectedCourseId} class="col-span-3">
-									<option value="" disabled selected>Select a course</option>
-									{#each datacourse as course (course.course_id)}
-										<option value={course.course_id}>{course.course_name}</option>
-									{/each}
-								</select>
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="description" class="text-right">Description</Label>
-								<textarea
-									id="description"
-									bind:value={courseDescription}
-									class="col-span-3"
-									placeholder="Enter course description in markdown"
-									rows="20"
-									cols="30"
-								/>
-							</div>
-						</div>
-						<Dialog.Footer>
-							<Button type="button" on:click={addCourseDescription}>Add Description</Button>
-						</Dialog.Footer>
-					</Dialog.Content>
-				</Dialog.Root>
+
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
 						>Delete Course</Dialog.Trigger
