@@ -78,7 +78,7 @@
 		formData.append('course_name', courseName || '');
 		formData.append('course_type', courseType || '');
 		formData.append('course_date', date);
-		formData.append('course_description', courseDescription || '');
+		// formData.append('course_description', courseDescription || '');
 		formData.append('course_lecture', courseLecture || '');
 		formData.append('course_location', courseLocation || '');
 		try {
@@ -97,9 +97,8 @@
 	//ยังไม่เสร็จ
 	const addCourseDescription = async () => {
 		try {
-			console.log(selectedDate?.toString());
-			await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-				.post({
+			await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
+				.put({
 					course_id: selectedCourseId,
 					course_description: courseDescription
 				})
@@ -191,7 +190,8 @@
 				</div>
 			</div>
 			<!-- post Blog -->
-			<div class="m-5 flex h-full border border-[red]">
+			<div class="m-5 flex h-full justify-center gap-5 items-center border border-[red]">
+				<!-- CREATE COURSE -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
 						>Create Course</Dialog.Trigger
@@ -236,10 +236,6 @@
 								</Popover.Root>
 							</div>
 							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="des" class="text-right">Description</Label>
-								<Input id="des" bind:value={courseDescription} class="col-span-3" />
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
 								<Label for="lec" class="text-right">Lecture</Label>
 								<Input id="lec" bind:value={courseLecture} class="col-span-3" />
 							</div>
@@ -264,6 +260,8 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
+
+				<!-- ADD COURSE DESCRIPTION -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
 						>Add Course Description</Dialog.Trigger
@@ -303,6 +301,7 @@
 					</Dialog.Content>
 				</Dialog.Root>
 
+				<!-- DELETE COURSE -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
 						>Delete Course</Dialog.Trigger
