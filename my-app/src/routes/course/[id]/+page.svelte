@@ -11,7 +11,6 @@
 	import wretch from 'wretch';
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Alert from '$lib/components/ui/alert/index.js';
-
 	interface Course {
 		course_id: string;
 		course_name: string;
