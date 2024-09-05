@@ -51,20 +51,6 @@ interface Student {
 
 let file: File | null = null;
 
-const handleFileUpload = async () => {
-    if (!file) {
-        console.error('No file selected.');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('http://localhost:3000/upload', {
-        method: 'POST',
-        body: formData
-    });
-};
 
 const handleFileChange = async (e: Event) => {
     const target = (await e.target) as HTMLInputElement;
@@ -81,6 +67,7 @@ let selectedDate: DateValue | undefined = undefined;
 let courseLecture: string;
 let courseLocation: string;
 
+//create
 const createCourse = async () => {
     if (!file) {
         console.error('No file selected.');
@@ -92,7 +79,6 @@ const createCourse = async () => {
     formData.append('course_name', courseName || '');
     formData.append('course_type', courseType || '');
     formData.append('course_date', date);
-    // formData.append('course_description', courseDescription || '');
     formData.append('course_lecture', courseLecture || '');
     formData.append('course_location', courseLocation || '');
     try {
@@ -499,11 +485,6 @@ function showStudentEachCourse(courseId: string) {
 				</div>
 			{/each}
 		</div>
-	</div>
-	<div class="grid w-full max-w-sm items-center gap-1.5">
-		<Label for="picture">Picture</Label>
-		<input type="file" on:change={handleFileChange} />
-		<button on:click={handleFileUpload}>Upload</button>
 	</div>
 	<Toaster />
 
