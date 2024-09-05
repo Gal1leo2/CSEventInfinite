@@ -59,10 +59,13 @@
 	let std_id: string;
 	let Fname: string;
 	let Lname: string;
+	let isSubmitting = writable(false); // New state JA
 
 	//SUBMIT THE FORM
 	const submitform = async () => {
 		const laptop = $isChecked;
+
+		isSubmitting.set(true); // Start showing the loading popup
 
 		try {
 			await wretch('https://nodejsbackend-ten.vercel.app/user/enroll')
@@ -93,6 +96,8 @@
 			alertMessage.set('Network error. Please try again later.');
 			showAlertFail.set(true);
 			showAlert.set(false);
+		} finally {
+			isSubmitting.set(false); // Stop showing the loading popup
 		}
 	};
 	onMount(() => {
@@ -122,10 +127,11 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mt-6 mb-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
+					class="mb-6 mt-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
+						<!-- svelte-ignore a11y-img-redundant-alt -->
 						<img
 							src={course.course_image}
 							alt="Course Image"
@@ -201,6 +207,18 @@
 									<Dialog.Footer>
 										<Button type="submit" on:click={submitform}>Enroll</Button>
 									</Dialog.Footer>
+									{#if $isSubmitting}
+									<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out">
+										<div class="relative p-6 bg-white bg-opacity-10 rounded-lg shadow-lg border border-gray-300 backdrop-filter backdrop-blur-lg">
+											<!-- Glowing Spinner -->
+											<div class="spinner-container flex items-center justify-center mb-4">
+												<div class="spinner-border animate-spin inline-block w-12 h-12 border-4 border-t-4 border-t-blue-600 border-blue-200 rounded-full"></div>
+											</div>
+											<!-- Fading Text -->
+											<p class="mt-4 text-lg text-gray-200 font-semibold animate-fadeIn">Processing your enrollment...</p>
+										</div>
+									</div>
+								{/if}
 									<!-- Success Alert -->
 									{#if $showAlert}
 										<Alert.Root>
@@ -238,8 +256,8 @@
 			<p class="mt-4 text-gray-500">No courses found.</p>
 		{/if}
 	</div>
-	<footer class="bg-gray flex ">
-		<div class="flex justify-between bg-black/5 p-4 text-xs w-full">
+	<footer class="bg-gray flex">
+		<div class="flex w-full justify-between bg-black/5 p-4 text-xs">
 			<span>© 2024 | Made with ❤️ by Tony , Gal1leo</span>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
@@ -255,5 +273,39 @@
 		color: #0c1524;
 		max-width: 100%;
 	}
+	/* Spinner Styles */
+	.spinner-border {
+		border-radius: 50%;
+		border: 4px solid rgba(255, 255, 255, 0.1);
+		border-top: 4px solid rgba(59, 130, 246, 0.8); /* Custom blue shade */
+		animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+	/* Text Fade-In Animation */
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	.animate-fadeIn {
+		animation: fadeIn 1s ease-in-out;
+	}
 
+	/* Blur & transition */
+	.backdrop-blur-sm {
+		backdrop-filter: blur(5px);
+	}
+	.transition-opacity {
+		transition: opacity 0.3s;
+	}
 </style>

@@ -136,14 +136,11 @@
 			});
 	};
 	//For show student in each course----------------------------------------------------------------------------------------------
-	// Writable stores for UI states
 	let isLoading = writable(true);
 	let students = writable<Student[]>([]);
-	let filteredStudents = writable<Student[]>([]); // Filtered students for a specific course
+	let filteredStudents = writable<Student[]>([]); 
 	let error = writable<string>('');
-	let allStudents: Student[] = []; // Store all students after fetching
-
-	// Fetch students from the server
+	let allStudents: Student[] = []; 
 	async function fetchStudents() {
 		try {
 			isLoading.set(true);
@@ -160,22 +157,20 @@
 		}
 	}
 
-	// Helper function to get error message
 	function getErrorMessage(error: unknown): string {
 		if (error instanceof Error) return error.message;
 		return String(error);
 	}
 
-	// Function to filter students by the selected course ID
 	function showStudentEachCourse(courseId: string) {
 		if (courseId) {
-			// Filter students where course_id matches the selected courseId
 			filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
 		} else {
-			// Clear the filtered students list if no course is selected
 			filteredStudents.set([]);
 		}
 	}
+	//Login handle----------------------------------------------------------------------------------------------
+
 	const isLoggedIn = writable(false);
 
 	const token = Cookies.get('authUser');
@@ -378,60 +373,73 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
+				<!-- show student in each course -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-						Show student in each course
+					  Show student in each course
 					</Dialog.Trigger>
-					<Dialog.Content class="sm:max-w-[425px]">
-						<Dialog.Header>
-							<Dialog.Title>Show Students</Dialog.Title>
-							<Dialog.Description>
-								Select a course to view the list of enrolled students.
-							</Dialog.Description>
-						</Dialog.Header>
-						<div class="grid gap-4 py-4">
-							<!-- Course Selection Dropdown -->
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="course" class="text-right">Course</Label>
-								<select
-									id="course"
-									bind:value={selectedCourseId}
-									class="col-span-3"
-									on:change={() => showStudentEachCourse(selectedCourseId)}
-								>
-									<option value="" disabled selected>Select a course</option>
-									{#each datacourse as course (course.course_id)}
-										<option value={course.course_id}>{course.course_name}</option>
-									{/each}
-								</select>
-							</div>
-
-							<!-- Display Loading State -->
-							{#if $isLoading}
-								<p>Loading students...</p>
-							{/if}
-
-							<!-- Display Filtered Students -->
-							{#if !$isLoading && $filteredStudents.length > 0}
-								<ul>
-									{#each $filteredStudents as Student}
-										<li>{Student.Fname} {Student.Lname} (ID: {Student.id})</li>
-									{/each}
-								</ul>
-							{/if}
-
-							<!-- Error Handling -->
-							{#if $error}
-								<p class="text-red-500">{error}</p>
-							{/if}
-
-							<!-- No students found for the selected course -->
-							{#if !$isLoading && $filteredStudents.length === 0 && selectedCourseId}
-								<p>No students enrolled in this course.</p>
-							{/if}
+					<Dialog.Content class="sm:max-w-[425px] p-6 rounded-lg bg-white shadow-lg">
+					  <Dialog.Header>
+						<Dialog.Title class="text-lg font-bold">Show Students</Dialog.Title>
+						<Dialog.Description class="text-sm text-gray-500">
+						  Select a course to view the list of enrolled students.
+						</Dialog.Description>
+					  </Dialog.Header>
+				  
+					  <div class="grid gap-4 py-4">
+						<div class="grid grid-cols-4 items-center gap-4">
+						  <Label for="course" class="text-right">Course</Label>
+						  <select
+							id="course"
+							bind:value={selectedCourseId}
+							class="col-span-3 p-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:border-blue-300"
+							on:change={() => showStudentEachCourse(selectedCourseId)}
+						  >
+							<option value="" disabled selected>Select a course</option>
+							{#each datacourse as course (course.course_id)}
+							  <option value={course.course_id}>{course.course_name}</option>
+							{/each}
+						  </select>
 						</div>
+				  
+						<!-- Display Loading State -->
+						{#if $isLoading}
+						  <p class="text-center text-gray-500">Loading students...</p>
+						{/if}
+				  
+						<!-- Display Filtered Students -->
+						{#if !$isLoading && $filteredStudents.length > 0}
+						  <table class="min-w-full bg-white">
+							<thead>
+							  <tr class="w-full bg-gray-100 border-b">
+								<th class="text-left py-2 px-4">Student Name</th>
+								<th class="text-left py-2 px-4">Student ID</th>
+							  </tr>
+							</thead>
+							<tbody>
+							  {#each $filteredStudents as Student}
+								<tr class="border-b">
+								  <td class="py-2 px-4">{Student.Fname} {Student.Lname}</td>
+								  <td class="py-2 px-4">{Student.id}</td>
+								</tr>
+							  {/each}
+							</tbody>
+						  </table>
+						{/if}
+				  
+						<!-- Error Handling -->
+						{#if $error}
+						  <p class="text-red-500">{error}</p>
+						{/if}
+				  
+						<!-- No students found for the selected course -->
+						{#if !$isLoading && $filteredStudents.length === 0 && selectedCourseId}
+						  <p class="text-center text-gray-500">No students enrolled in this course.</p>
+						{/if}
+					  </div>
 					</Dialog.Content>
-				</Dialog.Root>
+				  </Dialog.Root>
+				  
 			</div>
 		</div>
 		<!-- Right Box -->
