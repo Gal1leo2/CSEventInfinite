@@ -96,11 +96,9 @@
 	};
 	//ยังไม่เสร็จ
 	const addCourseDescription = async () => {
-		console.log({selectedCourseId, courseDescription})
 		try {
-			console.log(selectedDate?.toString());
 			await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
-				.post({
+				.put({
 					course_id: selectedCourseId,
 					course_description: courseDescription
 				})
