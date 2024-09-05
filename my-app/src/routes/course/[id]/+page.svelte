@@ -47,7 +47,6 @@
 				throw new Error('Failed to fetch courses');
 			}
 			const data: Course[] = await response.json();
-			// ชั่วคราว
 			data.forEach(
 				(course) =>
 					(course.course_image = course.course_img));
