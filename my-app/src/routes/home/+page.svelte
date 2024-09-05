@@ -5,9 +5,15 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { onMount } from 'svelte';
 	import { writable, derived } from 'svelte/store';
-	import {LibraryBig} from 'lucide-svelte';
+	import { LibraryBig } from 'lucide-svelte';
 	import { UsersRound } from 'lucide-svelte';
-
+	import Cookies from 'js-cookie';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import Wretch from 'wretch';
+	import { toast } from 'svelte-sonner';
+	import { Toaster } from 'svelte-sonner';
 
 	interface Course {
 		course_id: string;
@@ -77,6 +83,27 @@
 		});
 	});
 
+	let username: string;
+	let password: string;
+	const login= async () =>{
+		await Wretch('https://nodejsbackend-ten.vercel.app/admin/login')
+		.post({
+			username: username,
+			password: password
+		})
+		.badRequest(async (e)=>{
+			toast.warning(JSON.parse(e.message).message)
+		})
+		.notFound(async(e)=>{
+			toast.error(JSON.parse(e.message).message)
+		})
+		.res(async(e)=>{
+			toast.success("Login Successfully!")
+			Cookies.set('authUser', username );
+			window.location.pathname = 'dev'
+		})
+	}
+
 	onMount(() => {
 		fetchCourses();
 		fetchStudents();
@@ -89,11 +116,36 @@
 <div class="fontUse flex min-w-max flex-col">
 	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
 		<nav
-			class="flex flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
+			class="flex w-full flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
 		>
 			<a href="##" class="font-bold text-[#E35205] transition-colors">
 				CSEvent - Short Course Registration System
 			</a>
+
+			<Dialog.Root>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Admin login</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[425px]">
+					<Dialog.Header>
+						<Dialog.Title>Edit profile</Dialog.Title>
+						<Dialog.Description>
+							Make changes to your profile here. Click save when you're done.
+						</Dialog.Description>
+					</Dialog.Header>
+					<div class="grid gap-4 py-4">
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="Username" class="text-right">Username</Label>
+							<Input id="Username" bind:value={username} class="col-span-3" />
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="password" class="text-right">Password</Label>
+							<Input id="password" bind:value={password} class="col-span-3" />
+						</div>
+					</div>
+					<Dialog.Footer>
+						<Button type="submit" on:click={login}>Save changes</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
 		</nav>
 	</header>
 
@@ -115,8 +167,7 @@
 				<Card.Root>
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
 						<Card.Title class="text-sm font-medium">Events that can be registered</Card.Title>
-						<CalendarArrowDown class="h-6 w-6 text-muted-foreground" />
-						
+						<CalendarArrowDown class="text-muted-foreground h-6 w-6" />
 					</Card.Header>
 					<Card.Content>
 						<div class="text-2xl font-bold">{$totalCourses}</div>
@@ -128,10 +179,10 @@
 				<Card.Root class="col-span-full">
 					<Card.Header class="flex flex-row items-center justify-between">
 						<div class="grid gap-2">
-						  <Card.Title>Courses</Card.Title>
-						  <Card.Description>Courses available for registration</Card.Description>
+							<Card.Title>Courses</Card.Title>
+							<Card.Description>Courses available for registration</Card.Description>
 						</div>
-						<LibraryBig class="h-6 w-6 text-muted-foreground ml-2" />
+						<LibraryBig class="text-muted-foreground ml-2 h-6 w-6" />
 					</Card.Header>
 					<Card.Content>
 						<Table.Root>
@@ -142,35 +193,43 @@
 									<Table.Head>Date</Table.Head>
 									<Table.Head>Enrolled</Table.Head>
 									<Table.Head class="text-right">See details</Table.Head>
-
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
 								{#each $enrollCount as course}
-								<Table.Row>
-									<Table.Cell>
-									  <div class="font-medium">{course.course_name}</div>
-									  <div class="flex items-center">
-										<UsersRound  class="h-4 w-4 text-muted-foreground mr-2" />
-										<div class="hidden text-sm text-muted-foreground md:inline">
-										  {course.course_lecture}
-										  <!-- พี่มดแดง ดูให้ทีครับ -->
-										  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...$$props}><path fill="currentColor" d="M0 18v-1.575q0-1.1 1.113-1.763Q2.225 14 4 14q.325 0 .625.012q.3.013.575.063q-.35.5-.525 1.075q-.175.575-.175 1.225V18Zm6 0v-1.625q0-1.625 1.663-2.625q1.662-1 4.337-1q2.7 0 4.35 1q1.65 1 1.65 2.625V18Zm13.5 0v-1.625q0-.65-.163-1.225q-.162-.575-.487-1.075q.275-.05.563-.063Q19.7 14 20 14q1.8 0 2.9.662q1.1.663 1.1 1.763V18ZM12 14.75q-1.425 0-2.55.375q-1.125.375-1.325.875H15.9q-.225-.5-1.338-.875Q13.45 14.75 12 14.75ZM4 13q-.825 0-1.412-.588Q2 11.825 2 11q0-.85.588-1.425Q3.175 9 4 9q.85 0 1.425.575Q6 10.15 6 11q0 .825-.575 1.412Q4.85 13 4 13Zm16 0q-.825 0-1.413-.588Q18 11.825 18 11q0-.85.587-1.425Q19.175 9 20 9q.85 0 1.425.575Q22 10.15 22 11q0 .825-.575 1.412Q20.85 13 20 13Zm-8-1q-1.25 0-2.125-.875T9 9q0-1.275.875-2.138Q10.75 6 12 6q1.275 0 2.137.862Q15 7.725 15 9q0 1.25-.863 2.125Q13.275 12 12 12Zm0-4q-.425 0-.712.287Q11 8.575 11 9t.288.712Q11.575 10 12 10t.713-.288Q13 9.425 13 9t-.287-.713Q12.425 8 12 8Zm0 8Zm0-7Z"/></svg>
-										</div>
-									  </div>
-									</Table.Cell>
-									<Table.Cell>{course.course_type}</Table.Cell>
-									<Table.Cell>{course.course_date}</Table.Cell>
-									<Table.Cell>
-									  <span>{course.enroll_count}</span>
-									</Table.Cell>
-									<Table.Cell class="text-right">
-									  <a href="/course/{course.course_id}" class={buttonVariants({})}>
-										<b>See details</b>
-									  </a>
-									</Table.Cell>
-								  </Table.Row>
-								  
+									<Table.Row>
+										<Table.Cell>
+											<div class="font-medium">{course.course_name}</div>
+											<div class="flex items-center">
+												<UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
+												<div class="text-muted-foreground hidden text-sm md:inline">
+													{course.course_lecture}
+													<!-- พี่มดแดง ดูให้ทีครับ -->
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														width="1em"
+														height="1em"
+														viewBox="0 0 24 24"
+														{...$$props}
+														><path
+															fill="currentColor"
+															d="M0 18v-1.575q0-1.1 1.113-1.763Q2.225 14 4 14q.325 0 .625.012q.3.013.575.063q-.35.5-.525 1.075q-.175.575-.175 1.225V18Zm6 0v-1.625q0-1.625 1.663-2.625q1.662-1 4.337-1q2.7 0 4.35 1q1.65 1 1.65 2.625V18Zm13.5 0v-1.625q0-.65-.163-1.225q-.162-.575-.487-1.075q.275-.05.563-.063Q19.7 14 20 14q1.8 0 2.9.662q1.1.663 1.1 1.763V18ZM12 14.75q-1.425 0-2.55.375q-1.125.375-1.325.875H15.9q-.225-.5-1.338-.875Q13.45 14.75 12 14.75ZM4 13q-.825 0-1.412-.588Q2 11.825 2 11q0-.85.588-1.425Q3.175 9 4 9q.85 0 1.425.575Q6 10.15 6 11q0 .825-.575 1.412Q4.85 13 4 13Zm16 0q-.825 0-1.413-.588Q18 11.825 18 11q0-.85.587-1.425Q19.175 9 20 9q.85 0 1.425.575Q22 10.15 22 11q0 .825-.575 1.412Q20.85 13 20 13Zm-8-1q-1.25 0-2.125-.875T9 9q0-1.275.875-2.138Q10.75 6 12 6q1.275 0 2.137.862Q15 7.725 15 9q0 1.25-.863 2.125Q13.275 12 12 12Zm0-4q-.425 0-.712.287Q11 8.575 11 9t.288.712Q11.575 10 12 10t.713-.288Q13 9.425 13 9t-.287-.713Q12.425 8 12 8Zm0 8Zm0-7Z"
+														/></svg
+													>
+												</div>
+											</div>
+										</Table.Cell>
+										<Table.Cell>{course.course_type}</Table.Cell>
+										<Table.Cell>{course.course_date}</Table.Cell>
+										<Table.Cell>
+											<span>{course.enroll_count}</span>
+										</Table.Cell>
+										<Table.Cell class="text-right">
+											<a href="/course/{course.course_id}" class={buttonVariants({})}>
+												<b>See details</b>
+											</a>
+										</Table.Cell>
+									</Table.Row>
 								{/each}
 							</Table.Body>
 						</Table.Root>
@@ -186,3 +245,5 @@
 		font-family: 'Noto Sans Thai';
 	}
 </style>
+
+<Toaster></Toaster>
