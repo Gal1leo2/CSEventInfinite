@@ -174,20 +174,21 @@
 									<Table.Row>
 										<Table.Cell>
 											<div class="font-medium">{course.course_name}</div>
-											<div class="mb-2 flex items-center">
-												<UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
-												<div class="text-muted-foreground hidden text-sm md:inline">
-													{course.course_lecture}
-												</div>
+										  	<div class="mb-2 flex items-center">
+											  <UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
+											  <div class="text-muted-foreground text-sm block md:inline">
+												{course.course_lecture}
+											  </div>
 											</div>
-
+										  
 											<div class="flex items-center">
-												<Group class="text-muted-foreground mr-2 h-4 w-4" />
-												<div class="text-muted-foreground mr-2 hidden text-sm md:inline">
-													{course.course_team}
-												</div>
+											  <Group class="text-muted-foreground mr-2 h-4 w-4" />
+											  <div class="text-muted-foreground text-sm block md:inline mr-2">
+												{course.course_team}
+											  </div>
 											</div>
-										</Table.Cell>
+										  </Table.Cell>
+										  
 										<Table.Cell>{course.course_type}</Table.Cell>
 										<Table.Cell>{course.course_date}</Table.Cell>
 										<Table.Cell>
@@ -221,4 +222,5 @@
 	.fontUse {
 		font-family: 'Noto Sans Thai';
 	}
+
 </style>
