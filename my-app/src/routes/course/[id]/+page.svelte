@@ -122,7 +122,7 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mt-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
+					class="mt-6 mb-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
@@ -238,9 +238,8 @@
 			<p class="mt-4 text-gray-500">No courses found.</p>
 		{/if}
 	</div>
-	<div class="space-y-4"></div>
-	<footer class="bg-gray">
-		<div class="flex justify-between bg-black/5 p-4 text-xs">
+	<footer class="bg-gray flex ">
+		<div class="flex justify-between bg-black/5 p-4 text-xs w-full">
 			<span>© 2024 | Made with ❤️ by Tony , Gal1leo</span>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
@@ -256,4 +255,5 @@
 		color: #0c1524;
 		max-width: 100%;
 	}
+
 </style>
