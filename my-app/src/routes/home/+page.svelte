@@ -72,11 +72,20 @@
 			isLoading.set(false);
 		}
 	}
+	//sort table by date
+	function sortByDate(courses: Course[]): Course[] {
+		return courses.slice().sort((a, b) => {
+			const dateA = new Date(a.course_date);
+			const dateB = new Date(b.course_date);
+			return dateA.getTime() - dateB.getTime();
+		});
+	}
 
 	let totalCourses = derived(courses, ($courses) => $courses.length);
 
 	let enrollCount = derived([courses, students], ([$courses, $students]) => {
-		return $courses.map((course) => {
+		const sortedCourses = sortByDate($courses);
+		return sortedCourses.map((course) => {
 			let count = $students.filter((student) => student.course_id === course.course_id).length;
 			return { ...course, enroll_count: count };
 		});
@@ -174,21 +183,21 @@
 									<Table.Row>
 										<Table.Cell>
 											<div class="font-bold">{course.course_name}</div>
-										  	<div class="mb-2 flex items-center">
-											  <UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
-											  <div class="text-muted-foreground text-sm block md:inline">
-												{course.course_lecture}
-											  </div>
+											<div class="mb-2 flex items-center">
+												<UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
+												<div class="text-muted-foreground block text-sm md:inline">
+													{course.course_lecture}
+												</div>
 											</div>
-										  
+
 											<div class="flex items-center">
-											  <Group class="text-muted-foreground mr-2 h-4 w-4" />
-											  <div class="text-muted-foreground text-sm block md:inline mr-2">
-												{course.course_team}
-											  </div>
+												<Group class="text-muted-foreground mr-2 h-4 w-4" />
+												<div class="text-muted-foreground mr-2 block text-sm md:inline">
+													{course.course_team}
+												</div>
 											</div>
-										  </Table.Cell>
-										  
+										</Table.Cell>
+
 										<Table.Cell>{course.course_type}</Table.Cell>
 										<Table.Cell>{course.course_date}</Table.Cell>
 										<Table.Cell>
@@ -222,5 +231,4 @@
 	.fontUse {
 		font-family: 'Noto Sans Thai';
 	}
-
 </style>
