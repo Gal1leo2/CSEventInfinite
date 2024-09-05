@@ -121,18 +121,17 @@
 <svelte:head>
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
-<div class="fontUse flex min-w-max flex-col">
+<div class="fontUse flex flex-col min-h-screen min-w-max">
 	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
-		<nav
-			class="flex w-full flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
-		>
+		<nav class="flex w-full flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4">
 			<a href="##" class="font-bold text-[#E35205] transition-colors">
 				CSEvent - Short Course Registration System
 			</a>
 		</nav>
 	</header>
 
-	<main class="flex min-h-screen flex-1 flex-col gap-4 bg-gray-50 p-4 md:gap-8 md:p-8">
+	<!-- Main content with flex-1 to fill available space -->
+	<main class="flex flex-1 flex-col gap-4 bg-gray-50 p-4 md:gap-8 md:p-8">
 		<div class="flex flex-col items-center justify-center py-4 text-black">
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">CTRL</span> your future</h1>
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">ALT</span> your dream</h1>
@@ -141,85 +140,86 @@
 
 		{#if $isLoading}
 			<div>Loading...</div>
-		{:else}
-			{#if $error}
-				<div class="text-red-500">{$error}</div>
-			{/if}
-
-			<div class="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-				<Card.Root>
-					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<Card.Title class="text-sm font-medium">Events that can be registered</Card.Title>
-						<CalendarArrowDown class="text-muted-foreground h-6 w-6" />
-					</Card.Header>
-					<Card.Content>
-						<div class="text-2xl font-bold">{$totalCourses}</div>
-					</Card.Content>
-				</Card.Root>
-			</div>
-
-			<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-				<Card.Root class="col-span-full">
-					<Card.Header class="flex flex-row items-center justify-between">
-						<div class="grid gap-2">
-							<Card.Title>Courses</Card.Title>
-							<Card.Description>Courses available for registration</Card.Description>
-						</div>
-						<LibraryBig class="text-muted-foreground ml-2 h-6 w-6" />
-					</Card.Header>
-					<Card.Content>
-						<Table.Root>
-							<Table.Header>
-								<Table.Row>
-									<Table.Head>Name</Table.Head>
-									<Table.Head>Type</Table.Head>
-									<Table.Head>Date</Table.Head>
-									<Table.Head>Enrolled</Table.Head>
-									<Table.Head class="text-right">See details</Table.Head>
-								</Table.Row>
-							</Table.Header>
-							<Table.Body>
-								{#each $enrollCount as course}
-									<Table.Row>
-										<Table.Cell>
-											<div class="font-bold">{course.course_name}</div>
-											<div class="mb-2 flex items-center">
-												<UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
-												<div class="text-muted-foreground block text-sm md:inline">
-													{course.course_lecture}
-												</div>
-											</div>
-
-											<div class="flex items-center">
-												<Group class="text-muted-foreground mr-2 h-4 w-4" />
-												<div class="text-muted-foreground mr-2 block text-sm md:inline">
-													{course.course_team}
-												</div>
-											</div>
-										</Table.Cell>
-
-										<Table.Cell>{course.course_type}</Table.Cell>
-										<Table.Cell>{course.course_date}</Table.Cell>
-										<Table.Cell>
-											<span>{course.enroll_count}</span>
-										</Table.Cell>
-										<Table.Cell class="text-right">
-											<a href="/course/{course.course_id}" class={buttonVariants({})}>
-												<b>See details</b>
-											</a>
-										</Table.Cell>
-									</Table.Row>
-								{/each}
-							</Table.Body>
-						</Table.Root>
-					</Card.Content>
-				</Card.Root>
-			</div>
+		{:else if $error}
+			<div class="text-red-500">{$error}</div>
 		{/if}
+
+		<!-- Courses and events -->
+		<div class="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+			<Card.Root>
+				<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+					<Card.Title class="text-sm font-medium">Events that can be registered</Card.Title>
+					<CalendarArrowDown class="text-muted-foreground h-6 w-6" />
+				</Card.Header>
+				<Card.Content>
+					<div class="text-2xl font-bold">{$totalCourses}</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
+
+		<!-- Course details -->
+		<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+			<Card.Root class="col-span-full">
+				<Card.Header class="flex flex-row items-center justify-between">
+					<div class="grid gap-2">
+						<Card.Title>Courses</Card.Title>
+						<Card.Description>Courses available for registration</Card.Description>
+					</div>
+					<LibraryBig class="text-muted-foreground ml-2 h-6 w-6" />
+				</Card.Header>
+				<Card.Content>
+					<Table.Root>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>Name</Table.Head>
+								<Table.Head>Type</Table.Head>
+								<Table.Head>Date</Table.Head>
+								<Table.Head>Enrolled</Table.Head>
+								<Table.Head class="text-right">See details</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#each $enrollCount as course}
+								<Table.Row>
+									<Table.Cell>
+										<div class="font-bold">{course.course_name}</div>
+										<div class="mb-2 flex items-center">
+											<UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
+											<div class="text-muted-foreground block text-sm md:inline">
+												{course.course_lecture}
+											</div>
+										</div>
+										<div class="flex items-center">
+											<Group class="text-muted-foreground mr-2 h-4 w-4" />
+											<div class="text-muted-foreground mr-2 block text-sm md:inline">
+												{course.course_team}
+											</div>
+										</div>
+									</Table.Cell>
+
+									<Table.Cell>{course.course_type}</Table.Cell>
+									<Table.Cell>{course.course_date}</Table.Cell>
+									<Table.Cell>
+										<span>{course.enroll_count}</span>
+									</Table.Cell>
+									<Table.Cell class="text-right">
+										<a href="/course/{course.course_id}" class={buttonVariants({})}>
+											<b>See details</b>
+										</a>
+									</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
+				</Card.Content>
+			</Card.Root>
+		</div>
 	</main>
-	<footer class="bg-gray">
+
+	<!-- Footer sticks at the bottom -->
+	<footer class="bg-gray-100 w-full">
 		<div class="flex justify-between bg-black/5 p-4 text-xs">
-			<span>© 2024 | Made with ❤️ by Tony , Gal1leo</span>
+			<span>© 2024 | Made with ❤️ by Tony, Gal1leo</span>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
 	</footer>
@@ -232,3 +232,6 @@
 		font-family: 'Noto Sans Thai';
 	}
 </style>
+
+<Toaster></Toaster>
+
