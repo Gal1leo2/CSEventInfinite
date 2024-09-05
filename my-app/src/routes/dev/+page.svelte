@@ -28,6 +28,7 @@
 		Fname: string;
 		Lname: string;
 		course_id: string;
+		laptop: boolean;
 	}
 
 	interface Course {
@@ -199,8 +200,9 @@
 	});
 </script>
 
+
 {#if $isLoggedIn}
-	<div class="flex h-screen w-full">
+	<div class="flex h-screen w-full ">
 		<div class="m-5 flex w-full flex-col border border-[red]">
 			<h1 class="text-center text-2xl font-bold">API</h1>
 			<div class="grid grid-cols-3 justify-center gap-2">
@@ -384,7 +386,7 @@
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 						Show student in each course
 					</Dialog.Trigger>
-					<Dialog.Content class="rounded-lg bg-white p-6 shadow-lg sm:max-w-[425px]">
+					<Dialog.Content class="rounded-lg bg-white p-6 shadow-lg sm:max-w-[600px]">
 						<Dialog.Header>
 							<Dialog.Title class="text-lg font-bold">Show Students</Dialog.Title>
 							<Dialog.Description class="text-sm text-gray-500">
@@ -408,18 +410,17 @@
 								</select>
 							</div>
 
-							<!-- Display Loading State -->
 							{#if $isLoading}
 								<p class="text-center text-gray-500">Loading students...</p>
 							{/if}
 
-							<!-- Display Filtered Students -->
 							{#if !$isLoading && $filteredStudents.length > 0}
 								<table class="min-w-full bg-white">
 									<thead>
 										<tr class="w-full border-b bg-gray-100">
 											<th class="px-4 py-2 text-left">Student Name</th>
 											<th class="px-4 py-2 text-left">Student ID</th>
+											<th class="px-4 py-2 text-left">Can bring laptop?</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -427,6 +428,8 @@
 											<tr class="border-b">
 												<td class="px-4 py-2">{Student.Fname} {Student.Lname}</td>
 												<td class="px-4 py-2">{Student.student_id}</td>
+												<td class="px-4 py-2">{Student.laptop}</td>
+
 											</tr>
 										{/each}
 									</tbody>
@@ -501,8 +504,6 @@
 			background-size: 100% 24px;
 			line-height: 24px;
 			padding: 8px;
-			font-family: inherit;
-			font-size: inherit;
 			border: 1px solid #ccc;
 			border-radius: 5px;
 			resize: vertical;
