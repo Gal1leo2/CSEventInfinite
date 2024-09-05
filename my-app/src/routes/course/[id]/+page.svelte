@@ -11,7 +11,7 @@
 	import wretch from 'wretch';
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Alert from '$lib/components/ui/alert/index.js';
-
+	
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -111,7 +111,7 @@
 		<nav
 			class="flex flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
 		>
-			<a href="##" class="font-bold text-[#E35205] transition-colors">
+			<a href="/home" class="font-bold text-[#E35205] transition-colors">
 				CSEvent - Short Course Registration System
 			</a>
 		</nav>
