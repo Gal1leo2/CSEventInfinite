@@ -17,158 +17,170 @@
 	import { derived } from 'svelte/store';
 
 	const df = new DateFormatter('en-US', {
-		dateStyle: 'long'
-	});
+    dateStyle: 'long'
+});
 
-	let datauser: getuser[] = [];
-	let datacourse: Course[] = [];
-	interface getuser {
-		id: string;
-		student_id: string;
-		Fname: string;
-		Lname: string;
-	}
-	interface Course {
-		course_id: any;
-		course_name: string;
-		course_lecture: string;
-		course_type: string;
-		course_date: string;
-	}
-	interface Student {
-		id: number;
-		name: string;
-		course_id: string;
-		Fname: String;
-		Lname: String;
-		laptop: boolean;
-	}
+let datauser: getuser[] = [];
+let datacourse: Course[] = [];
 
-	let file: File | null = null;
+interface getuser {
+    id: string;
+    student_id: string;
+    Fname: string;
+    Lname: string;
+    course_id: string; 
+}
 
-	const handleFileUpload = async () => {
-		if (!file) {
-			console.error('No file selected.');
-			return;
-		}
+interface Course {
+    course_id: any;
+    course_name: string;
+    course_lecture: string;
+    course_type: string;
+    course_date: string;
+}
 
-		const formData = new FormData();
-		formData.append('file', file);
+//เหมือนจะไม่ใช้แล้ว
+interface Student {
+    id: number;
+    name: string;
+    course_id: string;
+    Fname: String;
+    Lname: String;
+    laptop: boolean;
+}
 
-		const response = await fetch('http://localhost:3000/upload', {
-			method: 'POST',
-			body: formData
-		});
-	};
-	const handleFileChange = async (e: Event) => {
-		const target = (await e.target) as HTMLInputElement;
-		if (target && target.files) {
-			file = target.files[0];
-		}
-	};
+let file: File | null = null;
 
-	// create course
-	let courseName: string;
-	let courseType: string;
-	let courseDescription: string;
-	let selectedDate: DateValue | undefined = undefined;
-	let courseLecture: string;
-	let courseLocation: string;
-	const createCourse = async () => {
-		if (!file) {
-			console.error('No file selected.');
-			return;
-		}
-		const formData = new FormData();
-		const date = selectedDate ? selectedDate.toString() : '';
-		formData.append('file', file);
-		formData.append('course_name', courseName || '');
-		formData.append('course_type', courseType || '');
-		formData.append('course_date', date);
-		// formData.append('course_description', courseDescription || '');
-		formData.append('course_lecture', courseLecture || '');
-		formData.append('course_location', courseLocation || '');
-		try {
-			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-				.post(formData)
-				.res(() => {
-					toast.success('Create course complete.');
-				})
-				.catch(() => {
-					toast.error("This didn't work. Please try again.");
-				});
-		} catch (error) {
-			console.error(error);
-		}
-	};
-	//add course Descript
-	const addCourseDescription = async () => {
-		try {
-			await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
-				.put({
-					course_id: selectedCourseId,
-					course_description: courseDescription
-				})
-				.res(() => {
-					toast.success('Add Course description complete.');
-				})
-				.catch(() => {
-					toast.error("This didn't work. Please try again.");
-				});
-		} catch (error) {
-			console.error(error);
-		}
-	};
+const handleFileUpload = async () => {
+    if (!file) {
+        console.error('No file selected.');
+        return;
+    }
 
-	//Delete
-	let selectedCourseId: string = '';
-	const deleteCourse = async (courseId: string) => {
-		console.log(courseId);
+    const formData = new FormData();
+    formData.append('file', file);
 
-		await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
-			.delete()
-			.notFound(() => {
-				toast.error('Error deleting course. Please try again.');
-			})
-			.res(() => {
-				toast.success('Course deleted successfully.');
-				datacourse = datacourse.filter((course) => course.course_id !== courseId);
-			});
-	};
-	//For show student in each course----------------------------------------------------------------------------------------------
-	let isLoading = writable(true);
-	let students = writable<Student[]>([]);
-	let filteredStudents = writable<Student[]>([]); 
-	let error = writable<string>('');
-	let allStudents: Student[] = []; 
-	async function fetchStudents() {
-		try {
-			isLoading.set(true);
-			const response = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
-			if (!response.ok) {
-				throw new Error('Failed to fetch students');
-			}
-			allStudents = await response.json(); // Store all students for filtering
-			students.set(allStudents); // Set the students store
-		} catch (err) {
-			error.set(getErrorMessage(err));
-		} finally {
-			isLoading.set(false);
-		}
-	}
+    const response = await fetch('http://localhost:3000/upload', {
+        method: 'POST',
+        body: formData
+    });
+};
 
-	function getErrorMessage(error: unknown): string {
-		if (error instanceof Error) return error.message;
-		return String(error);
-	}
+const handleFileChange = async (e: Event) => {
+    const target = (await e.target) as HTMLInputElement;
+    if (target && target.files) {
+        file = target.files[0];
+    }
+};
 
-	function showStudentEachCourse(courseId: string) {
-		if (courseId) {
-			filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
-		} else {
-			filteredStudents.set([]);
-		}
-	}
+// Create course
+let courseName: string;
+let courseType: string;
+let courseDescription: string;
+let selectedDate: DateValue | undefined = undefined;
+let courseLecture: string;
+let courseLocation: string;
+
+const createCourse = async () => {
+    if (!file) {
+        console.error('No file selected.');
+        return;
+    }
+    const formData = new FormData();
+    const date = selectedDate ? selectedDate.toString() : '';
+    formData.append('file', file);
+    formData.append('course_name', courseName || '');
+    formData.append('course_type', courseType || '');
+    formData.append('course_date', date);
+    // formData.append('course_description', courseDescription || '');
+    formData.append('course_lecture', courseLecture || '');
+    formData.append('course_location', courseLocation || '');
+    try {
+        const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+            .post(formData)
+            .res(() => {
+                toast.success('Create course complete.');
+            })
+            .catch(() => {
+                toast.error("This didn't work. Please try again.");
+            });
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+// Add course description
+const addCourseDescription = async () => {
+    try {
+        await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
+            .put({
+                course_id: selectedCourseId,
+                course_description: courseDescription
+            })
+            .res(() => {
+                toast.success('Add Course description complete.');
+            })
+            .catch(() => {
+                toast.error("This didn't work. Please try again.");
+            });
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+// Delete
+let selectedCourseId: string = '';
+
+const deleteCourse = async (courseId: string) => {
+    console.log(courseId);
+
+    await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
+        .delete()
+        .notFound(() => {
+            toast.error('Error deleting course. Please try again.');
+        })
+        .res(() => {
+            toast.success('Course deleted successfully.');
+            datacourse = datacourse.filter((course) => course.course_id !== courseId);
+        });
+};
+
+// Show students in each course
+let isLoading = writable(true);
+let students = writable<getuser[]>([]);
+let filteredStudents = writable<getuser[]>([]);
+let error = writable<string>('');
+let allStudents: getuser[] = [];
+
+async function fetchStudents() {
+    try {
+        isLoading.set(true);
+        const response = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
+        if (!response.ok) {
+            throw new Error('Failed to fetch students');
+        }
+        allStudents = await response.json(); // Store all students for filtering
+        students.set(allStudents); // Set the students store
+    } catch (err) {
+        error.set(getErrorMessage(err));
+    } finally {
+        isLoading.set(false);
+    }
+}
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    return String(error);
+}
+
+function showStudentEachCourse(courseId: string) {
+    if (courseId) {
+        filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
+    } else {
+        filteredStudents.set([]);
+    }
+}
+
 	//Login handle----------------------------------------------------------------------------------------------
 
 	const isLoggedIn = writable(false);
@@ -420,7 +432,7 @@
 							  {#each $filteredStudents as Student}
 								<tr class="border-b">
 								  <td class="py-2 px-4">{Student.Fname} {Student.Lname}</td>
-								  <td class="py-2 px-4">{Student.id}</td>
+								  <td class="py-2 px-4">{Student.student_id}</td>
 								</tr>
 							  {/each}
 							</tbody>
