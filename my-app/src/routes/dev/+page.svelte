@@ -14,158 +14,159 @@
 	import Cookies from 'js-cookie';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { writable } from 'svelte/store';
-	import { derived } from 'svelte/store';
 
 	const df = new DateFormatter('en-US', {
-    dateStyle: 'long'
-});
+		dateStyle: 'long'
+	});
 
-let datauser: getuser[] = [];
-let datacourse: Course[] = [];
+	let datauser: getuser[] = [];
+	let datacourse: Course[] = [];
 
-interface getuser {
-    id: string;
-    student_id: string;
-    Fname: string;
-    Lname: string;
-    course_id: string; 
-}
+	interface getuser {
+		id: string;
+		student_id: string;
+		Fname: string;
+		Lname: string;
+		course_id: string;
+	}
 
-interface Course {
-    course_id: any;
-    course_name: string;
-    course_lecture: string;
-    course_type: string;
-    course_date: string;
-}
+	interface Course {
+		course_id: any;
+		course_name: string;
+		course_lecture: string;
+		course_type: string;
+		course_date: string;
+	}
 
-//เหมือนจะไม่ใช้แล้ว
-interface Student {
-    id: number;
-    name: string;
-    course_id: string;
-    Fname: String;
-    Lname: String;
-    laptop: boolean;
-}
+	//เหมือนจะไม่ใช้แล้ว
+	interface Student {
+		id: number;
+		name: string;
+		course_id: string;
+		Fname: String;
+		Lname: String;
+		laptop: boolean;
+	}
 
-let file: File | null = null;
+	let file: File | null = null;
 
+	const handleFileChange = async (e: Event) => {
+		const target = (await e.target) as HTMLInputElement;
+		if (target && target.files) {
+			file = target.files[0];
+		}
+	};
 
-const handleFileChange = async (e: Event) => {
-    const target = (await e.target) as HTMLInputElement;
-    if (target && target.files) {
-        file = target.files[0];
-    }
-};
+	// Create course
+	let courseName: string;
+	let courseType: string;
+	let courseDescription: string;
+	let selectedDate: DateValue | undefined = undefined;
+	let courseLecture: string;
+	let courseLocation: string;
 
-// Create course
-let courseName: string;
-let courseType: string;
-let courseDescription: string;
-let selectedDate: DateValue | undefined = undefined;
-let courseLecture: string;
-let courseLocation: string;
+	//create
+	const createCourse = async () => {
+		if (!file) {
+			console.error('No file selected.');
+			return;
+		}
+		const formData = new FormData();
+		const date = selectedDate ? selectedDate.toString() : '';
+		formData.append('file', file);
+		formData.append('course_name', courseName || '');
+		formData.append('course_type', courseType || '');
+		formData.append('course_date', date);
+		formData.append('course_lecture', courseLecture || '');
+		formData.append('course_location', courseLocation || '');
+		try {
+			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+				.post(formData)
+				.res(() => {
+					toast.success('Create course complete.');
+					toast('Dont forget to add course description !!!!.', {
+						duration: 4000
+					});
+				})
+				.catch(() => {
+					toast.error("This didn't work. Please try again.");
+				});
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
-//create
-const createCourse = async () => {
-    if (!file) {
-        console.error('No file selected.');
-        return;
-    }
-    const formData = new FormData();
-    const date = selectedDate ? selectedDate.toString() : '';
-    formData.append('file', file);
-    formData.append('course_name', courseName || '');
-    formData.append('course_type', courseType || '');
-    formData.append('course_date', date);
-    formData.append('course_lecture', courseLecture || '');
-    formData.append('course_location', courseLocation || '');
-    try {
-        const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-            .post(formData)
-            .res(() => {
-                toast.success('Create course complete.');
-            })
-            .catch(() => {
-                toast.error("This didn't work. Please try again.");
-            });
-    } catch (error) {
-        console.error(error);
-    }
-};
+	// Add course description
+	const addCourseDescription = async () => {
+		try {
+			await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
+				.put({
+					course_id: selectedCourseId,
+					course_description: courseDescription
+				})
+				.res(() => {
+					toast.success('Add Course description complete.');
+				})
+				.catch(() => {
+					toast.error("This didn't work. Please try again.");
+				});
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
-// Add course description
-const addCourseDescription = async () => {
-    try {
-        await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
-            .put({
-                course_id: selectedCourseId,
-                course_description: courseDescription
-            })
-            .res(() => {
-                toast.success('Add Course description complete.');
-            })
-            .catch(() => {
-                toast.error("This didn't work. Please try again.");
-            });
-    } catch (error) {
-        console.error(error);
-    }
-};
+	// Delete
+	let selectedCourseId: string = '';
 
-// Delete
-let selectedCourseId: string = '';
+	const deleteCourse = async (courseId: string) => {
+		console.log(courseId);
 
-const deleteCourse = async (courseId: string) => {
-    console.log(courseId);
+		await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
+			.delete()
+			.notFound(() => {
+				toast.error('Error deleting course. Please try again.');
+			})
+			.res(() => {
+				toast.success('Course deleted successfully.');
+				datacourse = datacourse.filter((course) => course.course_id !== courseId);
+			});
+	};
 
-    await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
-        .delete()
-        .notFound(() => {
-            toast.error('Error deleting course. Please try again.');
-        })
-        .res(() => {
-            toast.success('Course deleted successfully.');
-            datacourse = datacourse.filter((course) => course.course_id !== courseId);
-        });
-};
+	// Show students in each course
+	let isLoading = writable(true);
+	let students = writable<getuser[]>([]);
+	let filteredStudents = writable<getuser[]>([]);
+	let error = writable<string>('');
+	let allStudents: getuser[] = [];
 
-// Show students in each course
-let isLoading = writable(true);
-let students = writable<getuser[]>([]);
-let filteredStudents = writable<getuser[]>([]);
-let error = writable<string>('');
-let allStudents: getuser[] = [];
+	async function fetchStudents() {
+		try {
+			isLoading.set(true);
+			const response = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
+			if (!response.ok) {
+				throw new Error('Failed to fetch students');
+			}
+			allStudents = await response.json(); // Store all students for filtering
+			students.set(allStudents); // Set the students store
+		} catch (err) {
+			error.set(getErrorMessage(err));
+		} finally {
+			isLoading.set(false);
+		}
+	}
 
-async function fetchStudents() {
-    try {
-        isLoading.set(true);
-        const response = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
-        if (!response.ok) {
-            throw new Error('Failed to fetch students');
-        }
-        allStudents = await response.json(); // Store all students for filtering
-        students.set(allStudents); // Set the students store
-    } catch (err) {
-        error.set(getErrorMessage(err));
-    } finally {
-        isLoading.set(false);
-    }
-}
+	function getErrorMessage(error: unknown): string {
+		if (error instanceof Error) return error.message;
+		return String(error);
+	}
 
-function getErrorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    return String(error);
-}
-
-function showStudentEachCourse(courseId: string) {
-    if (courseId) {
-        filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
-    } else {
-        filteredStudents.set([]);
-    }
-}
+	function showStudentEachCourse(courseId: string) {
+		if (courseId) {
+			filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
+		} else {
+			filteredStudents.set([]);
+		}
+	}
 
 	//Login handle----------------------------------------------------------------------------------------------
 
@@ -374,70 +375,69 @@ function showStudentEachCourse(courseId: string) {
 				<!-- show student in each course -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-					  Show student in each course
+						Show student in each course
 					</Dialog.Trigger>
-					<Dialog.Content class="sm:max-w-[425px] p-6 rounded-lg bg-white shadow-lg">
-					  <Dialog.Header>
-						<Dialog.Title class="text-lg font-bold">Show Students</Dialog.Title>
-						<Dialog.Description class="text-sm text-gray-500">
-						  Select a course to view the list of enrolled students.
-						</Dialog.Description>
-					  </Dialog.Header>
-				  
-					  <div class="grid gap-4 py-4">
-						<div class="grid grid-cols-4 items-center gap-4">
-						  <Label for="course" class="text-right">Course</Label>
-						  <select
-							id="course"
-							bind:value={selectedCourseId}
-							class="col-span-3 p-2 rounded-md border border-gray-300 focus:outline-none focus:ring focus:border-blue-300"
-							on:change={() => showStudentEachCourse(selectedCourseId)}
-						  >
-							<option value="" disabled selected>Select a course</option>
-							{#each datacourse as course (course.course_id)}
-							  <option value={course.course_id}>{course.course_name}</option>
-							{/each}
-						  </select>
+					<Dialog.Content class="rounded-lg bg-white p-6 shadow-lg sm:max-w-[425px]">
+						<Dialog.Header>
+							<Dialog.Title class="text-lg font-bold">Show Students</Dialog.Title>
+							<Dialog.Description class="text-sm text-gray-500">
+								Select a course to view the list of enrolled students.
+							</Dialog.Description>
+						</Dialog.Header>
+
+						<div class="grid gap-4 py-4">
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="course" class="text-right">Course</Label>
+								<select
+									id="course"
+									bind:value={selectedCourseId}
+									class="col-span-3 rounded-md border border-gray-300 p-2 focus:border-blue-300 focus:outline-none focus:ring"
+									on:change={() => showStudentEachCourse(selectedCourseId)}
+								>
+									<option value="" disabled selected>Select a course</option>
+									{#each datacourse as course (course.course_id)}
+										<option value={course.course_id}>{course.course_name}</option>
+									{/each}
+								</select>
+							</div>
+
+							<!-- Display Loading State -->
+							{#if $isLoading}
+								<p class="text-center text-gray-500">Loading students...</p>
+							{/if}
+
+							<!-- Display Filtered Students -->
+							{#if !$isLoading && $filteredStudents.length > 0}
+								<table class="min-w-full bg-white">
+									<thead>
+										<tr class="w-full border-b bg-gray-100">
+											<th class="px-4 py-2 text-left">Student Name</th>
+											<th class="px-4 py-2 text-left">Student ID</th>
+										</tr>
+									</thead>
+									<tbody>
+										{#each $filteredStudents as Student}
+											<tr class="border-b">
+												<td class="px-4 py-2">{Student.Fname} {Student.Lname}</td>
+												<td class="px-4 py-2">{Student.student_id}</td>
+											</tr>
+										{/each}
+									</tbody>
+								</table>
+							{/if}
+
+							<!-- Error Handling -->
+							{#if $error}
+								<p class="text-red-500">{error}</p>
+							{/if}
+
+							<!-- No students found for the selected course -->
+							{#if !$isLoading && $filteredStudents.length === 0 && selectedCourseId}
+								<p class="text-center text-gray-500">No students enrolled in this course.</p>
+							{/if}
 						</div>
-				  
-						<!-- Display Loading State -->
-						{#if $isLoading}
-						  <p class="text-center text-gray-500">Loading students...</p>
-						{/if}
-				  
-						<!-- Display Filtered Students -->
-						{#if !$isLoading && $filteredStudents.length > 0}
-						  <table class="min-w-full bg-white">
-							<thead>
-							  <tr class="w-full bg-gray-100 border-b">
-								<th class="text-left py-2 px-4">Student Name</th>
-								<th class="text-left py-2 px-4">Student ID</th>
-							  </tr>
-							</thead>
-							<tbody>
-							  {#each $filteredStudents as Student}
-								<tr class="border-b">
-								  <td class="py-2 px-4">{Student.Fname} {Student.Lname}</td>
-								  <td class="py-2 px-4">{Student.student_id}</td>
-								</tr>
-							  {/each}
-							</tbody>
-						  </table>
-						{/if}
-				  
-						<!-- Error Handling -->
-						{#if $error}
-						  <p class="text-red-500">{error}</p>
-						{/if}
-				  
-						<!-- No students found for the selected course -->
-						{#if !$isLoading && $filteredStudents.length === 0 && selectedCourseId}
-						  <p class="text-center text-gray-500">No students enrolled in this course.</p>
-						{/if}
-					  </div>
 					</Dialog.Content>
-				  </Dialog.Root>
-				  
+				</Dialog.Root>
 			</div>
 		</div>
 		<!-- Right Box -->

@@ -12,7 +12,7 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { marked } from 'marked';
-	import { SyncLoader} from 'svelte-loading-spinners';
+	import { SyncLoader } from 'svelte-loading-spinners';
 
 	interface Course {
 		course_id: string;
@@ -209,10 +209,12 @@
 										<Button type="submit" on:click={submitform}>Enroll</Button>
 									</Dialog.Footer>
 									{#if $isSubmitting}
-									<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out">
-										<SyncLoader size="60" color="#FF3E00" unit="px" duration="1s" />
-									</div>
-								{/if}
+										<div
+											class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+										>
+											<SyncLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+										</div>
+									{/if}
 									<!-- Success Alert -->
 									{#if $showAlert}
 										<Alert.Root>

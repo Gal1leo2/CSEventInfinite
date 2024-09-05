@@ -82,24 +82,24 @@
 
 	let username: string;
 	let password: string;
-	const login= async () =>{
+	const login = async () => {
 		await Wretch('https://nodejsbackend-ten.vercel.app/admin/login')
-		.post({
-			username: username,
-			password: password
-		})
-		.badRequest(async (e)=>{
-			toast.warning(JSON.parse(e.message).message)
-		})
-		.notFound(async(e)=>{
-			toast.error(JSON.parse(e.message).message)
-		})
-		.res(async(e)=>{
-			toast.success("Login Successfully!")
-			Cookies.set('authUser', username );
-			window.location.pathname = 'dev'
-		})
-	}
+			.post({
+				username: username,
+				password: password
+			})
+			.badRequest(async (e) => {
+				toast.warning(JSON.parse(e.message).message);
+			})
+			.notFound(async (e) => {
+				toast.error(JSON.parse(e.message).message);
+			})
+			.res(async (e) => {
+				toast.success('Login Successfully!');
+				Cookies.set('authUser', username);
+				window.location.pathname = 'dev';
+			});
+	};
 
 	onMount(() => {
 		fetchCourses();
@@ -211,19 +211,17 @@
 		{/if}
 	</main>
 	<footer class="bg-gray">
-		<div class="bg-black/5 p-4 text-xs flex justify-between">
-		  <span>© 2024 | Made with ❤️ by Tony , Gal1leo</span>
-		  <span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
+		<div class="flex justify-between bg-black/5 p-4 text-xs">
+			<span>© 2024 | Made with ❤️ by Tony , Gal1leo</span>
+			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
-	  </footer>
-	  
-	  
+	</footer>
 </div>
+
+<Toaster></Toaster>
 
 <style>
 	.fontUse {
 		font-family: 'Noto Sans Thai';
 	}
 </style>
-
-<Toaster></Toaster>
