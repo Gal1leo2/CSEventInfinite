@@ -65,8 +65,6 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
-	//let courseTime:
-
 	const createCourse = async () => {
 		if (!file) {
 			console.error('No file selected.');
@@ -94,7 +92,7 @@
 			console.error(error);
 		}
 	};
-	//ยังไม่เสร็จ
+	//add course Descript
 	const addCourseDescription = async () => {
 		try {
 			await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')

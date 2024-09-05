@@ -11,7 +11,8 @@
 	import wretch from 'wretch';
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Alert from '$lib/components/ui/alert/index.js';
-	
+	import { marked } from 'marked';
+
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -47,9 +48,7 @@
 				throw new Error('Failed to fetch courses');
 			}
 			const data: Course[] = await response.json();
-			data.forEach(
-				(course) =>
-					(course.course_image = course.course_img));
+			data.forEach((course) => (course.course_image = course.course_img));
 			courses.set(data);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
@@ -105,7 +104,7 @@
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
 
-<div class="fontUse flex  w-full flex-col">
+<div class="fontUse flex w-full flex-col">
 	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
 		<nav
 			class="flex flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
@@ -137,7 +136,9 @@
 						<div class="flex flex-1 flex-col justify-between">
 							<Card.Header>
 								<Card.Title class="mb-2 text-base font-semibold">{course.course_date}</Card.Title>
-								<Card.Title class="mb-2 text-2xl font-semibold"><span style="color:#E35205">{course.course_name}</span></Card.Title>
+								<Card.Title class="mb-2 text-2xl font-semibold"
+									><span style="color:#E35205">{course.course_name}</span></Card.Title
+								>
 								<Card.Title class="mb-2 text-base font-semibold"
 									>{course.course_location}</Card.Title
 								>
@@ -153,7 +154,7 @@
 
 							<!-- Bottom Left: Course Description -->
 							<Dialog.Root>
-								<Dialog.Trigger class={buttonVariants({ })}>
+								<Dialog.Trigger class={buttonVariants({})}>
 									<span style="font-weight:bold;">Enroll this course.</span>
 								</Dialog.Trigger>
 								<Dialog.Content class="sm:max-w-[425px]">
@@ -218,7 +219,6 @@
 									{/if}
 								</Dialog.Content>
 							</Dialog.Root>
-							
 						</div>
 					</div>
 
@@ -227,7 +227,9 @@
 					<div class="flex flex-col justify-between lg:flex-row">
 						<div class="text-gray-700">
 							<p class="text-base font-bold">Description</p>
-							{course.course_description}
+							<div class="prose">
+								{@html marked.parse(course.course_description)}
+							</div>
 						</div>
 					</div>
 				</Card.Root>
@@ -236,18 +238,69 @@
 			<p class="mt-4 text-gray-500">No courses found.</p>
 		{/if}
 	</div>
-	<div class =space-y-4>
-	</div>
+	<div class="space-y-4"></div>
 	<footer class="bg-gray">
-		<div class="bg-black/5 p-4 text-xs flex justify-between">
-		  <span>© 2024 | Made with ❤️ by Tony and Gal1leo</span>
-		  <span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
+		<div class="flex justify-between bg-black/5 p-4 text-xs">
+			<span>© 2024 | Made with ❤️ by Tony , Gal1leo</span>
+			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
-	  </footer>
+	</footer>
 </div>
 
 <style>
 	.fontUse {
 		font-family: 'Noto Sans Thai';
+	}
+	.prose {
+		font-family: sans-serif;
+		line-height: 1.6;
+		color: #4a5568; /* Tailwind's text-gray-700 */
+		max-width: 100%;
+	}
+
+	.prose h1,
+	.prose h2,
+	.prose h3,
+	.prose h4,
+	.prose h5,
+	.prose h6 {
+		font-weight: bold;
+		color: #2d3748; /* Tailwind's text-gray-800 */
+		margin-top: 1.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.prose p {
+		margin-bottom: 1rem;
+	}
+
+	.prose a {
+		color: #3182ce; /* Tailwind's text-blue-600 */
+		text-decoration: underline;
+	}
+
+	.prose ul,
+	.prose ol {
+		padding-left: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.prose li {
+		margin-bottom: 0.5rem;
+	}
+
+	.prose blockquote {
+		border-left: 4px solid #cbd5e0; /* Tailwind's border-gray-300 */
+		padding-left: 1rem;
+		margin-bottom: 1rem;
+		color: #718096; /* Tailwind's text-gray-600 */
+	}
+
+	.prose code {
+		background-color: #edf2f7; /* Tailwind's bg-gray-100 */
+		padding: 0.2rem 0.4rem;
+		border-radius: 0.25rem;
+		font-size: 0.875rem;
+		color: #e53e3e; /* Tailwind's text-red-600 */
 	}
 </style>
