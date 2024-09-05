@@ -14,6 +14,7 @@
 	import Cookies from 'js-cookie';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { writable } from 'svelte/store';
+	import { derived } from 'svelte/store';
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -33,6 +34,14 @@
 		course_lecture: string;
 		course_type: string;
 		course_date: string;
+	}
+	interface Student {
+		id: number;
+		name: string;
+		course_id: string;
+		Fname: String;
+		Lname: String;
+		laptop: boolean;
 	}
 
 	let file: File | null = null;
@@ -126,9 +135,50 @@
 				datacourse = datacourse.filter((course) => course.course_id !== courseId);
 			});
 	};
+	//For show student in each course----------------------------------------------------------------------------------------------
+	// Writable stores for UI states
+	let isLoading = writable(true);
+	let students = writable<Student[]>([]);
+	let filteredStudents = writable<Student[]>([]); // Filtered students for a specific course
+	let error = writable<string>('');
+	let allStudents: Student[] = []; // Store all students after fetching
+
+	// Fetch students from the server
+	async function fetchStudents() {
+		try {
+			isLoading.set(true);
+			const response = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
+			if (!response.ok) {
+				throw new Error('Failed to fetch students');
+			}
+			allStudents = await response.json(); // Store all students for filtering
+			students.set(allStudents); // Set the students store
+		} catch (err) {
+			error.set(getErrorMessage(err));
+		} finally {
+			isLoading.set(false);
+		}
+	}
+
+	// Helper function to get error message
+	function getErrorMessage(error: unknown): string {
+		if (error instanceof Error) return error.message;
+		return String(error);
+	}
+
+	// Function to filter students by the selected course ID
+	function showStudentEachCourse(courseId: string) {
+		if (courseId) {
+			// Filter students where course_id matches the selected courseId
+			filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
+		} else {
+			// Clear the filtered students list if no course is selected
+			filteredStudents.set([]);
+		}
+	}
 	const isLoggedIn = writable(false);
 
-	const token =  Cookies.get('authUser');
+	const token = Cookies.get('authUser');
 	onMount(async () => {
 		if (token) {
 			await Wretch('https://nodejsbackend-ten.vercel.app/admin/auth')
@@ -139,8 +189,8 @@
 				.res(() => {
 					isLoggedIn.set(true);
 				});
-		}else{
-			window.location.pathname = 'home'
+		} else {
+			window.location.pathname = 'home';
 		}
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
 		const resCourse = await fetch('https://nodejsbackend-ten.vercel.app/user/getcourse');
@@ -148,6 +198,7 @@
 		const DataC: Course[] = await resCourse.json();
 		datauser = DataU;
 		datacourse = DataC;
+		fetchStudents();
 	});
 </script>
 
@@ -188,7 +239,7 @@
 				</div>
 			</div>
 			<!-- post Blog -->
-			<div class="m-5 flex h-full justify-center gap-5 items-center border border-[red]">
+			<div class="m-5 flex h-full items-center justify-center gap-5 border border-[red]">
 				<!-- CREATE COURSE -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
@@ -325,6 +376,60 @@
 						<Dialog.Footer>
 							<Button type="button" on:click={() => deleteCourse(selectedCourseId)}>Delete</Button>
 						</Dialog.Footer>
+					</Dialog.Content>
+				</Dialog.Root>
+				<Dialog.Root>
+					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
+						Show student in each course
+					</Dialog.Trigger>
+					<Dialog.Content class="sm:max-w-[425px]">
+						<Dialog.Header>
+							<Dialog.Title>Show Students</Dialog.Title>
+							<Dialog.Description>
+								Select a course to view the list of enrolled students.
+							</Dialog.Description>
+						</Dialog.Header>
+						<div class="grid gap-4 py-4">
+							<!-- Course Selection Dropdown -->
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="course" class="text-right">Course</Label>
+								<select
+									id="course"
+									bind:value={selectedCourseId}
+									class="col-span-3"
+									on:change={() => showStudentEachCourse(selectedCourseId)}
+								>
+									<option value="" disabled selected>Select a course</option>
+									{#each datacourse as course (course.course_id)}
+										<option value={course.course_id}>{course.course_name}</option>
+									{/each}
+								</select>
+							</div>
+
+							<!-- Display Loading State -->
+							{#if $isLoading}
+								<p>Loading students...</p>
+							{/if}
+
+							<!-- Display Filtered Students -->
+							{#if !$isLoading && $filteredStudents.length > 0}
+								<ul>
+									{#each $filteredStudents as Student}
+										<li>{Student.Fname} {Student.Lname} (ID: {Student.id})</li>
+									{/each}
+								</ul>
+							{/if}
+
+							<!-- Error Handling -->
+							{#if $error}
+								<p class="text-red-500">{error}</p>
+							{/if}
+
+							<!-- No students found for the selected course -->
+							{#if !$isLoading && $filteredStudents.length === 0 && selectedCourseId}
+								<p>No students enrolled in this course.</p>
+							{/if}
+						</div>
 					</Dialog.Content>
 				</Dialog.Root>
 			</div>
