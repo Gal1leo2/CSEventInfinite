@@ -13,6 +13,7 @@
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { marked } from 'marked';
 	import { SyncLoader } from 'svelte-loading-spinners';
+	import toast, { Toaster } from 'svelte-french-toast';
 
 	interface Course {
 		course_id: string;
@@ -24,6 +25,7 @@
 		course_image: string;
 		course_location: string;
 		course_img: string;
+		course_team: string;
 	}
 
 	let courses = writable<Course[]>([]);
@@ -85,6 +87,7 @@
 				.res(async (response) => {
 					if (response.status === 200) {
 						showAlert.set(true);
+						toast.success('ลงทะเบียนสำเร็จ.', {position: "bottom-center"});
 						showAlertFail.set(false);
 					} else {
 						alertMessage.set('An unexpected error occurred.');
@@ -146,6 +149,7 @@
 								<Card.Title class="mb-2 text-2xl font-semibold"
 									><span style="color:#E35205">{course.course_name}</span></Card.Title
 								>
+								
 								<Card.Title class="mb-2 text-base font-semibold"
 									>{course.course_location}</Card.Title
 								>
@@ -153,6 +157,7 @@
 									<div class="text-gray-700">
 										<p>Instructor: {course.course_lecture}</p>
 										<p>Type: {course.course_type}</p>
+										<p>Powered by: {course.course_team} </p>
 									</div>
 								</div>
 							</Card.Header>
@@ -258,6 +263,7 @@
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
 	</footer>
+	<Toaster />
 </div>
 
 <style>

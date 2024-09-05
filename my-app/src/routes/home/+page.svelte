@@ -173,7 +173,7 @@
 								{#each $enrollCount as course}
 									<Table.Row>
 										<Table.Cell>
-											<div class="font-medium">{course.course_name}</div>
+											<div class="font-bold">{course.course_name}</div>
 										  	<div class="mb-2 flex items-center">
 											  <UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
 											  <div class="text-muted-foreground text-sm block md:inline">
