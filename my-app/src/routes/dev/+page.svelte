@@ -12,7 +12,6 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import Wretch from 'wretch';
 	import toast, { Toaster } from 'svelte-french-toast';
-	import { string } from 'zod';
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -64,6 +63,7 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
+	//let courseTime:
 
 	const createCourse = async () => {
 		if (!file) {
@@ -82,8 +82,15 @@
 		try {
 			console.log(selectedDate?.toString());
 			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-				.post(formData)
-				.res(() => {
+				.post({
+					course_name: courseName,
+					course_type: courseType,
+					course_date: selectedDate?.toString(),
+					course_description: courseDescription,
+					course_lecture: courseLecture,
+					course_location: courseLocation
+				})
+				.res(()=>{
 					toast.success('Create course complete.');
 				})
 				.catch(() => {
@@ -93,7 +100,29 @@
 			console.error(error);
 		}
 	};
-	let selectedCourseId: string = '';
+	//ยังไม่เสร็จ
+	const addCourseDescription = async () => {
+		try {
+			console.log(selectedDate?.toString());
+			await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+				.post({
+					course_id: selectedCourseId,
+					course_description: courseDescription
+
+				})
+				.res(()=>{
+					toast.success('Add Course description complete.');
+				})
+				.catch(()=>{
+					toast.error("This didn't work. Please try again.");
+				})
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	//Delete
+	let selectedCourseId : string ='';
 	const deleteCourse = async (courseId: string) => {
 		console.log(courseId);
 
@@ -106,22 +135,9 @@
 				toast.success('Course deleted successfully.');
 				datacourse = datacourse.filter((course) => course.course_id !== courseId);
 			});
-		// try {
-		// 	const response = await Wretch(
-		// 		`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`
-		// 	)
-		// 		.delete()
-		// 		.res();
 
-		// 	if (response.status === 200) {
-		// 		toast.success('Course deleted successfully.');
-		// 		datacourse = datacourse.filter((course) => course.course_id !== courseId);
-		// 	}
-		// } catch (error) {
-		// 	toast.error('Error deleting course. Please try again.');
-		// 	console.error('Error deleting course:', error);
-		// }
 	};
+	
 	onMount(async () => {
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
 		const resCourse = await fetch('https://nodejsbackend-ten.vercel.app/user/getcourse');
@@ -211,10 +227,10 @@
 								</Popover.Content>
 							</Popover.Root>
 						</div>
-						<div class="grid grid-cols-4 items-center gap-4">
+						<!-- <div class="grid grid-cols-4 items-center gap-4">
 							<Label for="des" class="text-right">Description</Label>
 							<Input id="des" bind:value={courseDescription} class="col-span-3" />
-						</div>
+						</div> -->
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="lec" class="text-right">Lecture</Label>
 							<Input id="lec" bind:value={courseLecture} class="col-span-3" />
@@ -232,6 +248,80 @@
 					<Dialog.Footer>
 						<!-- submit BTN -->
 						<Button type="submit" on:click={()=>{createCourse()}}>Save changes</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+			<Dialog.Root>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Add Course Description</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[1080px]">
+					<Dialog.Header>
+						<Dialog.Title>Add Course Description</Dialog.Title>
+						<Dialog.Description>
+							Provide a description for the selected course. Markdown is supported.
+						</Dialog.Description>
+					</Dialog.Header>
+					<div class="grid gap-4 py-4">
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="course" class="text-right">Course</Label>
+							<select id="course" bind:value={selectedCourseId} class="col-span-3">
+								<option value="" disabled selected>Select a course</option>
+								{#each datacourse as course (course.course_id)}
+									<option value={course.course_id}>{course.course_name}</option>
+								{/each}
+							</select>
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="description" class="text-right">Description</Label>
+							<textarea
+								id="description"
+								bind:value={courseDescription}
+								class="col-span-3"
+								placeholder="Enter course description in markdown"
+								rows="20"
+								cols="30"
+							/>
+						</div>
+
+					</div>
+					<Dialog.Footer>
+						<Button type="button" on:click={addCourseDescription}>Add Description</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+			<Dialog.Root>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Add Course Description</Dialog.Trigger>
+				<Dialog.Content class="sm:max-w-[1080px]">
+					<Dialog.Header>
+						<Dialog.Title>Add Course Description</Dialog.Title>
+						<Dialog.Description>
+							Provide a description for the selected course. Markdown is supported.
+						</Dialog.Description>
+					</Dialog.Header>
+					<div class="grid gap-4 py-4">
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="course" class="text-right">Course</Label>
+							<select id="course" bind:value={selectedCourseId} class="col-span-3">
+								<option value="" disabled selected>Select a course</option>
+								{#each datacourse as course (course.course_id)}
+									<option value={course.course_id}>{course.course_name}</option>
+								{/each}
+							</select>
+						</div>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="description" class="text-right">Description</Label>
+							<textarea
+								id="description"
+								bind:value={courseDescription}
+								class="col-span-3"
+								placeholder="Enter course description in markdown"
+								rows="20"
+								cols="30"
+							/>
+						</div>
+
+					</div>
+					<Dialog.Footer>
+						<Button type="button" on:click={addCourseDescription}>Add Description</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
@@ -261,6 +351,7 @@
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
+			
 		</div>
 	</div>
 	<!-- Right Box -->
@@ -314,4 +405,17 @@
 	<input type="file" on:change={handleFileChange} />
 	<button on:click={handleFileUpload}>Upload</button>
 </div>
+<style>
+	.lined-textarea {
+		background: linear-gradient(to bottom, #ddd 1px, transparent 1px);
+		background-size: 100% 24px;
+		line-height: 24px;
+		padding: 8px;
+		font-family: inherit;
+		font-size: inherit;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		resize: vertical;
+	}
+	</style>
 <Toaster />
