@@ -34,21 +34,27 @@
 		course_date: string;
 	}
 
-	//File
 	let file: File | null = null;
-	const readIMG = async (event: Event) => {
-		const input = event.target as HTMLInputElement;
-		file = input.files ? input.files[0] : null;
-	};
-	//upload
-	const upload = async () => {
+
+	const handleFileUpload = async () => {
 		if (!file) {
-			alert('Please select a file first.');
+			console.error('No file selected.');
 			return;
 		}
+
 		const formData = new FormData();
-		formData.append('picture', file);
-		Wretch('https://nodejsbackend-ten.vercel.app/course/upload').post(formData);
+		formData.append('file', file);
+
+		const response = await fetch('http://localhost:3000/upload', {
+			method: 'POST',
+			body: formData
+		});
+	};
+	const handleFileChange = async (e: Event) => {
+		const target = (await e.target) as HTMLInputElement;
+		if (target && target.files) {
+			file = target.files[0];
+		}
 	};
 
 	// create course
@@ -58,24 +64,31 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
+
 	const createCourse = async () => {
+		if (!file) {
+			console.error('No file selected.');
+			return;
+		}
+		const formData = new FormData();
+		const date = selectedDate ? selectedDate.toString() : '';
+		formData.append('file', file);
+		formData.append('course_name', courseName);
+		formData.append('course_type', courseType);
+		formData.append('course_date', date);
+		formData.append('course_description', courseDescription);
+		formData.append('course_lecture', courseLecture);
+		formData.append('course_location', courseLocation);
 		try {
 			console.log(selectedDate?.toString());
 			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-				.post({
-					course_name: courseName,
-					course_type: courseType,
-					course_date: selectedDate?.toString(),
-					course_description: courseDescription,
-					course_lecture: courseLecture,
-					course_location: courseLocation
-				})
-				.res(()=>{
+				.post(formData)
+				.res(() => {
 					toast.success('Create course complete.');
 				})
-				.catch(()=>{
+				.catch(() => {
 					toast.error("This didn't work. Please try again.");
-				})
+				});
 		} catch (error) {
 			console.error(error);
 		}
@@ -86,7 +99,7 @@
 
 		await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
 			.delete()
-			.notFound(()=>{
+			.notFound(() => {
 				toast.error('Error deleting course. Please try again.');
 			})
 			.res(() => {
@@ -213,11 +226,12 @@
 						<div class="grid grid-cols-4 items-center gap-4">
 							<!-- <Input id="local" bind:value={courseLocation}  /> -->
 							<Label for="picture" class="text-right">Picture</Label>
-							<Input id="picture" class="col-span-3" type="file" />
+							<Input id="picture" class="col-span-3" type="file" on:change={handleFileChange}/>
 						</div>
 					</div>
 					<Dialog.Footer>
-						<Button type="submit" on:click={createCourse}>Save changes</Button>
+						<!-- submit BTN -->
+						<Button type="submit" on:click={()=>{createCourse()}}>Save changes</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
@@ -297,7 +311,7 @@
 </div>
 <div class="grid w-full max-w-sm items-center gap-1.5">
 	<Label for="picture">Picture</Label>
-	<Input id="picture" type="file" accept="image/*" on:change={readIMG} />
-	<Button on:click={upload}>Click</Button>
+	<input type="file" on:change={handleFileChange} />
+	<button on:click={handleFileUpload}>Upload</button>
 </div>
 <Toaster />

@@ -21,6 +21,7 @@
 		course_description: string;
 		course_image: string;
 		course_location: string;
+		course_img: string;
 	}
 
 	let courses = writable<Course[]>([]);
@@ -49,9 +50,7 @@
 			// ชั่วคราว
 			data.forEach(
 				(course) =>
-					(course.course_image =
-						'https://firebasestorage.googleapis.com/v0/b/pguide-e4220.appspot.com/o/Short-course-Deciphering-SQL-Query-Performance-and-more.jpg?alt=media&token=9297cd7d-39bd-4d5d-b7b7-f38076a86bbf')
-			);
+					(course.course_image = course.course_img));
 			courses.set(data);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
