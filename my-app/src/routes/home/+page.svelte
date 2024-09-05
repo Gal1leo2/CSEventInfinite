@@ -213,6 +213,14 @@
 			</div>
 		{/if}
 	</main>
+	<footer class="bg-gray">
+		<div class="bg-black/5 p-4 text-xs flex justify-between">
+		  <span>© 2024 | Made with ❤️ by Tony and Gal1leo</span>
+		  <span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
+		</div>
+	  </footer>
+	  
+	  
 </div>
 
 <style>
