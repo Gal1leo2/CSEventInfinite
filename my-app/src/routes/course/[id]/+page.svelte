@@ -225,9 +225,9 @@
 					<!-- Bottom Right: Additional Content -->
 					<Separator class="my-4 lg:my-6" />
 					<div class="flex flex-col justify-between lg:flex-row">
-						<div class="text-gray-700">
+						<div class="w-full text-gray-700">
 							<p class="text-base font-bold">Description</p>
-							<div class="prose">
+							<div class="prose w-full">
 								{@html marked.parse(course.course_description)}
 							</div>
 						</div>
@@ -252,55 +252,8 @@
 		font-family: 'Noto Sans Thai';
 	}
 	.prose {
-		font-family: sans-serif;
-		line-height: 1.6;
-		color: #4a5568; /* Tailwind's text-gray-700 */
+		line-height: 1.5;
+		color: #0c1524;
 		max-width: 100%;
-	}
-
-	.prose h1,
-	.prose h2,
-	.prose h3,
-	.prose h4,
-	.prose h5,
-	.prose h6 {
-		font-weight: bold;
-		color: #2d3748; /* Tailwind's text-gray-800 */
-		margin-top: 1.5rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.prose p {
-		margin-bottom: 1rem;
-	}
-
-	.prose a {
-		color: #3182ce; /* Tailwind's text-blue-600 */
-		text-decoration: underline;
-	}
-
-	.prose ul,
-	.prose ol {
-		padding-left: 1.5rem;
-		margin-bottom: 1rem;
-	}
-
-	.prose li {
-		margin-bottom: 0.5rem;
-	}
-
-	.prose blockquote {
-		border-left: 4px solid #cbd5e0; /* Tailwind's border-gray-300 */
-		padding-left: 1rem;
-		margin-bottom: 1rem;
-		color: #718096; /* Tailwind's text-gray-600 */
-	}
-
-	.prose code {
-		background-color: #edf2f7; /* Tailwind's bg-gray-100 */
-		padding: 0.2rem 0.4rem;
-		border-radius: 0.25rem;
-		font-size: 0.875rem;
-		color: #e53e3e; /* Tailwind's text-red-600 */
 	}
 </style>
