@@ -131,7 +131,7 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mb-6 mt-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
+					class="mb-6 mt-6 flex  flex-col justify-center rounded-lg bg-white p-6 shadow-md max-w-full"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
@@ -139,11 +139,11 @@
 						<img
 							src={course.course_image}
 							alt="Course Image"
-							class="mb-4 min-w-[200px] rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
-						/>
+							class="mb-4 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2 max-w-full"
+							/>
 
 						<!-- Top Right: Course Name -->
-						<div class="flex flex-1 flex-col justify-between">
+						<div class="flex flex-1 flex-col justify-between text-center lg:text-left">
 							<Card.Header>
 								<Card.Title class="mb-2 text-base font-semibold">{course.course_date}</Card.Title>
 								<Card.Title class="mb-2 text-2xl font-semibold"
@@ -153,13 +153,11 @@
 								<Card.Title class="mb-2 text-base font-semibold"
 									>{course.course_location}</Card.Title
 								>
-								<div class="flex flex-col justify-between lg:flex-row">
 									<div class="text-gray-700">
 										<p>Instructor: {course.course_lecture}</p>
 										<p>Type: {course.course_type}</p>
 										<p>Powered by: {course.course_team} </p>
 									</div>
-								</div>
 							</Card.Header>
 
 							<Separator class="my-4 lg:my-6" />
