@@ -12,6 +12,7 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { marked } from 'marked';
+	import { SyncLoader} from 'svelte-loading-spinners';
 
 	interface Course {
 		course_id: string;
@@ -209,14 +210,7 @@
 									</Dialog.Footer>
 									{#if $isSubmitting}
 									<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out">
-										<div class="relative p-6 bg-white bg-opacity-10 rounded-lg shadow-lg border border-gray-300 backdrop-filter backdrop-blur-lg">
-											<!-- Glowing Spinner -->
-											<div class="spinner-container flex items-center justify-center mb-4">
-												<div class="spinner-border animate-spin inline-block w-12 h-12 border-4 border-t-4 border-t-blue-600 border-blue-200 rounded-full"></div>
-											</div>
-											<!-- Fading Text -->
-											<p class="mt-4 text-lg text-gray-200 font-semibold animate-fadeIn">Processing your enrollment...</p>
-										</div>
+										<SyncLoader size="60" color="#FF3E00" unit="px" duration="1s" />
 									</div>
 								{/if}
 									<!-- Success Alert -->
