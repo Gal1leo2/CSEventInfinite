@@ -64,6 +64,7 @@
 	let selectedDate: DateValue | undefined = undefined;
 	let courseLecture: string;
 	let courseLocation: string;
+	let courseTeam: string;
 
 	//create
 	const createCourse = async () => {
@@ -79,6 +80,8 @@
 		formData.append('course_date', date);
 		formData.append('course_lecture', courseLecture || '');
 		formData.append('course_location', courseLocation || '');
+		formData.append('course_team', courseTeam || '');
+
 		try {
 			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
 				.post(formData)
@@ -254,6 +257,10 @@
 							<div class="grid grid-cols-4 items-center gap-4">
 								<Label for="type" class="text-right">Type</Label>
 								<Input id="type" bind:value={courseType} class="col-span-3" />
+							</div>
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="team" class="text-right">Team</Label>
+								<Input id="team" bind:value={courseTeam} class="col-span-3" />
 							</div>
 							<div class="grid grid-cols-4 items-center gap-4">
 								<Label for="date" class="text-right">Date</Label>

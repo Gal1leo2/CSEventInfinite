@@ -264,44 +264,4 @@
 	.fontUse {
 		font-family: 'Noto Sans Thai';
 	}
-	.prose {
-		line-height: 1.5;
-		color: #0c1524;
-		max-width: 100%;
-	}
-	/* Spinner Styles */
-	.spinner-border {
-		border-radius: 50%;
-		border: 4px solid rgba(255, 255, 255, 0.1);
-		border-top: 4px solid rgba(59, 130, 246, 0.8); /* Custom blue shade */
-		animation: spin 1s linear infinite;
-	}
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-	/* Text Fade-In Animation */
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-	.animate-fadeIn {
-		animation: fadeIn 1s ease-in-out;
-	}
-
-	/* Blur & transition */
-	.backdrop-blur-sm {
-		backdrop-filter: blur(5px);
-	}
-	.transition-opacity {
-		transition: opacity 0.3s;
-	}
 </style>
