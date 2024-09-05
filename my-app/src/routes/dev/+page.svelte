@@ -73,24 +73,16 @@
 		const formData = new FormData();
 		const date = selectedDate ? selectedDate.toString() : '';
 		formData.append('file', file);
-		formData.append('course_name', courseName);
-		formData.append('course_type', courseType);
+		formData.append('course_name', courseName || '');
+		formData.append('course_type', courseType || '');
 		formData.append('course_date', date);
-		formData.append('course_description', courseDescription);
-		formData.append('course_lecture', courseLecture);
-		formData.append('course_location', courseLocation);
+		formData.append('course_description', courseDescription || '');
+		formData.append('course_lecture', courseLecture || '');
+		formData.append('course_location', courseLocation || '');
 		try {
-			console.log(selectedDate?.toString());
 			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
-				.post({
-					course_name: courseName,
-					course_type: courseType,
-					course_date: selectedDate?.toString(),
-					course_description: courseDescription,
-					course_lecture: courseLecture,
-					course_location: courseLocation
-				})
-				.res(()=>{
+				.post(formData)
+				.res(() => {
 					toast.success('Create course complete.');
 				})
 				.catch(() => {
@@ -108,21 +100,20 @@
 				.post({
 					course_id: selectedCourseId,
 					course_description: courseDescription
-
 				})
-				.res(()=>{
+				.res(() => {
 					toast.success('Add Course description complete.');
 				})
-				.catch(()=>{
+				.catch(() => {
 					toast.error("This didn't work. Please try again.");
-				})
+				});
 		} catch (error) {
 			console.error(error);
 		}
 	};
 
 	//Delete
-	let selectedCourseId : string ='';
+	let selectedCourseId: string = '';
 	const deleteCourse = async (courseId: string) => {
 		console.log(courseId);
 
@@ -135,9 +126,8 @@
 				toast.success('Course deleted successfully.');
 				datacourse = datacourse.filter((course) => course.course_id !== courseId);
 			});
-
 	};
-	
+
 	onMount(async () => {
 		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
 		const resCourse = await fetch('https://nodejsbackend-ten.vercel.app/user/getcourse');
@@ -227,10 +217,10 @@
 								</Popover.Content>
 							</Popover.Root>
 						</div>
-						<!-- <div class="grid grid-cols-4 items-center gap-4">
+						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="des" class="text-right">Description</Label>
 							<Input id="des" bind:value={courseDescription} class="col-span-3" />
-						</div> -->
+						</div>
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="lec" class="text-right">Lecture</Label>
 							<Input id="lec" bind:value={courseLecture} class="col-span-3" />
@@ -242,17 +232,24 @@
 						<div class="grid grid-cols-4 items-center gap-4">
 							<!-- <Input id="local" bind:value={courseLocation}  /> -->
 							<Label for="picture" class="text-right">Picture</Label>
-							<Input id="picture" class="col-span-3" type="file" on:change={handleFileChange}/>
+							<Input id="picture" class="col-span-3" type="file" on:change={handleFileChange} />
 						</div>
 					</div>
 					<Dialog.Footer>
 						<!-- submit BTN -->
-						<Button type="submit" on:click={()=>{createCourse()}}>Save changes</Button>
+						<Button
+							type="submit"
+							on:click={() => {
+								createCourse();
+							}}>Save changes</Button
+						>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
 			<Dialog.Root>
-				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Add Course Description</Dialog.Trigger>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
+					>Add Course Description</Dialog.Trigger
+				>
 				<Dialog.Content class="sm:max-w-[1080px]">
 					<Dialog.Header>
 						<Dialog.Title>Add Course Description</Dialog.Title>
@@ -281,7 +278,6 @@
 								cols="30"
 							/>
 						</div>
-
 					</div>
 					<Dialog.Footer>
 						<Button type="button" on:click={addCourseDescription}>Add Description</Button>
@@ -289,7 +285,9 @@
 				</Dialog.Content>
 			</Dialog.Root>
 			<Dialog.Root>
-				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>Add Course Description</Dialog.Trigger>
+				<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
+					>Add Course Description</Dialog.Trigger
+				>
 				<Dialog.Content class="sm:max-w-[1080px]">
 					<Dialog.Header>
 						<Dialog.Title>Add Course Description</Dialog.Title>
@@ -318,7 +316,6 @@
 								cols="30"
 							/>
 						</div>
-
 					</div>
 					<Dialog.Footer>
 						<Button type="button" on:click={addCourseDescription}>Add Description</Button>
@@ -351,7 +348,6 @@
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
-			
 		</div>
 	</div>
 	<!-- Right Box -->
@@ -405,6 +401,8 @@
 	<input type="file" on:change={handleFileChange} />
 	<button on:click={handleFileUpload}>Upload</button>
 </div>
+<Toaster />
+
 <style>
 	.lined-textarea {
 		background: linear-gradient(to bottom, #ddd 1px, transparent 1px);
@@ -417,5 +415,4 @@
 		border-radius: 5px;
 		resize: vertical;
 	}
-	</style>
-<Toaster />
+</style>
