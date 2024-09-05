@@ -302,6 +302,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
+
 				<!-- DELETE COURSE -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
