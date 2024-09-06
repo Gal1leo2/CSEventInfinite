@@ -14,7 +14,12 @@
 	import { marked } from 'marked';
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import toast, { Toaster } from 'svelte-french-toast';
+	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 
+	interface Year {
+		value: string;
+		label: string;
+	}
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -63,7 +68,7 @@
 	let Fname: string;
 	let Lname: string;
 	let isSubmitting = writable(false); // New state JA
-
+	let stdYear: string;
 	//SUBMIT THE FORM
 	const submitform = async () => {
 		const laptop = $isChecked;
@@ -77,7 +82,8 @@
 					course_id: id,
 					fname: Fname,
 					lname: Lname,
-					laptop: laptop
+					laptop: laptop,
+					stdyear: stdYear
 				})
 				.badRequest(async (e) => {
 					alertMessage.set(JSON.parse(e.message).message);
@@ -87,7 +93,7 @@
 				.res(async (response) => {
 					if (response.status === 200) {
 						showAlert.set(true);
-						toast.success('ลงทะเบียนสำเร็จ.', {position: "bottom-center"});
+						toast.success('ลงทะเบียนสำเร็จ.', { position: 'bottom-center' });
 						showAlertFail.set(false);
 					} else {
 						alertMessage.set('An unexpected error occurred.');
@@ -131,7 +137,7 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mb-6 mt-6 flex  flex-col justify-center rounded-lg bg-white p-6 shadow-md max-w-full"
+					class="mb-6 mt-6 flex  max-w-full flex-col justify-center rounded-lg bg-white p-6 shadow-md"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
@@ -139,8 +145,8 @@
 						<img
 							src={course.course_image}
 							alt="Course Image"
-							class="mb-4 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2 max-w-full"
-							/>
+							class="mb-4 w-full max-w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
+						/>
 
 						<!-- Top Right: Course Name -->
 						<div class="flex flex-1 flex-col justify-between text-center lg:text-left">
@@ -149,15 +155,15 @@
 								<Card.Title class="mb-2 text-2xl font-semibold"
 									><span style="color:#E35205">{course.course_name}</span></Card.Title
 								>
-								
+
 								<Card.Title class="mb-2 text-base font-semibold"
 									>{course.course_location}</Card.Title
 								>
-									<div class="text-gray-700">
-										<p>Instructor: {course.course_lecture}</p>
-										<p>Type: {course.course_type}</p>
-										<p>Powered by: {course.course_team} </p>
-									</div>
+								<div class="text-gray-700">
+									<p>Instructor: {course.course_lecture}</p>
+									<p>Type: {course.course_type}</p>
+									<p>Powered by: {course.course_team}</p>
+								</div>
 							</Card.Header>
 
 							<Separator class="my-4 lg:my-6" />
@@ -194,6 +200,34 @@
 													>Lastname (In Thai)</Label
 												>
 												<Input id="lname" bind:value={Lname} class="mt-1 block w-full" />
+											</div>
+
+											<!-- SELECT YEAR -->
+											<div>
+												<Label for="lname" class="block text-sm font-medium text-gray-700"
+													>Year</Label
+												>
+												<RadioGroup.Root bind:value={stdYear}>
+													<div class="flex w-full justify-between mt-3">
+														<div class="flex items-center space-x-2">
+															<RadioGroup.Item value="1" id="r1" />
+															<Label for="r1">ปี 1</Label>
+														</div>
+														<div class="flex items-center space-x-2">
+															<RadioGroup.Item value="2" id="r2" />
+															<Label for="r2">ปี 2</Label>
+														</div>
+														<div class="flex items-center space-x-2">
+															<RadioGroup.Item value="3" id="r3" />
+															<Label for="r3">ปี 3</Label>
+														</div>
+														<div class="flex items-center space-x-2">
+															<RadioGroup.Item value="4" id="r4" />
+															<Label for="r4">ปี 4</Label>
+														</div>
+													</div>
+													<RadioGroup.Input name="spacing" />
+												</RadioGroup.Root>
 											</div>
 											<div class="flex items-center">
 												<Switch
