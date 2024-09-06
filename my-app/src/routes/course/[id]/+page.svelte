@@ -294,9 +294,9 @@
 			<p class="mt-4 text-gray-500">No courses found.</p>
 		{/if}
 	</div>
-	<footer class="bg-gray flex">
-		<div class="flex w-full justify-between bg-black/5 p-4 text-xs">
-			<span>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> , Gal1leo</span>
+	<footer class="w-full bg-gray-100">
+		<div class="flex justify-between bg-black/5 p-4 text-xs">
+			<span>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> , <a href="https://github.com/Gal1leo2">Gal1leo</a></span>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
 	</footer>
