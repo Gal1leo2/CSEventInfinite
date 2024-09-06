@@ -241,7 +241,7 @@
 													class="relative inline-flex h-6 w-11 items-center rounded-full"
 												></Switch>
 												<span class="ml-3 text-sm font-medium text-gray-700"
-													>Participants can bring their own computers.</span
+													>ผู้เข้าร่วมสามารถนำคอมพิวเตอร์มาเองได้.</span
 												>
 											</div>
 										</div>
