@@ -477,7 +477,7 @@
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 						Change courses visibility
 					</Dialog.Trigger>
-					<Dialog.Content class="rounded-lg bg-white p-4 shadow-lg max-w-[90vw] max-h-[80vh] overflow-auto">
+					<Dialog.Content class="rounded-lg bg-white p-4 shadow-lg max-w-[40vw] max-h-[80vh] overflow-auto">
 						<div class="grid gap-4">
 							{#each datacourse as course}
 								<Card.Root class="col-span-full">
