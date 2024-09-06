@@ -226,6 +226,10 @@
 															<RadioGroup.Item value="4" id="r4" />
 															<Label for="r4">ปี 4</Label>
 														</div>
+														<div class="flex items-center space-x-2">
+															<RadioGroup.Item value="4" id="r4" />
+															<Label for="r5">อื่นๆ</Label>
+														</div>
 													</div>
 													<RadioGroup.Input name="spacing" />
 												</RadioGroup.Root>
