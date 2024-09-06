@@ -140,12 +140,11 @@
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
-						<!-- svelte-ignore a11y-img-redundant-alt -->
 						<img
 						src={course.course_image}
-						alt="Course Image"
+						alt="A preview of {course.course_name}"
 						class="mb-4 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2 max-w-full"
-						style="width: 700px; height: 640px; object-fit: cover;"
+						style="object-fit: cover;"
 					/>
 
 						<!-- Top Right: Course Name -->
