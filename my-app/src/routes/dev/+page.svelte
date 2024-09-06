@@ -238,7 +238,7 @@
 				</div>
 			</div>
 			<!-- post Blog -->
-			<div class="m-5 flex h-full items-center justify-center gap-5 border border-[red]">
+			<div class="m-5 flex flex-col h-full items-center justify-center gap-5 border border-[red]">
 				<!-- CREATE COURSE -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
