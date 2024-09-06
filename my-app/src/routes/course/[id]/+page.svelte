@@ -136,7 +136,7 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-					class="mb-6 mt-6 flex  max-w-full flex-col justify-center rounded-lg bg-white p-6 shadow-md"
+				class="mb-6 mt-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md w-full"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
@@ -279,13 +279,15 @@
 					<!-- Bottom Right: Additional Content -->
 					<Separator class="my-4 lg:my-6" />
 					<div class="flex flex-col justify-between lg:flex-row">
-						<div class="w-full text-gray-700">
-							<p class="text-base font-bold">Description</p>
-							<div class="prose l ">
-								{@html marked.parse(course.course_description)}
-							</div>
+					  <!-- Text content container with wider width -->
+					  <div class="lg:w-full text-gray-700"> <!-- Full width on larger screens -->
+						<p class="text-base font-bold">Description</p>
+						<div class="prose max-w-full">
+						  {@html marked.parse(course.course_description)}
 						</div>
+					  </div>
 					</div>
+					  
 				</Card.Root>
 			{/each}
 		{:else}
