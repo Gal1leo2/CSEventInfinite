@@ -452,23 +452,23 @@
 		</div>
 		<!-- Right Box -->
 		<div class="m-5 flex w-full flex-col">
-			<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
+			<div class="flex w-full flex-col border-b bg-gray-300 p-5">
 				<div class="flex w-full justify-between">
-					<h1 class="font-mono font-bold">COURSE_ID</h1>
-					<h1 class="font-mono font-bold">NAME</h1>
-					<h1 class="font-mono font-bold">LECTURE</h1>
-					<h1 class="font-mono font-bold">TYPE</h1>
-					<h1 class="font-mono font-bold">DATE</h1>
+					<h1 class="font-mono font-bold flex w-1/5">COURSE_ID</h1>
+					<h1 class="font-mono font-bold flex w-1/5">NAME</h1>
+					<h1 class="font-mono font-bold flex w-1/5">LECTURE</h1>
+					<h1 class="font-mono font-bold flex w-1/5">TYPE</h1>
+					<h1 class="font-mono font-bold flex w-1/5">DATE</h1>
 				</div>
 			</div>
 			{#each datacourse as data}
-				<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
-					<div class="flex w-full justify-between">
-						<h1 class="font-mono font-bold">{data.course_id}</h1>
-						<h1 class="font-mono font-bold">{data.course_name}</h1>
-						<h1 class="font-mono font-bold">{data.course_lecture}</h1>
-						<h1 class="font-mono font-bold">{data.course_type}</h1>
-						<h1 class="font-mono font-bold">{data.course_date}</h1>
+				<div class="flex w-full flex-col border-b bg-[#ffffff] p-3">
+					<div class="flex w-full justify-between border border-[red]">
+						<p class="font-mono text-xs flex w-1/5">{data.course_id}</p>
+						<p class="font-mono text-xs flex w-1/5 ">{data.course_name}</p>
+						<p class="font-mono text-xs flex w-1/5">{data.course_lecture}</p>
+						<p class="font-mono text-xs flex w-1/5">{data.course_type}</p>
+						<p class="font-mono text-xs flex w-1/5">{data.course_date}</p>
 					</div>
 				</div>
 			{/each}
