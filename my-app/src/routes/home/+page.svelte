@@ -20,6 +20,7 @@
 		course_type: string;
 		course_date: string;
 		course_team: string;
+		is_visible: boolean; //new
 	}
 
 	interface Student {
@@ -81,15 +82,24 @@
 		});
 	}
 
-	let totalCourses = derived(courses, ($courses) => $courses.length);
-
 	let enrollCount = derived([courses, students], ([$courses, $students]) => {
-		const sortedCourses = sortByDate($courses);
+		$courses.forEach((course) => {
+			console.log(course.course_name, course.is_visible);
+		});
+
+		const visibleCourses = $courses.filter((course) => course.is_visible === true);
+
+		const sortedCourses = sortByDate(visibleCourses);
+
 		return sortedCourses.map((course) => {
 			let count = $students.filter((student) => student.course_id === course.course_id).length;
 			return { ...course, enroll_count: count };
 		});
 	});
+
+	let totalCourses = derived(courses, ($courses) => {
+    return $courses.filter(course => course.is_visible === true).length;
+});
 
 	let username: string;
 	let password: string;
@@ -121,9 +131,11 @@
 <svelte:head>
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
-<div class="fontUse flex flex-col min-h-screen min-w-max">
+<div class="fontUse flex min-h-screen min-w-max flex-col">
 	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
-		<nav class="flex w-full flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4">
+		<nav
+			class="flex w-full flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
+		>
 			<a href="##" class="font-bold text-[#E35205] transition-colors">
 				CSEvent - Short Course Registration System
 			</a>
@@ -217,7 +229,7 @@
 	</main>
 
 	<!-- Footer sticks at the bottom -->
-	<footer class="bg-gray-100 w-full">
+	<footer class="w-full bg-gray-100">
 		<div class="flex justify-between bg-black/5 p-4 text-xs">
 			<span>© 2024 | Made with ❤️ by Tony, Gal1leo</span>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
@@ -227,11 +239,10 @@
 
 <Toaster></Toaster>
 
+<Toaster></Toaster>
+
 <style>
 	.fontUse {
 		font-family: 'Noto Sans Thai';
 	}
 </style>
-
-<Toaster></Toaster>
-
