@@ -187,7 +187,6 @@
 								<Table.Head>Type</Table.Head>
 								<Table.Head>Date (Y-M-D)</Table.Head>
 								<Table.Head>Enrolled</Table.Head>
-								<Table.Head class="text-right">See details</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
