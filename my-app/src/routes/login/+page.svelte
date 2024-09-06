@@ -1,19 +1,11 @@
 <script lang="ts">
-	import { CalendarArrowDown, LibraryIcon } from 'lucide-svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import { onMount } from 'svelte';
-	import { writable, derived } from 'svelte/store';
-	import { LibraryBig } from 'lucide-svelte';
-	import { UsersRound } from 'lucide-svelte';
 	import Cookies from 'js-cookie';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import Wretch from 'wretch';
 	import { toast } from 'svelte-sonner';
-	import { Toaster } from 'svelte-sonner';
 
 	let username: string;
 	let password: string;

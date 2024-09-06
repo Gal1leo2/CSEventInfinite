@@ -137,10 +137,11 @@
 						<!-- Top Left: Image -->
 						<!-- svelte-ignore a11y-img-redundant-alt -->
 						<img
-							src={course.course_image}
-							alt="Course Image"
-							class="mb-4 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2 max-w-full"
-							/>
+						src={course.course_image}
+						alt="Course Image"
+						class="mb-4 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2 max-w-full"
+						style="width: 700px; height: 640px; object-fit: cover;"
+					/>
 
 						<!-- Top Right: Course Name -->
 						<div class="flex flex-1 flex-col justify-between text-center lg:text-left">
@@ -244,7 +245,7 @@
 					<div class="flex flex-col justify-between lg:flex-row">
 						<div class="w-full text-gray-700">
 							<p class="text-base font-bold">Description</p>
-							<div class="prose w-full">
+							<div class="prose l ">
 								{@html marked.parse(course.course_description)}
 							</div>
 						</div>
