@@ -15,8 +15,7 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
-	import * as Popover from "$lib/components/ui/popover/index.js";
-	import * as Command from "$lib/components/ui/command/index.js";
+
 
 
 
@@ -241,7 +240,7 @@
 													class="relative inline-flex h-6 w-11 items-center rounded-full"
 												></Switch>
 												<span class="ml-3 text-sm font-medium text-gray-700"
-													>ผู้เข้าร่วมสามารถนำคอมพิวเตอร์มาเองได้.</span
+													>ผู้เข้าร่วมสามารถนำคอมพิวเตอร์มาเองได้</span
 												>
 											</div>
 										</div>

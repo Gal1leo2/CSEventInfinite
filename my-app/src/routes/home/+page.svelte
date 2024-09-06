@@ -195,14 +195,21 @@
 								<Table.Row>
 									<Table.Cell>
 										<div class="font-bold">{course.course_name}</div>
-										<div class="mb-2 flex items-center">
-											<UsersRound class="text-muted-foreground mr-2 h-4 w-4" />
-											<div class="text-muted-foreground block text-sm md:inline">
+										<div class="mb-2 mr-8 flex items-center">
+											<svg 
+											class = mr-2
+											xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...$$props}>
+												<path fill="black" d="M20 17a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H9.46c.35.61.54 1.3.54 2h10v11h-9v2m4-10v2H9v13H7v-6H5v6H3v-8H1.5V9a2 2 0 0 1 2-2zM8 4a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2a2 2 0 0 1 2 2" />
+											</svg>											<div class="text-muted-foreground block text-sm md:inline">
 												{course.course_lecture}
 											</div>
 										</div>
 										<div class="flex items-center">
-											<Group class="text-muted-foreground mr-2 h-4 w-4" />
+											<svg
+											class = mr-2
+											xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...$$props}>
+												<path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 18.72a9.1 9.1 0 0 0 3.741-.479q.01-.12.01-.241a3 3 0 0 0-4.692-2.478m.94 3.197l.001.031q0 .337-.037.666A11.94 11.94 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6 6 0 0 1 6 18.719m12 0a5.97 5.97 0 0 0-.941-3.197m0 0A6 6 0 0 0 12 12.75a6 6 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72a9 9 0 0 0 3.74.477m.94-3.197a5.97 5.97 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0a3 3 0 0 1 6 0m6 3a2.25 2.25 0 1 1-4.5 0a2.25 2.25 0 0 1 4.5 0m-13.5 0a2.25 2.25 0 1 1-4.5 0a2.25 2.25 0 0 1 4.5 0" />
+											</svg>
 											<div class="text-muted-foreground mr-2 block text-sm md:inline">
 												{course.course_team}
 											</div>
