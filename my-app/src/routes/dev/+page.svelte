@@ -14,6 +14,7 @@
 	import Cookies from 'js-cookie';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { writable } from 'svelte/store';
+	import * as Card from "$lib/components/ui/card";
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -37,6 +38,7 @@
 		course_lecture: string;
 		course_type: string;
 		course_date: string;
+		is_visible:boolean;
 	}
 
 	//เหมือนจะไม่ใช้แล้ว
@@ -171,6 +173,29 @@
 			filteredStudents.set([]);
 		}
 	}
+	//Gunner
+	const toggleCourseVisibility = async (courseId: string, currentVisibility: boolean) => {
+	try {
+		const newVisibility = !currentVisibility;
+
+		await Wretch(`https://nodejsbackend-ten.vercel.app/course/update-visible/${courseId}`)
+			.put({ is_visible: newVisibility })
+			.res(() => {
+				toast.success('Course visibility updated.');
+				const updatedCourses = datacourse.map((course) =>
+					course.course_id === courseId
+						? { ...course, is_visible: newVisibility }
+						: course
+				);
+				datacourse = updatedCourses;
+			})
+			.catch(() => {
+				toast.error("Failed to update course visibility.");
+			});
+	} catch (error) {
+		console.error(error);
+	}
+};
 
 	//Login handle----------------------------------------------------------------------------------------------
 
@@ -448,6 +473,43 @@
 						</div>
 					</Dialog.Content>
 				</Dialog.Root>
+				<!-- Change courses visibility -->
+				<Dialog.Root>
+					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
+						Change courses visibility
+					</Dialog.Trigger>
+					<Dialog.Content class="rounded-lg bg-white p-4 shadow-lg max-w-[90vw] max-h-[80vh] overflow-auto">
+						<div class="grid gap-4">
+							{#each datacourse as course}
+								<Card.Root class="col-span-full">
+									<Card.Header class="flex flex-row items-center justify-between">
+										<div class="grid gap-1">
+											<Card.Title class="text-sm font-medium">{course.course_name}</Card.Title>
+											<Card.Description class="text-xs">{course.course_type}</Card.Description>
+										</div>
+									</Card.Header>
+									<Card.Content>
+										<div class="flex items-center justify-between">
+											<div class="flex items-center">
+												<span class={course.is_visible ? 'text-green-500 font-semibold text-xs' : 'text-red-500 font-semibold text-xs'}>
+													{course.is_visible ? 'Visible' : 'Hidden'}
+												</span>
+											</div>
+					
+											<Button
+												on:click={() => toggleCourseVisibility(course.course_id, course.is_visible)}
+												class="bg-gray-200 hover:bg-gray-300 text-black text-xs font-bold py-1 px-2 rounded"
+											>
+												Change Status
+											</Button>
+										</div>
+									</Card.Content>
+								</Card.Root>
+							{/each}
+						</div>
+					</Dialog.Content>
+				</Dialog.Root>
+				
 			</div>
 		</div>
 		<!-- Right Box -->
