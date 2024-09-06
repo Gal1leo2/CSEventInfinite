@@ -195,7 +195,7 @@
 								<Table.Row>
 									<Table.Cell>
 										<div class="font-bold">{course.course_name}</div>
-										<div class="mb-2 mr-8 flex items-center">
+										<div class="mr-8 flex items-center">
 											<svg 
 											class = mr-2
 											xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...$$props}>
