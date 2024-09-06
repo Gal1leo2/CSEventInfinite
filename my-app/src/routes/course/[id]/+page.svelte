@@ -15,11 +15,11 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
+	import * as Popover from "$lib/components/ui/popover/index.js";
+	import * as Command from "$lib/components/ui/command/index.js";
 
-	interface Year {
-		value: string;
-		label: string;
-	}
+
+
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -227,7 +227,7 @@
 															<Label for="r4">ปี 4</Label>
 														</div>
 														<div class="flex items-center space-x-2">
-															<RadioGroup.Item value="4" id="r4" />
+															<RadioGroup.Item value="5" id="r4" />
 															<Label for="r5">อื่นๆ</Label>
 														</div>
 													</div>
