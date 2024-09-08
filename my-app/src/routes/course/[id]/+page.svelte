@@ -16,9 +16,6 @@
 	import toast, { Toaster } from 'svelte-french-toast';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 
-
-
-
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -109,6 +106,30 @@
 			isSubmitting.set(false); // Stop showing the loading popup
 		}
 	};
+	//check first and last name type in thai only
+	let firstNameError = writable<string | null>(null);
+	let lastNameError = writable<string | null>(null);
+
+	function isThaiOnly(input: string): boolean {
+		const thaiRegex = /^[\u0E00-\u0E7F\s]+$/; // \s allows spaces
+		return thaiRegex.test(input);
+	}
+
+	function validateFirstName() {
+		if (!isThaiOnly(Fname)) {
+			firstNameError.set('กรุณากรอกชื่อเป็นภาษาไทยเท่านั้น');
+		} else {
+			firstNameError.set(null);
+		}
+	}
+
+	function validateLastName() {
+		if (!isThaiOnly(Lname)) {
+			lastNameError.set('กรุณากรอกนามสกุลเป็นภาษาไทยเท่านั้น');
+		} else {
+			lastNameError.set(null);
+		}
+	}
 	onMount(() => {
 		fetchCoursesDetails(id);
 	});
@@ -136,16 +157,16 @@
 		{:else if $courses.length}
 			{#each $courses as course}
 				<Card.Root
-				class="mb-6 mt-6 flex max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md w-full"
+					class="mb-6 mt-6 flex w-full max-w-7xl flex-col justify-center rounded-lg bg-white p-6 shadow-md"
 				>
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
 						<img
-						src={course.course_image}
-						alt="A preview of {course.course_name}"
-						class="mb-4 w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2 max-w-full"
-						style="object-fit: cover;"
-					/>
+							src={course.course_image}
+							alt="A preview of {course.course_name}"
+							class="mb-4 w-full max-w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
+							style="object-fit: cover;"
+						/>
 
 						<!-- Top Right: Course Name -->
 						<div class="flex flex-1 flex-col justify-between text-center lg:text-left">
@@ -192,13 +213,30 @@
 												<Label for="fname" class="block text-sm font-medium text-gray-700"
 													>Firstname (In Thai)</Label
 												>
-												<Input id="fname" bind:value={Fname} class="mt-1 block w-full" />
+												<Input
+													id="fname"
+													bind:value={Fname}
+													class="mt-1 block w-full"
+													on:blur={validateFirstName}
+												/>
+												{#if $firstNameError}
+													<p class="text-sm text-red-500">{$firstNameError}</p>
+												{/if}
 											</div>
+
 											<div>
 												<Label for="lname" class="block text-sm font-medium text-gray-700"
 													>Lastname (In Thai)</Label
 												>
-												<Input id="lname" bind:value={Lname} class="mt-1 block w-full" />
+												<Input
+													id="lname"
+													bind:value={Lname}
+													class="mt-1 block w-full"
+													on:blur={validateLastName}
+												/>
+												{#if $lastNameError}
+													<p class="text-sm text-red-500">{$lastNameError}</p>
+												{/if}
 											</div>
 
 											<!-- SELECT YEAR -->
@@ -207,7 +245,7 @@
 													>Year</Label
 												>
 												<RadioGroup.Root bind:value={stdYear}>
-													<div class="flex w-full justify-between mt-3">
+													<div class="mt-3 flex w-full justify-between">
 														<div class="flex items-center space-x-2">
 															<RadioGroup.Item value="1" id="r1" />
 															<Label for="r1">ปี 1</Label>
@@ -279,15 +317,15 @@
 					<!-- Bottom Right: Additional Content -->
 					<Separator class="my-4 lg:my-6" />
 					<div class="flex flex-col justify-between lg:flex-row">
-					  <!-- Text content container with wider width -->
-					  <div class="lg:w-full text-gray-700"> <!-- Full width on larger screens -->
-						<p class="text-base font-bold">Description</p>
-						<div class="prose max-w-full">
-						  {@html marked.parse(course.course_description)}
+						<!-- Text content container with wider width -->
+						<div class="text-gray-700 lg:w-full">
+							<!-- Full width on larger screens -->
+							<p class="text-base font-bold">Description</p>
+							<div class="prose max-w-full">
+								{@html marked.parse(course.course_description)}
+							</div>
 						</div>
-					  </div>
 					</div>
-					  
 				</Card.Root>
 			{/each}
 		{:else}
@@ -296,7 +334,10 @@
 	</div>
 	<footer class="w-full bg-gray-100">
 		<div class="flex justify-between bg-black/5 p-4 text-xs">
-			<span>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> , <a href="https://github.com/Gal1leo2">Gal1leo</a></span>
+			<span
+				>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> ,
+				<a href="https://github.com/Gal1leo2">Gal1leo</a></span
+			>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
 		</div>
 	</footer>
