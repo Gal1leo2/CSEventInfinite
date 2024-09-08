@@ -203,7 +203,7 @@
 	const token = Cookies.get('authUser');
 	onMount(async () => {
 		if (token) {
-			await Wretch('${import.meta.env.VITE_API_BASE_URL}/admin/auth')
+			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
 				.post({ token })
 				.unauthorized(() => {
 					window.location.pathname = '/';
