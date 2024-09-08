@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,64 +12,92 @@
       <div class="icon">🔧</div>
       <h1>We're Under Maintenance</h1>
       <p>We’re working hard to bring you a better experience. Please check back later.</p>
-      <p>Estimated Time of Arrival: IDK </p>
+      <p>Estimated Time of Arrival: IDK</p>
     </div>
   </div>
-  <footer class="w-full bg-gray-100">
-    <div class="flex justify-between bg-black/5 p-4 text-xs">
-        <span>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> , <a href="https://github.com/Gal1leo2">Gal1leo</a></span>
-        <span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
+  <footer class="footer">
+    <div class="footer-content">
+      <span>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a>, <a href="https://github.com/Gal1leo2">Gal1leo</a></span>
+      <span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
     </div>
-</footer>
+  </footer>
 </body>
-
 </html>
 <style>
     * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    html, body {
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-    }
-    
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      padding: 1rem;
-    }
-    
-    .content {
-      text-align: center;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 2rem;
-    }
-    
-    .icon {
-      font-size: 5rem;
-      color: #ff5722;
-      margin-bottom: 1rem;
-    }
-    
-    h1 {
-      font-size: 2.5rem;
-      color: #333;
-      margin-bottom: 1rem;
-    }
-    
-    p {
-      font-size: 1.2rem;
-      color: #666;
-      margin-bottom: 1.5rem;
-    }
-    
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    </style>
+html, body {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 50px); /* Adjust height for footer */
+  padding: 1rem;
+}
+
+.content {
+  text-align: center;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.icon {
+  font-size: 5rem;
+  color: #ff5722;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* Footer Styles */
+.footer {
+  background-color: #f1f1f1;
+  padding: 1rem 0;
+  text-align: center;
+  border-top: 1px solid #ddd;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.footer-content a {
+  color: #ff5722;
+  text-decoration: none;
+}
+
+.footer-content a:hover {
+  text-decoration: underline;
+}
+
+
+</style>
