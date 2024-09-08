@@ -86,7 +86,7 @@
 		formData.append('course_team', courseTeam || '');
 
 		try {
-			const response = await Wretch('${import.meta.env.VITE_API_BASE_URL}/course/create')
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
 				.post(formData)
 				.res(() => {
 					toast.success('Create course complete.');
@@ -105,7 +105,7 @@
 	// Add course description
 	const addCourseDescription = async () => {
 		try {
-			await Wretch('${import.meta.env.VITE_API_BASE_URL}/course/update-course-desciption')
+			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-course-desciption`)
 				.put({
 					course_id: selectedCourseId,
 					course_description: courseDescription
@@ -148,7 +148,7 @@
 	async function fetchStudents() {
 		try {
 			isLoading.set(true);
-			const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getuser');
+			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`);
 			if (!response.ok) {
 				throw new Error('Failed to fetch students');
 			}
@@ -214,8 +214,8 @@
 		} else {
 			window.location.pathname = 'home';
 		}
-		const resUser = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getuser');
-		const resCourse = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getcourse');
+		const resUser = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`);
+		const resCourse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`);
 		const DataU: getuser[] = await resUser.json();
 		const DataC: Course[] = await resCourse.json();
 		datauser = DataU;

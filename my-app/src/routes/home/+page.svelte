@@ -45,7 +45,7 @@
 	async function fetchCourses() {
 		try {
 			isLoading.set(true);
-			const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getcourse');
+			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`);
 			if (!response.ok) {
 				throw new Error('Failed to fetch courses');
 			}
@@ -61,7 +61,7 @@
 	async function fetchStudents() {
 		try {
 			isLoading.set(true);
-			const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getuser');
+			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`);
 			if (!response.ok) {
 				throw new Error('Failed to fetch students');
 			}
@@ -104,7 +104,7 @@
 	let username: string;
 	let password: string;
 	const login = async () => {
-		await Wretch('${import.meta.env.VITE_API_BASE_URL}/admin/login')
+		await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/login`)
 			.post({
 				username: username,
 				password: password
