@@ -47,7 +47,8 @@
 	async function fetchCoursesDetails(id: string) {
 		try {
 			isLoading.set(true);
-			const response = await fetch(`https://nodejsbackend-ten.vercel.app/user/getcourse/${id}`);
+			
+			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse/${id}`);
 			if (!response.ok) {
 				throw new Error('Failed to fetch courses');
 			}
@@ -141,6 +142,7 @@
 		}
 	}
 	onMount(() => {
+		console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
 		fetchCoursesDetails(id);
 	});
 </script>
