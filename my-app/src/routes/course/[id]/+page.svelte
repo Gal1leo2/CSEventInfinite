@@ -73,7 +73,7 @@
 		isSubmitting.set(true); // Start showing the loading popup
 
 		try {
-			await wretch('https://nodejsbackend-ten.vercel.app/user/enroll')
+			await wretch('${import.meta.env.VITE_API_BASE_URL}/user/enroll')
 				.post({
 					student_id: std_id,
 					course_id: id,

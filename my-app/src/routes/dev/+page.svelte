@@ -86,7 +86,7 @@
 		formData.append('course_team', courseTeam || '');
 
 		try {
-			const response = await Wretch('https://nodejsbackend-ten.vercel.app/course/create')
+			const response = await Wretch('${import.meta.env.VITE_API_BASE_URL}/course/create')
 				.post(formData)
 				.res(() => {
 					toast.success('Create course complete.');
@@ -105,7 +105,7 @@
 	// Add course description
 	const addCourseDescription = async () => {
 		try {
-			await Wretch('https://nodejsbackend-ten.vercel.app/course/update-course-desciption')
+			await Wretch('${import.meta.env.VITE_API_BASE_URL}/course/update-course-desciption')
 				.put({
 					course_id: selectedCourseId,
 					course_description: courseDescription
@@ -127,7 +127,7 @@
 	const deleteCourse = async (courseId: string) => {
 		console.log(courseId);
 
-		await Wretch(`https://nodejsbackend-ten.vercel.app/course/delete/${courseId}`)
+		await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/delete/${courseId}`)
 			.delete()
 			.notFound(() => {
 				toast.error('Error deleting course. Please try again.');
@@ -148,7 +148,7 @@
 	async function fetchStudents() {
 		try {
 			isLoading.set(true);
-			const response = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
+			const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getuser');
 			if (!response.ok) {
 				throw new Error('Failed to fetch students');
 			}
@@ -177,7 +177,7 @@
 	try {
 		const newVisibility = !currentVisibility;
 
-		await Wretch(`https://nodejsbackend-ten.vercel.app/course/update-visible/${courseId}`)
+		await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
 			.put({ is_visible: newVisibility })
 			.res(() => {
 				toast.success('Course visibility updated.');
@@ -203,7 +203,7 @@
 	const token = Cookies.get('authUser');
 	onMount(async () => {
 		if (token) {
-			await Wretch('https://nodejsbackend-ten.vercel.app/admin/auth')
+			await Wretch('${import.meta.env.VITE_API_BASE_URL}/admin/auth')
 				.post({ token })
 				.unauthorized(() => {
 					window.location.pathname = '/';
@@ -214,8 +214,8 @@
 		} else {
 			window.location.pathname = 'home';
 		}
-		const resUser = await fetch('https://nodejsbackend-ten.vercel.app/user/getuser');
-		const resCourse = await fetch('https://nodejsbackend-ten.vercel.app/user/getcourse');
+		const resUser = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getuser');
+		const resCourse = await fetch('${import.meta.env.VITE_API_BASE_URL}/user/getcourse');
 		const DataU: getuser[] = await resUser.json();
 		const DataC: Course[] = await resCourse.json();
 		datauser = DataU;
