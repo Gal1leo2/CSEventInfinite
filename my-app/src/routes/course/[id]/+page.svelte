@@ -103,9 +103,19 @@
 			showAlertFail.set(true);
 			showAlert.set(false);
 		} finally {
-			isSubmitting.set(false); // Stop showing the loading popup
+			isSubmitting.set(false); 
 		}
 	};
+	//check student id num and 8 digit 
+	let studentIdError = writable<string | null>(null);
+	function validateStudentId() {
+		const idRegex = /^\d{8}$/; 
+		if (!idRegex.test(std_id)) {
+			studentIdError.set("รหัสนักศึกษาต้องมีตัวเลข 8 หลักเท่านั้น");
+		} else {
+			studentIdError.set(null);
+		}
+	}
 	//check first and last name type in thai only
 	let firstNameError = writable<string | null>(null);
 	let lastNameError = writable<string | null>(null);
@@ -204,10 +214,16 @@
 									<div class="py-4">
 										<div class="space-y-4">
 											<div>
-												<Label for="stuid" class="block text-sm font-medium text-gray-700"
-													>Student ID</Label
-												>
-												<Input id="stuid" bind:value={std_id} class="mt-1 block w-full" />
+												<Label for="stuid" class="block text-sm font-medium text-gray-700">Student ID</Label>
+												<Input
+													id="stuid"
+													bind:value={std_id}
+													class="mt-1 block w-full"
+													on:blur={validateStudentId}
+												/>
+												{#if $studentIdError}
+													<p class="text-red-500 text-sm">{$studentIdError}</p>
+												{/if}
 											</div>
 											<div>
 												<Label for="fname" class="block text-sm font-medium text-gray-700"
