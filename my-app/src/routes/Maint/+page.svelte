@@ -70,39 +70,5 @@
       margin-bottom: 1.5rem;
     }
     
-    .contact-form {
-      margin-top: 2rem;
-    }
-    
-    .contact-form label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #333;
-    }
-    
-    .contact-form input {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-    
-    .contact-form button {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      background-color: #ff5722;
-      color: #fff;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    
-    .contact-form button:hover {
-      background-color: #e64a19;
-    }
-    
-    #countdown {
-      font-weight: bold;
-      color: #ff5722;
-    }
+
     </style>
