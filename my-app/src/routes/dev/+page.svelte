@@ -197,16 +197,17 @@
 	};
 
 	//Login handle----------------------------------------------------------------------------------------------
-
+		//ยังแก้บั้คไม่เสร็จจจจจ
 	const isLoggedIn = writable(false);
 
 	const token = Cookies.get('authUser');
 	onMount(async () => {
 		if (token) {
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
-				.post({ token })
+				.headers({ 'Content-Type': 'application/json' })
+				.post({ token: Cookies.get('authUser') })
 				.unauthorized(() => {
-					window.location.pathname = '/';
+					// window.location.pathname = '/';
 				})
 				.res(() => {
 					isLoggedIn.set(true);
