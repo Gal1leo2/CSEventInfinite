@@ -23,7 +23,7 @@
 			})
 			.res(async (e) => {
 				toast.success('Login Successfully!');
-				Cookies.set('authUser', username);
+				localStorage.setItem('jt',e.token)
 				window.location.pathname = 'dev';
 			});
 	};

@@ -14,7 +14,7 @@
 	import Cookies from 'js-cookie';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { writable } from 'svelte/store';
-	import * as Card from "$lib/components/ui/card";
+	import * as Card from '$lib/components/ui/card';
 
 	const df = new DateFormatter('en-US', {
 		dateStyle: 'long'
@@ -38,7 +38,7 @@
 		course_lecture: string;
 		course_type: string;
 		course_date: string;
-		is_visible:boolean;
+		is_visible: boolean;
 	}
 
 	//เหมือนจะไม่ใช้แล้ว
@@ -85,8 +85,10 @@
 		formData.append('course_location', courseLocation || '');
 		formData.append('course_team', courseTeam || '');
 
+		const token = localStorage.getItem('authUser');
 		try {
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
+				.headers({ Authorization: `Bearer ${token}` })
 				.post(formData)
 				.res(() => {
 					toast.success('Create course complete.');
@@ -174,27 +176,25 @@
 	}
 	//Gunner
 	const toggleCourseVisibility = async (courseId: string, currentVisibility: boolean) => {
-	try {
-		const newVisibility = !currentVisibility;
+		try {
+			const newVisibility = !currentVisibility;
 
-		await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
-			.put({ is_visible: newVisibility })
-			.res(() => {
-				toast.success('Course visibility updated.');
-				const updatedCourses = datacourse.map((course) =>
-					course.course_id === courseId
-						? { ...course, is_visible: newVisibility }
-						: course
-				);
-				datacourse = updatedCourses;
-			})
-			.catch(() => {
-				toast.error("Failed to update course visibility.");
-			});
-	} catch (error) {
-		console.error(error);
-	}
-};
+			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
+				.put({ is_visible: newVisibility })
+				.res(() => {
+					toast.success('Course visibility updated.');
+					const updatedCourses = datacourse.map((course) =>
+						course.course_id === courseId ? { ...course, is_visible: newVisibility } : course
+					);
+					datacourse = updatedCourses;
+				})
+				.catch(() => {
+					toast.error('Failed to update course visibility.');
+				});
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
 	//Login handle----------------------------------------------------------------------------------------------
 
@@ -224,13 +224,12 @@
 	});
 </script>
 
-
 {#if $isLoggedIn}
-	<div class="flex h-screen w-full ">
+	<div class="flex h-screen w-full">
 		<div class="m-5 flex w-full flex-col border border-[red]">
-			<h1 class="text-center text-2xl font-bold p-5">Edit Courses</h1>
+			<h1 class="p-5 text-center text-2xl font-bold">Edit Courses</h1>
 			<!-- post Blog -->
-			<div class="flex flex-col h-full  justify-center gap-5 border border-[green] m-5 p-5">
+			<div class="m-5 flex h-full flex-col justify-center gap-5 border border-[green] p-5">
 				<!-- CREATE COURSE -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
@@ -421,7 +420,6 @@
 												<td class="px-4 py-2">{Student.Fname} {Student.Lname}</td>
 												<td class="px-4 py-2">{Student.student_id}</td>
 												<td class="px-4 py-2">{Student.laptop}</td>
-
 											</tr>
 										{/each}
 									</tbody>
@@ -445,7 +443,9 @@
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 						Change courses visibility
 					</Dialog.Trigger>
-					<Dialog.Content class="rounded-lg bg-white p-4 shadow-lg max-w-[40vw] max-h-[80vh] overflow-auto">
+					<Dialog.Content
+						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
+					>
 						<div class="grid gap-4">
 							{#each datacourse as course}
 								<Card.Root class="col-span-full">
@@ -458,14 +458,18 @@
 									<Card.Content>
 										<div class="flex items-center justify-between">
 											<div class="flex items-center">
-												<span class={course.is_visible ? 'text-green-500 font-semibold text-xs' : 'text-red-500 font-semibold text-xs'}>
+												<span
+													class={course.is_visible
+														? 'text-xs font-semibold text-green-500'
+														: 'text-xs font-semibold text-red-500'}
+												>
 													{course.is_visible ? 'Visible' : 'Hidden'}
 												</span>
 											</div>
-					
+
 											<Button
 												on:click={() => toggleCourseVisibility(course.course_id, course.is_visible)}
-												class="bg-gray-200 hover:bg-gray-300 text-black text-xs font-bold py-1 px-2 rounded"
+												class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
 											>
 												Change Status
 											</Button>
@@ -476,28 +480,27 @@
 						</div>
 					</Dialog.Content>
 				</Dialog.Root>
-				
 			</div>
 		</div>
 		<!-- Right Box -->
 		<div class="m-5 flex w-full flex-col">
 			<div class="flex w-full flex-col border-b bg-gray-300 p-5">
 				<div class="flex w-full justify-between text-center">
-					<h1 class="font-bold w-1/5">COURSE_ID</h1>
-					<h1 class="font-bold w-1/5">NAME</h1>
-					<h1 class="font-bold w-1/5">LECTURE</h1>
-					<h1 class="font-bold w-1/5">TYPE</h1>
-					<h1 class="font-bold w-1/5">DATE</h1>
+					<h1 class="w-1/5 font-bold">COURSE_ID</h1>
+					<h1 class="w-1/5 font-bold">NAME</h1>
+					<h1 class="w-1/5 font-bold">LECTURE</h1>
+					<h1 class="w-1/5 font-bold">TYPE</h1>
+					<h1 class="w-1/5 font-bold">DATE</h1>
 				</div>
 			</div>
 			{#each datacourse as data}
 				<div class="flex w-full flex-col border-b bg-[#ffffff] p-3">
-					<div class="flex w-full gap-5 justify-between text-center items-center">
-						<h1 class=" text-xs w-1/5">{data.course_id}</h1>
-						<h1 class=" text-xs w-1/5">{data.course_name}</h1>
-						<h1 class=" text-xs w-1/5">{data.course_lecture}</h1>
-						<h1 class=" text-xs w-1/5">{data.course_type}</h1>
-						<h1 class=" text-xs w-1/5">{data.course_date}</h1>
+					<div class="flex w-full items-center justify-between gap-5 text-center">
+						<h1 class=" w-1/5 text-xs">{data.course_id}</h1>
+						<h1 class=" w-1/5 text-xs">{data.course_name}</h1>
+						<h1 class=" w-1/5 text-xs">{data.course_lecture}</h1>
+						<h1 class=" w-1/5 text-xs">{data.course_type}</h1>
+						<h1 class=" w-1/5 text-xs">{data.course_date}</h1>
 					</div>
 				</div>
 			{/each}
