@@ -143,6 +143,15 @@
 	}
 	onMount(() => {
 		fetchCoursesDetails(id);
+		//ป้องกันการกด คลิ้กขวา หรือ F12
+		// document.addEventListener('keydown', (e: KeyboardEvent) => {
+		// 	if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+		// 		e.preventDefault();
+		// 	}
+		// });
+		// document.addEventListener('contextmenu', (e: MouseEvent) => {
+		// 	e.preventDefault();
+		// });
 	});
 </script>
 
