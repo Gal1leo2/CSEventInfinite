@@ -15,7 +15,6 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
-
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -44,28 +43,49 @@
 		return String(error);
 	}
 
+	const csrf = async () => {
+		try {
+			const response = await wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+				.get()
+				.json<{ csrfToken: string }>(); // Use the interface
+			console.log('csrf', response.csrfToken);
+			return response.csrfToken; // Access the csrfToken
+		} catch (error) {
+			console.error('Failed to fetch CSRF token:', error);
+			throw new Error('Failed to fetch CSRF token'); // Handle errors as needed
+		}
+	};
+
 	async function fetchCoursesDetails(id: string) {
 		try {
+			const csrfToken = await csrf();
 			isLoading.set(true);
-			
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse/${id}`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch courses');
-			}
-			const data: Course[] = await response.json();
-			data.forEach((course) => (course.course_image = course.course_img));
-			courses.set(data);
+
+			const response = await wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse/${id}`)
+				.headers({
+					'X-CSRF-Token': csrfToken
+					
+				})
+				.get()
+				.json<Course[]>();
+
+			// const data: Course[] = await response.json();
+			response.forEach((course) => (course.course_image = course.course_img));
+			// courses.set(data);
+			courses.set(response);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
 		} finally {
 			isLoading.set(false);
 		}
 	}
+
 	let std_id: string;
 	let Fname: string;
 	let Lname: string;
 	let isSubmitting = writable(false); // New state JA
 	let stdYear: string;
+
 	//SUBMIT THE FORM
 	const submitform = async () => {
 		const laptop = $isChecked;
@@ -73,7 +93,11 @@
 		isSubmitting.set(true); // Start showing the loading popup
 
 		try {
-			await wretch(`${import.meta.env.VITE_API_BASE_URL}/user/enroll`)
+			const csrfToken = await csrf();
+			await wretch(`${import.meta.env.VITE_API_BASE_URL}/course/enroll`)
+				.headers({
+					'x-csrf-token': csrfToken 
+				})
 				.post({
 					student_id: std_id,
 					course_id: id,
@@ -99,20 +123,20 @@
 					}
 				});
 		} catch (error) {
-			console.error('Error submitting form:', error);
+			// console.error('Error submitting form:', error);
 			alertMessage.set('Network error. Please try again later.');
 			showAlertFail.set(true);
 			showAlert.set(false);
 		} finally {
-			isSubmitting.set(false); 
+			isSubmitting.set(false);
 		}
 	};
-	//check student id num and 8 digit 
+	//check student id num and 8 digit
 	let studentIdError = writable<string | null>(null);
 	function validateStudentId() {
-		const idRegex = /^\d{8}$/; 
+		const idRegex = /^\d{8}$/;
 		if (!idRegex.test(std_id)) {
-			studentIdError.set("รหัสนักศึกษาต้องมีตัวเลข 8 หลักเท่านั้น");
+			studentIdError.set('รหัสนักศึกษาต้องมีตัวเลข 8 หลักเท่านั้น');
 		} else {
 			studentIdError.set(null);
 		}
@@ -224,7 +248,9 @@
 									<div class="py-4">
 										<div class="space-y-4">
 											<div>
-												<Label for="stuid" class="block text-sm font-medium text-gray-700">Student ID</Label>
+												<Label for="stuid" class="block text-sm font-medium text-gray-700"
+													>Student ID</Label
+												>
 												<Input
 													id="stuid"
 													bind:value={std_id}
@@ -232,7 +258,7 @@
 													on:blur={validateStudentId}
 												/>
 												{#if $studentIdError}
-													<p class="text-red-500 text-sm">{$studentIdError}</p>
+													<p class="text-sm text-red-500">{$studentIdError}</p>
 												{/if}
 											</div>
 											<div>

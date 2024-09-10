@@ -84,11 +84,8 @@
 		formData.append('course_lecture', courseLecture || '');
 		formData.append('course_location', courseLocation || '');
 		formData.append('course_team', courseTeam || '');
-
-		const token = localStorage.getItem('authUser');
 		try {
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
-				.headers({ Authorization: `Bearer ${token}` })
 				.post(formData)
 				.res(() => {
 					toast.success('Create course complete.');
@@ -146,16 +143,57 @@
 	let filteredStudents = writable<getuser[]>([]);
 	let error = writable<string>('');
 	let allStudents: getuser[] = [];
+	let allCourse: Course[] = [];
+
+	const csrf = async () => {
+		try {
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+				.get()
+				.json<{ csrfToken: string }>(); // Use the interface
+				console.log("csrf" ,response.csrfToken)
+			return response.csrfToken; // Access the csrfToken
+		} catch (error) {
+			console.error('Failed to fetch CSRF token:', error);
+			throw new Error('Failed to fetch CSRF token'); // Handle errors as needed
+		}
+	};
+
 
 	async function fetchStudents() {
 		try {
+			const csrfToken = await csrf();
 			isLoading.set(true);
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch students');
-			}
-			allStudents = await response.json(); // Store all students for filtering
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
+			.headers({
+				'X-CSRF-Token': csrfToken
+			})
+			.get()
+			.json<getuser[]>()
+			allStudents = response;
+			datauser = response
 			students.set(allStudents); // Set the students store
+			console.log(allStudents)
+		} catch (err) {
+			error.set(getErrorMessage(err));
+		} finally {
+			isLoading.set(false);
+		}
+	}
+
+	async function fetchCourses() {
+		try {
+			const csrfToken = await csrf();
+			isLoading.set(true);
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
+			.headers({
+				'X-CSRF-Token': csrfToken
+			})
+			.get()
+			.json<Course[]>()
+			allCourse = response;
+			datacourse = response
+			students.set(allStudents); // Set the students store
+			console.log(allStudents)
 		} catch (err) {
 			error.set(getErrorMessage(err));
 		} finally {
@@ -200,12 +238,19 @@
 		//ยังแก้บั้คไม่เสร็จจจจจ
 	const isLoggedIn = writable(false);
 
-	const token = Cookies.get('authUser');
 	onMount(async () => {
+		//auth------------------------
+		const token = await localStorage.getItem('auth')
+		console.log(token)
 		if (token) {
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
-				.headers({ 'Content-Type': 'application/json' })
-				.post({ token: Cookies.get('authUser') })
+				.headers(
+					{
+						"Content-type": "application/json",
+						'Authorization': `Bearer ${token}`
+					}
+				)
+				.post({})
 				.unauthorized(() => {
 					// window.location.pathname = '/';
 				})
@@ -215,13 +260,8 @@
 		} else {
 			window.location.pathname = 'home';
 		}
-		const resUser = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`);
-		const resCourse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`);
-		const DataU: getuser[] = await resUser.json();
-		const DataC: Course[] = await resCourse.json();
-		datauser = DataU;
-		datacourse = DataC;
 		fetchStudents();
+		fetchCourses();
 	});
 </script>
 

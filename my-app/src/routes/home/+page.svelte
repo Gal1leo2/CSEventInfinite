@@ -6,10 +6,12 @@
 	import { onMount } from 'svelte';
 	import { writable, derived } from 'svelte/store';
 	import { LibraryBig } from 'lucide-svelte';
+	import { UsersRound } from 'lucide-svelte';
 	import Cookies from 'js-cookie';
 	import Wretch from 'wretch';
 	import { toast } from 'svelte-sonner';
 	import { Toaster } from 'svelte-sonner';
+	import { Group } from 'lucide-svelte';
 
 	interface Course {
 		course_id: string;
@@ -40,15 +42,31 @@
 		return String(error);
 	}
 
+	const csrf = async () => {
+		try {
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+				.get()
+				.json<{ csrfToken: string }>(); // Use the interface
+				console.log("csrf" ,response.csrfToken)
+			return response.csrfToken; // Access the csrfToken
+		} catch (error) {
+			console.error('Failed to fetch CSRF token:', error);
+			throw new Error('Failed to fetch CSRF token'); // Handle errors as needed
+		}
+	};
+
 	async function fetchCourses() {
 		try {
+			const csrfToken = await csrf();
+			console.log("course",csrfToken)
 			isLoading.set(true);
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch courses');
-			}
-			const data: Course[] = await response.json();
-			courses.set(data);
+			const response =  await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
+			.headers({
+				'X-CSRF-Token': csrfToken
+			})
+			.get()
+			.json<Course[]>()
+			courses.set(response)
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
 		} finally {
@@ -58,13 +76,15 @@
 
 	async function fetchStudents() {
 		try {
+			const csrfToken = await csrf();
 			isLoading.set(true);
-			const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch students');
-			}
-			const data: Student[] = await response.json();
-			students.set(data);
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
+			.headers({
+				'X-CSRF-Token': csrfToken
+			})
+			.get()
+			.json<Student[]>();
+			students.set(response);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
 		} finally {
@@ -120,18 +140,10 @@
 			});
 	};
 
-	onMount(() => {
+	onMount(async () => {
+		// await csrf();
 		fetchCourses();
 		fetchStudents();
-		//ป้องกันการกด คลิ้กขวา หรือ F12
-		// document.addEventListener('keydown', (e: KeyboardEvent) => {
-		// 	if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-		// 		e.preventDefault();
-		// 	}
-		// });
-		// document.addEventListener('contextmenu', (e: MouseEvent) => {
-		// 	e.preventDefault();
-		// });
 	});
 </script>
 
@@ -168,7 +180,7 @@
 			<Card.Root>
 				<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
 					<Card.Title class="text-sm font-medium">Events that can be registered</Card.Title>
-					<CalendarArrowDown class="h-6 w-6 text-muted-foreground" />
+					<CalendarArrowDown class="text-muted-foreground h-6 w-6" />
 				</Card.Header>
 				<Card.Content>
 					<div class="text-2xl font-bold">{$totalCourses}</div>
@@ -184,7 +196,7 @@
 						<Card.Title>Courses</Card.Title>
 						<Card.Description>Courses available for registration</Card.Description>
 					</div>
-					<LibraryBig class="ml-2 h-6 w-6 text-muted-foreground" />
+					<LibraryBig class="text-muted-foreground ml-2 h-6 w-6" />
 				</Card.Header>
 				<Card.Content>
 					<Table.Root>
@@ -215,7 +227,7 @@
 													d="M20 17a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H9.46c.35.61.54 1.3.54 2h10v11h-9v2m4-10v2H9v13H7v-6H5v6H3v-8H1.5V9a2 2 0 0 1 2-2zM8 4a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2a2 2 0 0 1 2 2"
 												/>
 											</svg>
-											<div class="block text-sm text-muted-foreground md:inline">
+											<div class="text-muted-foreground block text-sm md:inline">
 												{course.course_lecture}
 											</div>
 										</div>
@@ -237,7 +249,7 @@
 													d="M18 18.72a9.1 9.1 0 0 0 3.741-.479q.01-.12.01-.241a3 3 0 0 0-4.692-2.478m.94 3.197l.001.031q0 .337-.037.666A11.94 11.94 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6 6 0 0 1 6 18.719m12 0a5.97 5.97 0 0 0-.941-3.197m0 0A6 6 0 0 0 12 12.75a6 6 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72a9 9 0 0 0 3.74.477m.94-3.197a5.97 5.97 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0a3 3 0 0 1 6 0m6 3a2.25 2.25 0 1 1-4.5 0a2.25 2.25 0 0 1 4.5 0m-13.5 0a2.25 2.25 0 1 1-4.5 0a2.25 2.25 0 0 1 4.5 0"
 												/>
 											</svg>
-											<div class="mr-2 block text-sm text-muted-foreground md:inline">
+											<div class="text-muted-foreground mr-2 block text-sm md:inline">
 												{course.course_team}
 											</div>
 										</div>

@@ -10,22 +10,30 @@
 	let username: string;
 	let password: string;
 	const login = async () => {
-		const res = await Wretch('https://nodejsbackend-ten.vercel.app/admin/login')
-			.post({
-				username: username,
-				password: password
-			})
-			.badRequest(async (e) => {
-				toast.warning(JSON.parse(e.message).message);
-			})
-			.notFound(async (e) => {
-				toast.error(JSON.parse(e.message).message);
-			})
-			.res( async(e) => {
-				const data = await e.json()
-				toast.success('Login Successfully!');
-				Cookies.set('authUser', data.token, { expires: 1 });
-			});
+		try {
+			const res = await Wretch('https://nodejsbackend-ten.vercel.app/admin/login')
+				.post({
+					username: username,
+					password: password
+				})
+				.badRequest(async (e) => {
+					const errorData = await e.json();
+					toast.warning(errorData.message);
+				})
+				.notFound(async (e) => {
+					const errorData = await e.json();
+					toast.error(errorData.message);
+				})
+				.res(async (e) => {
+					const data = await e.json();
+					toast.success('Login Successfully!');
+					localStorage.setItem('auth', data.token);
+					window.location.pathname = 'dev'; // Ensure this path is correct
+				});
+		} catch (error) {
+			toast.error('An unexpected error occurred');
+			console.error(error);
+		}
 	};
 </script>
 
