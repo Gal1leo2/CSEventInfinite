@@ -99,16 +99,16 @@
 	}
 
 	let enrollCount = derived([courses, students], ([$courses, $students]) => {
+	// Sort courses by date, without filtering by visibility
+	const sortedCourses = sortByDate($courses);
 
-		const visibleCourses = $courses.filter((course) => course.is_visible === true);
-
-		const sortedCourses = sortByDate(visibleCourses);
-
-		return sortedCourses.map((course) => {
-			let count = $students.filter((student) => student.course_id === course.course_id).length;
-			return { ...course, enroll_count: count };
-		});
+	// Map each course and calculate the enroll count
+	return sortedCourses.map((course) => {
+		let count = $students.filter((student) => student.course_id === course.course_id).length;
+		return { ...course, enroll_count: count };
 	});
+});
+
 
 	let totalCourses = derived(courses, ($courses) => {
 		return $courses.filter((course) => course.is_visible === true).length;
@@ -256,10 +256,17 @@
 										<span>{course.enroll_count}</span>
 									</Table.Cell>
 									<Table.Cell class="text-right">
-										<a href="/course/{course.course_id}" class={buttonVariants({})}>
-											<b>See details</b>
-										</a>
+										{#if course.is_visible}
+											<a href="/course/{course.course_id}" class={buttonVariants({})}>
+												<b>See details</b>
+											</a>
+										{:else}
+										<button class={buttonVariants({ variant: 'ghost' })} disabled>
+											<b>To be Announced</b>
+											</button>
+										{/if}
 									</Table.Cell>
+									
 								</Table.Row>
 							{/each}
 						</Table.Body>
