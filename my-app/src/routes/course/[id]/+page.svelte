@@ -48,7 +48,6 @@
 			const response = await wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
 				.json<{ csrfToken: string }>(); // Use the interface
-			console.log('csrf', response.csrfToken);
 			return response.csrfToken; // Access the csrfToken
 		} catch (error) {
 			console.error('Failed to fetch CSRF token:', error);

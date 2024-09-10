@@ -134,7 +134,11 @@
 			.res(() => {
 				toast.success('Course deleted successfully.');
 				datacourse = datacourse.filter((course) => course.course_id !== courseId);
+			})
+			.catch(() => {
+				toast.error("This didn't work. Please try again.");
 			});
+			
 	};
 
 	// Show students in each course

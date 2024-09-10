@@ -47,7 +47,6 @@
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
 				.json<{ csrfToken: string }>(); // Use the interface
-				console.log("csrf" ,response.csrfToken)
 			return response.csrfToken; // Access the csrfToken
 		} catch (error) {
 			console.error('Failed to fetch CSRF token:', error);
@@ -58,7 +57,6 @@
 	async function fetchCourses() {
 		try {
 			const csrfToken = await csrf();
-			console.log("course",csrfToken)
 			isLoading.set(true);
 			const response =  await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
 			.headers({
@@ -101,9 +99,6 @@
 	}
 
 	let enrollCount = derived([courses, students], ([$courses, $students]) => {
-		$courses.forEach((course) => {
-			console.log(course.course_name, course.is_visible);
-		});
 
 		const visibleCourses = $courses.filter((course) => course.is_visible === true);
 
