@@ -255,10 +255,14 @@
 					}
 				)
 				.post({})
-				.unauthorized(() => {
-					// window.location.pathname = '/';
+				.badRequest(()=>{
+					window.location.pathname = 'home';
+
 				})
-				.res(() => {
+				.unauthorized(async () => {
+					window.location.pathname = 'home';
+				})
+				.res( async () => {
 					isLoggedIn.set(true);
 				});
 		} else {
