@@ -14,25 +14,11 @@
 	import { Group } from 'lucide-svelte';
 	import { redirect } from '@sveltejs/kit';
 	import { supabase } from '../userauth/supabase'; // Ensure the path to supabase.js is correct
+	import { goto } from '$app/navigation';
+	import type { Session, User } from '@supabase/supabase-js';
 
-export async function load() {
-    try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error || !session || !session.user) {
-            throw redirect(303, '/userauth');
-        }
-        
-        return {
-            props: {
-                user: session.user
-            }
-        };
-    } catch (error) {
-        console.error('Error loading page data:', error);
-        throw redirect(303, '/userauth');
-    }
-}
+	let user = writable<User | null>(null);
+
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -155,8 +141,21 @@ export async function load() {
 	};
 
 	onMount(async () => {
-		fetchCourses();
-		fetchStudents();
+		try {
+			const { data: { session } } = await supabase.auth.getSession();
+
+			if (!session || !session.user) {
+				throw new Error('Unauthorized');
+			}
+			user.set(session.user);
+			await fetchCourses();
+			await fetchStudents();
+		} catch (err) {
+			error.set(getErrorMessage(err));
+			goto('/userauth');
+		} finally {
+			isLoading.set(false);
+		}
 	});
 </script>
 
@@ -164,13 +163,31 @@ export async function load() {
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
 <div class="fontUse flex min-h-screen min-w-max flex-col">
-	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
-		<nav
-			class="flex w-full flex-col justify-between gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-3 lg:gap-4"
-		>
-			<a href="##" class="font-bold text-[#E35205] transition-colors">
+	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white  px-4 md:px-8">
+		<nav class="flex w-full justify-between items-center text-lg font-medium">
+			<a href="/" class="text-2xl font-bold text-[#E35205] transition-colors hover:text-[#d94d3f]">
 				CSEvent - Short Course Registration System
 			</a>
+	
+			<!-- User information displayed on the right -->
+			<div class="flex items-center gap-6">
+				{#if $user}
+					<span class="font-medium text-gray-700">Welcome, <span class="font-semibold text-[#E35205]">{$user.email}</span></span>
+					<button 
+						class="bg-transparent hover:bg-orange-500 text-black  hover:text-white py-1 px-3 border border-orange-300 hover:border-transparent rounded"
+						on:click={async () => {
+							await supabase.auth.signOut();
+							goto('/userauth'); // Redirect to login after sign-out
+						}}
+					>
+						Logout
+					</button>
+				{:else}
+					<a href="/userauth" class="text-sm font-medium text-gray-700 hover:text-gray-900 transition duration-300">
+						Login
+					</a>
+				{/if}
+			</div>
 		</nav>
 	</header>
 

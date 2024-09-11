@@ -15,6 +15,12 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
+	import { supabase } from '../../userauth/supabase'; // Ensure the path to supabase.js is correct
+	import { goto } from '$app/navigation';
+	import type { Session, User } from '@supabase/supabase-js';
+
+	let user = writable<User | null>(null);
+
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -164,8 +170,22 @@
 			lastNameError.set(null);
 		}
 	}
-	onMount(() => {
-		fetchCoursesDetails(id);
+	onMount(async() => {
+		try {
+			const { data: { session } } = await supabase.auth.getSession();
+
+			if (!session || !session.user) {
+				throw new Error('Unauthorized');
+			}
+			user.set(session.user);
+			await fetchCoursesDetails(id);
+		} catch (err) {
+			error.set(getErrorMessage(err));
+			goto('/userauth');
+		} finally {
+			isLoading.set(false);
+		}
+
 		//ป้องกันการกด คลิ้กขวา หรือ F12
 		// document.addEventListener('keydown', (e: KeyboardEvent) => {
 		// 	if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
