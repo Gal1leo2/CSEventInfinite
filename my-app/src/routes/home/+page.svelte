@@ -12,7 +12,27 @@
 	import { toast } from 'svelte-sonner';
 	import { Toaster } from 'svelte-sonner';
 	import { Group } from 'lucide-svelte';
+	import { redirect } from '@sveltejs/kit';
+	import { supabase } from '../userauth/supabase'; // Ensure the path to supabase.js is correct
 
+export async function load() {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error || !session || !session.user) {
+            throw redirect(303, '/userauth');
+        }
+        
+        return {
+            props: {
+                user: session.user
+            }
+        };
+    } catch (error) {
+        console.error('Error loading page data:', error);
+        throw redirect(303, '/userauth');
+    }
+}
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -58,13 +78,13 @@
 		try {
 			const csrfToken = await csrf();
 			isLoading.set(true);
-			const response =  await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
-			.headers({
-				'X-CSRF-Token': csrfToken
-			})
-			.get()
-			.json<Course[]>()
-			courses.set(response)
+			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
+				.headers({
+					'X-CSRF-Token': csrfToken
+				})
+				.get()
+				.json<Course[]>();
+			courses.set(response);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
 		} finally {
@@ -77,11 +97,11 @@
 			const csrfToken = await csrf();
 			isLoading.set(true);
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
-			.headers({
-				'X-CSRF-Token': csrfToken
-			})
-			.get()
-			.json<Student[]>();
+				.headers({
+					'X-CSRF-Token': csrfToken
+				})
+				.get()
+				.json<Student[]>();
 			students.set(response);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
@@ -99,16 +119,15 @@
 	}
 
 	let enrollCount = derived([courses, students], ([$courses, $students]) => {
-	// Sort courses by date, without filtering by visibility
-	const sortedCourses = sortByDate($courses);
+		// Sort courses by date, without filtering by visibility
+		const sortedCourses = sortByDate($courses);
 
-	// Map each course and calculate the enroll count
-	return sortedCourses.map((course) => {
-		let count = $students.filter((student) => student.course_id === course.course_id).length;
-		return { ...course, enroll_count: count };
+		// Map each course and calculate the enroll count
+		return sortedCourses.map((course) => {
+			let count = $students.filter((student) => student.course_id === course.course_id).length;
+			return { ...course, enroll_count: count };
+		});
 	});
-});
-
 
 	let totalCourses = derived(courses, ($courses) => {
 		return $courses.filter((course) => course.is_visible === true).length;
@@ -136,7 +155,6 @@
 	};
 
 	onMount(async () => {
-		// await csrf();
 		fetchCourses();
 		fetchStudents();
 	});
@@ -261,12 +279,11 @@
 												<b>See details</b>
 											</a>
 										{:else}
-										<button class={buttonVariants({ variant: 'ghost' })} disabled>
-											<b>To be Announced</b>
+											<button class={buttonVariants({ variant: 'ghost' })} disabled>
+												<b>To be Announced</b>
 											</button>
 										{/if}
 									</Table.Cell>
-									
 								</Table.Row>
 							{/each}
 						</Table.Body>
