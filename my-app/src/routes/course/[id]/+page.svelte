@@ -143,6 +143,7 @@
 	//check first and last name type in thai only
 	let firstNameError = writable<string | null>(null);
 	let lastNameError = writable<string | null>(null);
+	let nameError = writable(true);
 
 	function isThaiOnly(input: string): boolean {
 		const thaiRegex = /^[\u0E00-\u0E7F\s]+$/; // \s allows spaces
@@ -152,15 +153,21 @@
 	function validateFirstName() {
 		if (!isThaiOnly(Fname)) {
 			firstNameError.set('กรุณากรอกชื่อเป็นภาษาไทยเท่านั้น');
+			nameError.set(false);
+
+
 		} else {
+			nameError.set(true);
 			firstNameError.set(null);
 		}
 	}
 
 	function validateLastName() {
 		if (!isThaiOnly(Lname)) {
+			nameError.set(false);
 			lastNameError.set('กรุณากรอกนามสกุลเป็นภาษาไทยเท่านั้น');
 		} else {
+			nameError.set(true);
 			lastNameError.set(null);
 		}
 	}
@@ -272,6 +279,7 @@
 												/>
 												{#if $firstNameError}
 													<p class="text-sm text-red-500">{$firstNameError}</p>
+
 												{/if}
 											</div>
 
@@ -335,7 +343,11 @@
 									</div>
 
 									<Dialog.Footer>
-										<Button type="submit" on:click={submitform}>Enroll</Button>
+										{#if $nameError}
+											<Button type="submit" on:click={submitform}>Enroll</Button>
+										{:else}
+											<Button type="button" disabled class="disabled">Enroll</Button>
+										{/if}
 									</Dialog.Footer>
 									{#if $isSubmitting}
 										<div
