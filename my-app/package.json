@@ -45,6 +45,7 @@
 		"embla-carousel-svelte": "^8.1.7",
 		"formsnap": "^1.0.1",
 		"js-cookie": "^3.0.5",
+		"jspdf": "^2.5.1",
 		"lucide-svelte": "^0.416.0",
 		"marked": "^14.1.1",
 		"mode-watcher": "^0.4.1",
