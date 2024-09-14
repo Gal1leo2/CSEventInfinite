@@ -152,29 +152,7 @@
 			console.error(error);
 		}
 	};
-    // const printPDF = () => {
-	// 	const doc = new jsPDF();
-	// 	doc.setFontSize(18);
-	// 	doc.text('Enrolled Students', 14, 22);
 
-	// 	if ($filteredStudents.length > 0) {
-	// 		const tableData = $filteredStudents.map(student => [
-	// 			`${student.Fname} ${student.Lname}`, 
-	// 			student.student_id, 
-	// 			student.laptop ? 'Yes' : 'No'
-	// 		]);
-
-	// 		doc.autoTable({
-	// 			head: [['Student Name', 'Student ID', 'Can Bring Laptop?']],
-	// 			body: tableData,
-	// 			startY: 30,
-	// 		});
-	// 	} else {
-	// 		doc.text('No students enrolled in this course.', 14, 30);
-	// 	}
-
-	// 	doc.save('students-list.pdf');
-	// };
 
 	//Login handle----------------------------------------------------------------------------------------------
 		//ยังแก้บั้คไม่เสร็จจจจจ
@@ -214,7 +192,7 @@
 {#if $isLoggedIn}
 	<div class="flex h-screen w-full">
 		<div class="m-5 flex w-full flex-col border border-[red]">
-			<h1 class="p-5 text-center text-2xl font-bold">Edit Courses</h1>
+			<h1 class="p-5 text-center text-2xl font-bold">For Staff Console</h1>
 			<!-- post Blog -->
 			<div class="m-5 flex h-full flex-col justify-center gap-5 border border-[green] p-5">
 				<!-- show student in each course -->
@@ -246,15 +224,6 @@
                                     {/each}
                                 </select>
                             </div>
-                
-                            <!-- Print PDF Button -->
-                            <!-- {#if $filteredStudents.length > 0}
-                                <button
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150 ease-in-out"
-                                    on:click={printPDF}>
-                                    Print PDF
-                                </button>
-                            {/if} -->
                 
                             <!-- Loading Indicator -->
                             {#if $isLoading}
@@ -368,28 +337,32 @@
 			{/each}
 		</div>
 	</div>
-	<div class="flex">
-		<div class="m-5 flex w-full flex-col">
-			<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
-				<div class="flex w-full justify-between">
-					<h1 class="font-mono font-bold">ID</h1>
-					<h1 class="font-mono font-bold">STUDENT_ID</h1>
-					<h1 class="font-mono font-bold">FIRSTNAME</h1>
-					<h1 class="font-mono font-bold">LASTNAME</h1>
-				</div>
+	<div class="flex justify-center p-6">
+		<div class="w-full max-w-4xl flex flex-col space-y-4">
+		  <!-- Header -->
+		  <div class="bg-gray-100 p-5 rounded-lg shadow-md">
+			<div class="grid grid-cols-4 gap-4 text-center font-mono font-bold text-gray-700">
+			  <h1>ID</h1>
+			  <h1>STUDENT ID</h1>
+			  <h1>FIRST NAME</h1>
+			  <h1>LAST NAME</h1>
 			</div>
-			{#each datauser as data}
-				<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
-					<div class="flex w-full justify-between">
-						<h1 class="font-mono font-bold">{data.id}</h1>
-						<h1 class="font-mono font-bold">{data.student_id}</h1>
-						<h1 class="font-mono font-bold">{data.Fname}</h1>
-						<h1 class="font-mono font-bold">{data.Lname}</h1>
-					</div>
-				</div>
-			{/each}
+		  </div>
+	  
+		  <!-- Data Rows -->
+		  {#each datauser as data}
+			<div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 ease-in-out">
+			  <div class="grid grid-cols-4 gap-4 text-center font-mono text-gray-600">
+				<h1>{data.id}</h1>
+				<h1>{data.student_id}</h1>
+				<h1>{data.Fname}</h1>
+				<h1>{data.Lname}</h1>
+			  </div>
+			</div>
+		  {/each}
 		</div>
-	</div>
+	  </div>
+	  
 	<Toaster />
 
 	<style>
