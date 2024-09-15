@@ -1,0 +1,309 @@
+<script lang="ts">
+    import { LibraryIcon } from 'lucide-svelte';
+    import { Input } from '$lib/components/ui/input';
+    import { Button } from '$lib/components/ui/button';
+    import * as AlertDialog from '$lib/components/ui/alert-dialog';
+    import { writable } from 'svelte/store';
+    import toast, { Toaster } from 'svelte-french-toast';
+    import Wretch from 'wretch';
+    import { onMount } from 'svelte';
+
+    // Define types
+    interface getuser {
+        id: string;
+        student_id: string;
+        Fname: string;
+        Lname: string;
+        course_id: string;
+        laptop: boolean;
+    }
+
+    interface Course {
+        course_id: any;
+        course_name: string;
+        course_lecture: string;
+        course_type: string;
+        course_date: string;
+        is_visible: boolean;
+    }
+
+    let datauser: getuser[] = [];
+    let datacourse: Course[] = [];
+    let files: File[] = [];
+    let isUploading: boolean = false;
+    let showAlert: boolean = false;
+    let studentId: string = '';
+    let studentCourses: Course[] = [];
+    let selectedCourse: string = ''; // Changed to string
+    let studentVerified: boolean = false;
+
+    const isLoading = writable(true);
+    const students = writable<getuser[]>([]);
+    const error = writable<string>('');
+
+    const csrf = async () => {
+        try {
+            const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+                .get()
+                .json<{ csrfToken: string }>();
+            return response.csrfToken;
+        } catch (error) {
+            console.error('Failed to fetch CSRF token:', error);
+            throw new Error('Failed to fetch CSRF token');
+        }
+    };
+
+    async function fetchStudents() {
+        try {
+            const csrfToken = await csrf();
+            isLoading.set(true);
+            const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
+                .headers({ 'X-CSRF-Token': csrfToken })
+                .get()
+                .json<getuser[]>();
+            datauser = response;
+            students.set(response);
+        } catch (err) {
+            error.set(getErrorMessage(err));
+        } finally {
+            isLoading.set(false);
+        }
+    }
+
+    async function fetchCourses() {
+        try {
+            const csrfToken = await csrf();
+            isLoading.set(true);
+            const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
+                .headers({ 'X-CSRF-Token': csrfToken })
+                .get()
+                .json<Course[]>();
+            datacourse = response;
+        } catch (err) {
+            error.set(getErrorMessage(err));
+        } finally {
+            isLoading.set(false);
+        }
+    }
+
+    function getErrorMessage(error: unknown): string {
+        if (error instanceof Error) return error.message;
+        return String(error);
+    }
+
+    async function checkStudentId() {
+        const student = datauser.filter((user) => user.student_id === studentId);
+        if (student.length > 0) {
+            const studentCourseIds = student.map((user) => user.course_id);
+            const uniqueCourseIds = [...new Set(studentCourseIds)];
+            studentCourses = datacourse.filter((course) => uniqueCourseIds.includes(course.course_id));
+            studentVerified = true;
+        } else {
+            toast.error('Student ID not found.');
+            studentCourses = [];
+            studentVerified = false;
+        }
+    }
+
+    const handleFileChange = (event: Event) => {
+        const input = event.target as HTMLInputElement;
+        if (input.files) {
+            files = Array.from(input.files).map(file => {
+                // Prepend student ID to file name
+                const newFileName = `${studentId}_${file.name}`;
+                return new File([file], newFileName, { type: file.type });
+            });
+        }
+    };
+
+    const uploadFiles = async () => {
+        if (files.length === 0) {
+            toast.error('Please select files to upload.');
+            return;
+        }
+
+        if (!selectedCourse) {
+            toast.error('Please select a course.');
+            return;
+        }
+
+        isUploading = true;
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        try {
+            const response = await fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Course-ID': selectedCourse, // Send selected course ID
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                toast.success('Files uploaded successfully!');
+            } else {
+                toast.error('Error: ' + result.error);
+            }
+        } catch (error) {
+            toast.error('Error: ' + (error as Error).message);
+        } finally {
+            isUploading = false;
+        }
+    };
+
+    const handleAlertAction = () => {
+        uploadFiles();
+        setShowAlert(false);
+    };
+
+    const setShowAlert = (show: boolean) => {
+        showAlert = show;
+    };
+
+    onMount(() => {
+        fetchStudents();
+        fetchCourses();
+    });
+</script>
+
+<div class="upload-container">
+    {#if !studentVerified}
+        <div>
+            <h1>
+                <LibraryIcon size={24} color="#3182ce" />
+                Enter Student ID
+            </h1>
+            <Input 
+                id="student-id" 
+                type="text" 
+                placeholder="Enter Student ID" 
+                bind:value={studentId}
+                class="file-input"
+            />
+            <Button 
+                class="upload-button mt-4"
+                on:click={checkStudentId}
+            >
+                Check Student ID
+            </Button>
+        </div>
+    {/if}
+
+    {#if studentVerified}
+        <div>
+            <h1>
+                <LibraryIcon size={24} color="#3182ce" />
+                Select Courses and Upload Files
+            </h1>
+            <select bind:value={selectedCourse} class="file-input">
+                <option value="" disabled>Select Course</option>
+                {#each studentCourses as course}
+                    <option value={course.course_id}>{course.course_name}</option>
+                {/each}
+            </select>
+            <Input 
+                id="files" 
+                type="file" 
+                multiple
+                on:change={handleFileChange} 
+                class="file-input"
+            />
+            <Button 
+                class="upload-button mt-4"
+                on:click={() => setShowAlert(true)} 
+                disabled={files.length === 0 || isUploading}
+            >
+                {isUploading ? 'Uploading...' : 'Upload'}
+            </Button>
+
+            {#if showAlert}
+                <AlertDialog.Root open={showAlert} on:openChange={() => setShowAlert(false)}>
+                    <AlertDialog.Trigger />
+                    <AlertDialog.Content>
+                        <AlertDialog.Header>
+                            <AlertDialog.Title>Confirm Upload</AlertDialog.Title>
+                            <AlertDialog.Description>
+                                Are you sure you want to upload these files? This action cannot be undone.
+                            </AlertDialog.Description>
+                        </AlertDialog.Header>
+                        <AlertDialog.Footer>
+                            <AlertDialog.Cancel on:click={() => setShowAlert(false)}>Cancel</AlertDialog.Cancel>
+                            <AlertDialog.Action on:click={handleAlertAction}>Upload</AlertDialog.Action>
+                        </AlertDialog.Footer>
+                    </AlertDialog.Content>
+                </AlertDialog.Root>
+            {/if}
+        </div>
+    {/if}
+
+    <Toaster />
+</div>
+
+<style>
+    :global(body) {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #e2e8f0;
+        margin: 0;
+    }
+
+    .upload-container {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 500px; /* Increased width */
+        width: 100%;
+        border: 1px solid #ddd;
+    }
+
+    h1 {
+        color: #2d3748;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .file-input,
+    select {
+        margin-bottom: 20px;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        width: 100%; /* Ensures the select box fits the container */
+        box-sizing: border-box;
+        background-color: #f9fafb;
+        display: block;
+    }
+
+    .upload-button {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .message {
+        margin-top: 20px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .error {
+        color: #e53e3e;
+    }
+
+    .success {
+        color: #38a169;
+    }
+</style>
