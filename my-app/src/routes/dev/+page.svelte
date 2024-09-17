@@ -1,4 +1,6 @@
+
 <script lang="ts">
+	// @ts-nocheck
 	import { onMount } from 'svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -38,7 +40,7 @@
 		course_lecture: string;
 		course_type: string;
 		course_date: string;
-		is_visible: boolean;
+		is_visible: string;
 	}
 
 	//เหมือนจะไม่ใช้แล้ว
@@ -138,7 +140,6 @@
 			.catch(() => {
 				toast.error("This didn't work. Please try again.");
 			});
-			
 	};
 
 	// Show students in each course
@@ -154,29 +155,27 @@
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
 				.json<{ csrfToken: string }>(); // Use the interface
-				console.log("csrf" ,response.csrfToken)
+			console.log('csrf', response.csrfToken);
 			return response.csrfToken; // Access the csrfToken
 		} catch (error) {
 			console.error('Failed to fetch CSRF token:', error);
 			throw new Error('Failed to fetch CSRF token'); // Handle errors as needed
 		}
 	};
-
-
 	async function fetchStudents() {
 		try {
 			const csrfToken = await csrf();
 			isLoading.set(true);
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
-			.headers({
-				'X-CSRF-Token': csrfToken
-			})
-			.get()
-			.json<getuser[]>()
+				.headers({
+					'X-CSRF-Token': csrfToken
+				})
+				.get()
+				.json<getuser[]>();
 			allStudents = response;
-			datauser = response
+			datauser = response;
 			students.set(allStudents); // Set the students store
-			console.log(allStudents)
+			console.log(allStudents);
 		} catch (err) {
 			error.set(getErrorMessage(err));
 		} finally {
@@ -189,15 +188,15 @@
 			const csrfToken = await csrf();
 			isLoading.set(true);
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
-			.headers({
-				'X-CSRF-Token': csrfToken
-			})
-			.get()
-			.json<Course[]>()
+				.headers({
+					'X-CSRF-Token': csrfToken
+				})
+				.get()
+				.json<Course[]>();
 			allCourse = response;
-			datacourse = response
+			datacourse = response;
 			students.set(allStudents); // Set the students store
-			console.log(allStudents)
+			console.log(allStudents);
 		} catch (err) {
 			error.set(getErrorMessage(err));
 		} finally {
@@ -217,52 +216,46 @@
 		}
 	}
 	//Gunner
-	const toggleCourseVisibility = async (courseId: string, currentVisibility: boolean) => {
+	
+	const updateCourseVisibility = async (courseId: string, newVisibility: string) => {
 		try {
-			const newVisibility = !currentVisibility;
-
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
 				.put({ is_visible: newVisibility })
 				.res(() => {
 					toast.success('Course visibility updated.');
-					const updatedCourses = datacourse.map((course) =>
+					datacourse = datacourse.map((course) =>
 						course.course_id === courseId ? { ...course, is_visible: newVisibility } : course
 					);
-					datacourse = updatedCourses;
-				})
-				.catch(() => {
-					toast.error('Failed to update course visibility.');
 				});
 		} catch (error) {
+			toast.error('Failed to update course visibility.');
 			console.error(error);
 		}
 	};
 
+
 	//Login handle----------------------------------------------------------------------------------------------
-		//ยังแก้บั้คไม่เสร็จจจจจ
+	//ยังแก้บั้คไม่เสร็จจจจจ
 	const isLoggedIn = writable(false);
 
 	onMount(async () => {
 		//auth------------------------
-		const token = await localStorage.getItem('auth')
-		console.log(token)
+		const token = await localStorage.getItem('auth');
+		console.log(token);
 		if (token) {
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
-				.headers(
-					{
-						"Content-type": "application/json",
-						'Authorization': `Bearer ${token}`
-					}
-				)
+				.headers({
+					'Content-type': 'application/json',
+					Authorization: `Bearer ${token}`
+				})
 				.post({})
-				.badRequest(()=>{
+				.badRequest(() => {
 					window.location.pathname = 'home';
-
 				})
 				.unauthorized(async () => {
 					window.location.pathname = 'home';
 				})
-				.res( async () => {
+				.res(async () => {
 					isLoggedIn.set(true);
 				});
 		} else {
@@ -496,7 +489,7 @@
 						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
 					>
 						<div class="grid gap-4">
-							{#each datacourse as course}
+							{#each datacourse as course (course.course_id)}
 								<Card.Root class="col-span-full">
 									<Card.Header class="flex flex-row items-center justify-between">
 										<div class="grid gap-1">
@@ -508,20 +501,32 @@
 										<div class="flex items-center justify-between">
 											<div class="flex items-center">
 												<span
-													class={course.is_visible
+													class={course.is_visible === '1'
 														? 'text-xs font-semibold text-green-500'
-														: 'text-xs font-semibold text-red-500'}
+														: course.is_visible === '2'
+															? 'text-xs font-semibold text-yellow-500'
+															: 'text-xs font-semibold text-red-500'}
 												>
-													{course.is_visible ? 'Visible' : 'Hidden'}
+													{course.is_visible === '1'
+														? 'Visible and can register'
+														: course.is_visible === '2'
+															? 'Visible but registration closed'
+															: 'Not visible'}
 												</span>
 											</div>
 
-											<Button
-												on:click={() => toggleCourseVisibility(course.course_id, course.is_visible)}
-												class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
-											>
-												Change Status
-											</Button>
+											<!-- Dropdown to change visibility status -->
+											<select
+											class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
+											bind:value={course.is_visible} 
+											on:change={(e) => updateCourseVisibility(course.course_id, e.target.value)} 
+										  >
+											<option value="1">Visible and can register</option>
+											<option value="2">Visible but registration closed</option>
+											<option value="3">Not visible</option>
+										  </select>
+										  
+										  
 										</div>
 									</Card.Content>
 								</Card.Root>

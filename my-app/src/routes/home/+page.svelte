@@ -20,7 +20,7 @@
 		course_type: string;
 		course_date: string;
 		course_team: string;
-		is_visible: boolean; //new
+		is_visible: string; 
 	}
 
 	interface Student {
@@ -111,7 +111,7 @@
 
 
 	let totalCourses = derived(courses, ($courses) => {
-		return $courses.filter((course) => course.is_visible === true).length;
+		return $courses.filter((course) => course.is_visible === '1').length;
 	});
 
 	let username: string;
@@ -204,8 +204,8 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each $enrollCount as course}
-								<Table.Row>
+							{#each $enrollCount.filter(course => course.is_visible !== '3') as course}
+							<Table.Row>
 									<Table.Cell>
 										<div class="font-bold">{course.course_name}</div>
 										<div class="mr-8 flex items-center">
@@ -256,13 +256,13 @@
 										<span>{course.enroll_count}</span>
 									</Table.Cell>
 									<Table.Cell class="text-right">
-										{#if course.is_visible}
+										{#if course.is_visible === '1'}
 											<a href="/course/{course.course_id}" class={buttonVariants({})}>
 												<b>See details</b>
 											</a>
-										{:else}
-										<button class={buttonVariants({ variant: 'ghost' })} disabled>
-											<b>To be Announced</b>
+										{:else if course.is_visible === '2'}
+											<button class={buttonVariants({ variant: 'ghost' })} disabled>
+												<b>Registration Closed</b>
 											</button>
 										{/if}
 									</Table.Cell>
