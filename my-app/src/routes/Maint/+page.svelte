@@ -16,13 +16,13 @@
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: #ffffff;
-      overflow: hidden;
+      padding: 20px;
     }
 
     .container {
@@ -33,8 +33,9 @@
       border-radius: 20px;
       box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
       border: 1px solid rgba(255, 255, 255, 0.18);
-      max-width: 100%;
-      width: 500px;
+      width: 90%;
+      max-width: 600px;
+      margin-bottom: 60px;
     }
 
     .icon {
@@ -76,10 +77,11 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1rem;
+      padding: 10px;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(5px);
       text-align: center;
+      font-size: 0.8rem;
     }
 
     footer a {
@@ -105,14 +107,26 @@
     }
 
     @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
       .container {
-        width: 95%;
+        width: 100%;
+        padding: 1.5rem;
+        margin-bottom: 40px;
       }
       h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
       }
       p {
-        font-size: 1rem;
+        font-size: 0.9rem;
+      }
+      .icon {
+        font-size: 4rem;
+      }
+      footer {
+        padding: 5px;
+        font-size: 0.7rem;
       }
     }
   </style>
@@ -127,8 +141,7 @@
     </div>
   </div>
   <footer>
-    <p>© 2024 | Crafted with passion by <a href="https://github.com/tony007x">Tony219y</a> & <a href="https://github.com/Gal1leo2">Gal1leo</a><br>
-    Computer Science, King Mongkut's Institute of Technology Ladkrabang</p>
+    <p>© 2024 | Crafted by <a href="https://github.com/tony007x">Tony219y</a> & <a href="https://github.com/Gal1leo2">Gal1leo</a> | CS, KMITL</p>
   </footer>
 </body>
 </html>
