@@ -34,13 +34,15 @@ html, body {
   height: 100%;
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
+  flex: 1; /* Take up the remaining space */
   display: flex;
   justify-content: center;
   align-items: center;
-  height: calc(100vh - 50px); /* Adjust height for footer */
   padding: 1rem;
 }
 
@@ -76,9 +78,6 @@ p {
   padding: 1rem 0;
   text-align: center;
   border-top: 1px solid #ddd;
-  position: absolute;
-  bottom: 0;
-  width: 100%;
 }
 
 .footer-content {
@@ -98,6 +97,7 @@ p {
 .footer-content a:hover {
   text-decoration: underline;
 }
+
 
 
 </style>
