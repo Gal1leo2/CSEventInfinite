@@ -3,101 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Under Maintenance</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Site Maintenance</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      max-width: 100%;
+      width: 500px;
+    }
+
+    .icon {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .progress {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      height: 10px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      background: #4CAF50;
+      height: 100%;
+      width: 0%;
+      animation: progress 3s ease-in-out infinite;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      text-align: center;
+    }
+
+    footer a {
+      color: #FFD700;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #FFA500;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @keyframes progress {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 95%;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      p {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <div class="content">
-      <div class="icon">🔧</div>
-      <h1>We're Under Maintenance</h1>
-      <p>We’re working hard to bring you a better experience. Please check back later.</p>
-      <p>Estimated Time of Arrival: IDK</p>
+    <div class="icon">🚧</div>
+    <h1>We're Upgrading Our Site</h1>
+    <p>We're working hard to bring you an even better experience. Please check back soon!</p>
+    <div class="progress">
+      <div class="progress-bar"></div>
     </div>
   </div>
-  <footer class="footer">
-    <div class="footer-content">
-      <span>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a>, <a href="https://github.com/Gal1leo2">Gal1leo</a></span>
-      <span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
-    </div>
+  <footer>
+    <p>© 2024 | Crafted with passion by <a href="https://github.com/tony007x">Tony219y</a> & <a href="https://github.com/Gal1leo2">Gal1leo</a><br>
+    Computer Science, King Mongkut's Institute of Technology Ladkrabang</p>
   </footer>
 </body>
 </html>
-<style>
-    * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
-  display: flex;
-  flex-direction: column;
-}
-
-.container {
-  flex: 1; /* Take up the remaining space */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-}
-
-.content {
-  text-align: center;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-}
-
-.icon {
-  font-size: 5rem;
-  color: #ff5722;
-  margin-bottom: 1rem;
-}
-
-h1 {
-  font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-p {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 1.5rem;
-}
-
-/* Footer Styles */
-.footer {
-  background-color: #f1f1f1;
-  padding: 1rem 0;
-  text-align: center;
-  border-top: 1px solid #ddd;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.footer-content a {
-  color: #ff5722;
-  text-decoration: none;
-}
-
-.footer-content a:hover {
-  text-decoration: underline;
-}
-
-
-
-</style>
