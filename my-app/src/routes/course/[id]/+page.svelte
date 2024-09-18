@@ -26,6 +26,7 @@
 		course_location: string;
 		course_img: string;
 		course_team: string;
+		is_submissionproject: boolean;
 	}
 
 	let courses = writable<Course[]>([]);
@@ -63,7 +64,6 @@
 			const response = await wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse/${id}`)
 				.headers({
 					'X-CSRF-Token': csrfToken
-					
 				})
 				.get()
 				.json<Course[]>();
@@ -95,7 +95,7 @@
 			const csrfToken = await csrf();
 			await wretch(`${import.meta.env.VITE_API_BASE_URL}/course/enroll`)
 				.headers({
-					'x-csrf-token': csrfToken 
+					'x-csrf-token': csrfToken
 				})
 				.post({
 					student_id: std_id,
@@ -154,8 +154,6 @@
 		if (!isThaiOnly(Fname)) {
 			firstNameError.set('กรุณากรอกชื่อเป็นภาษาไทยเท่านั้น');
 			nameError.set(false);
-
-
 		} else {
 			nameError.set(true);
 			firstNameError.set(null);
@@ -219,7 +217,7 @@
 						/>
 
 						<!-- Top Right: Course Name -->
-						<div class="flex flex-1 flex-col justify-between text-center lg:text-left">
+						<div class="flex flex-1 flex-col text-center lg:text-left">
 							<Card.Header>
 								<Card.Title class="mb-2 text-base font-semibold">{course.course_date}</Card.Title>
 								<Card.Title class="mb-2 text-2xl font-semibold"
@@ -236,13 +234,27 @@
 								</div>
 							</Card.Header>
 
-							<Separator class="my-4 lg:my-6" />
+							{#if course.is_submissionproject === true}
+								<Separator class="my-6 lg:my-6" />
+
+								<a
+									href="https://csevent.vercel.app/submission"
+									class={buttonVariants({ variant: 'destructive' })}
+									style="z-index: 1; position: relative;"
+								>
+									<b>Sent Project</b>
+								</a>
+							{/if}
+
+							<Separator class="my-6 lg:my-6" />
 
 							<!-- Bottom Left: Course Description -->
+
 							<Dialog.Root>
 								<Dialog.Trigger class={buttonVariants({})}>
 									<span style="font-weight:bold;">Enroll this course.</span>
 								</Dialog.Trigger>
+
 								<Dialog.Content class="sm:max-w-[425px]">
 									<Dialog.Header>
 										<Dialog.Title>Enroll {course.course_name}</Dialog.Title>
@@ -279,7 +291,6 @@
 												/>
 												{#if $firstNameError}
 													<p class="text-sm text-red-500">{$firstNameError}</p>
-
 												{/if}
 											</div>
 
@@ -374,11 +385,13 @@
 									{/if}
 								</Dialog.Content>
 							</Dialog.Root>
+							<Separator class="my-6 lg:my-6" />
 						</div>
 					</div>
 
 					<!-- Bottom Right: Additional Content -->
 					<Separator class="my-4 lg:my-6" />
+
 					<div class="flex flex-col justify-between lg:flex-row">
 						<!-- Text content container with wider width -->
 						<div class="text-gray-700 lg:w-full">
