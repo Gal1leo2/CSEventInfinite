@@ -112,7 +112,6 @@
 		const input = event.target as HTMLInputElement;
 		if (input.files) {
 			files = Array.from(input.files).map((file) => {
-				// Prepend student ID to file name
 				const newFileName = `${studentId}_${file.name}`;
 				return new File([file], newFileName, { type: file.type });
 			});
