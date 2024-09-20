@@ -39,8 +39,7 @@ export const actions = {
         const token = data.get('cf-turnstile-response'); // CAPTCHA response from form
 
         // Use the imported secret key from environment variables
-        const SECRET_KEY = '0x4AAAAAAAkTZwT9rp20WBQs-cCAb3ZLQug'
-        ; 
+        const SECRET_KEY = '0x4AAAAAAAkTZwT9rp20WBQs-cCAb3ZLQug'; 
 
         const { success, error } = await validateToken(token, SECRET_KEY);
 

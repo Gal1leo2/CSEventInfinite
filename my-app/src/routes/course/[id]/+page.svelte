@@ -386,7 +386,7 @@
 
 									<Dialog.Footer>
 										<!-- Turnstile CAPTCHA Component -->
-										<Turnstile siteKey="{import.meta.env.VITE_SITEKEY}" theme="light" size="flexible" id="cf-turnstile-response" />
+										<Turnstile siteKey="{import.meta.env.VITE_SITE_KEY}" theme="light" size="flexible" id="cf-turnstile-response" />
 									
 										<!-- Conditional Enroll Button -->
 										{#if !$nameError}
