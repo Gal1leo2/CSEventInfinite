@@ -16,6 +16,7 @@
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
+	import { VITE_SITEKEY } from '$env/static/private';
 	interface Course {
 		course_id: string;
 		course_name: string;
@@ -384,8 +385,7 @@
 									</div>
 
 									<Dialog.Footer>
-										<Turnstile siteKey="0x4AAAAAAAkTZ_RJ8UwUievi" theme="light" size="flexible" id="cf-turnstile-response" />
-
+										<Turnstile siteKey="${import.meta.env.VITE_SITEKEY}" theme="light" size="flexible" id="cf-turnstile-response" />
 										{#if $nameError}
 											<Button type="submit" on:click={submitform}  disabled={$isSubmitting}>Enroll</Button>
 										{:else}

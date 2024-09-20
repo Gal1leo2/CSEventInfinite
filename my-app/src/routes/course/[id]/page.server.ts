@@ -1,3 +1,5 @@
+import { VITE_SECRET_KEY } from '$env/static/private';
+
 interface TokenValidateResponse {
     'error-codes': string[];
     success: boolean;
@@ -36,7 +38,7 @@ export const actions = {
         const data = await request.formData();
 
         const token = data.get('cf-turnstile-response'); // if you edited the formsField option change this
-        const SECRET_KEY = '0x4AAAAAAAkTZwT9rp20WBQs-cCAb3ZLQug'; // you should use $env module for secrets
+        const SECRET_KEY = 'VITE_SECRET_KEY'; // you should use $env module for secrets
 
         const { success, error } = await validateToken(token, SECRET_KEY);
 
