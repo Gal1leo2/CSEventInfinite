@@ -385,15 +385,8 @@
 									</div>
 
 									<Dialog.Footer>
-										<!-- Turnstile CAPTCHA Component -->
-										<Turnstile siteKey="{import.meta.env.VITE_SITE_KEY}" theme="light" size="flexible" id="cf-turnstile-response" />
-									
-										<!-- Conditional Enroll Button -->
-										{#if !$nameError}
-											<!-- Submit button (enabled if no error and not submitting) -->
-											<Button type="submit" on:click={submitform} disabled={$isSubmitting}>
-												Enroll
-											</Button>
+										{#if $nameError}
+											<Button type="submit" on:click={submitform}>Enroll</Button>
 										{:else}
 											<!-- Disabled button -->
 											<Button type="button" disabled class="disabled">
