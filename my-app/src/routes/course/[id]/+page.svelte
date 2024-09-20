@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Turnstile } from 'svelte-turnstile';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { writable } from 'svelte/store';
@@ -84,6 +85,31 @@
 	let Lname: string;
 	let isSubmitting = writable(false); // New state JA
 	let stdYear: string;
+	let errorMessage = '';
+
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+		errorMessage = ''; // Clear previous errors
+
+		const formData = new FormData(event.target);
+
+		// Disable form while validating CAPTCHA
+		isSubmitting.set(true);
+
+		const response = await fetch('/your-form-action-url', {
+			method: 'POST',
+			body: formData
+		});
+
+		const result = await response.json();
+
+		if (result.success) {
+			submitform();
+		} else {
+			errorMessage = result.error || 'Failed CAPTCHA validation';
+			isSubmitting.set(false); // Re-enable form after failure
+		}
+	};
 
 	//SUBMIT THE FORM
 	const submitform = async () => {
@@ -169,7 +195,10 @@
 			lastNameError.set(null);
 		}
 	}
+	
+	
 	onMount(() => {
+		
 		fetchCoursesDetails(id);
 		//ป้องกันการกด คลิ้กขวา หรือ F12
 		// document.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -210,6 +239,7 @@
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
 						<img
+						
 							src={course.course_image}
 							alt="A preview of {course.course_name}"
 							class="mb-4 w-full max-w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
@@ -354,8 +384,10 @@
 									</div>
 
 									<Dialog.Footer>
+										<Turnstile siteKey="0x4AAAAAAAkTZ_RJ8UwUievi" theme="light" size="flexible" id="cf-turnstile-response" />
+
 										{#if $nameError}
-											<Button type="submit" on:click={submitform}>Enroll</Button>
+											<Button type="submit" on:click={submitform}  disabled={$isSubmitting}>Enroll</Button>
 										{:else}
 											<Button type="button" disabled class="disabled">Enroll</Button>
 										{/if}
