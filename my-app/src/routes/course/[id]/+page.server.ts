@@ -1,4 +1,3 @@
-import { VITE_SECRET_KEY } from '$env/static/private';
 
 interface TokenValidateResponse {
     'error-codes': string[];
@@ -31,25 +30,29 @@ async function validateToken(token: string, secret: string) {
         // Return the first error if it exists
         error: data['error-codes']?.length ? data['error-codes'][0] : null,
     };
-
 }
+
 export const actions = {
     default: async ({ request }) => {
         const data = await request.formData();
 
-        const token = data.get('cf-turnstile-response'); // if you edited the formsField option change this
-        const SECRET_KEY = 'VITE_SECRET_KEY'; // you should use $env module for secrets
+        const token = data.get('cf-turnstile-response'); // CAPTCHA response from form
+
+        // Use the imported secret key from environment variables
+        const SECRET_KEY = '0x4AAAAAAAkTZwT9rp20WBQs-cCAb3ZLQug'
+        ; 
 
         const { success, error } = await validateToken(token, SECRET_KEY);
 
-        if (!success){
+        if (!success) {
             return {
                 error: error || 'Invalid CAPTCHA',
             };
         }
-        return {
-        success:true,
-        };
 
+        // CAPTCHA is valid, return success
+        return {
+            success: true,
+        };
     },
 };

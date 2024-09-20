@@ -385,13 +385,23 @@
 									</div>
 
 									<Dialog.Footer>
-										<Turnstile siteKey="${import.meta.env.VITE_SITEKEY}" theme="light" size="flexible" id="cf-turnstile-response" />
-										{#if $nameError}
-											<Button type="submit" on:click={submitform}  disabled={$isSubmitting}>Enroll</Button>
+										<!-- Turnstile CAPTCHA Component -->
+										<Turnstile siteKey="{import.meta.env.VITE_SITEKEY}" theme="light" size="flexible" id="cf-turnstile-response" />
+									
+										<!-- Conditional Enroll Button -->
+										{#if !$nameError}
+											<!-- Submit button (enabled if no error and not submitting) -->
+											<Button type="submit" on:click={submitform} disabled={$isSubmitting}>
+												Enroll
+											</Button>
 										{:else}
-											<Button type="button" disabled class="disabled">Enroll</Button>
+											<!-- Disabled button -->
+											<Button type="button" disabled class="disabled">
+												Enroll
+											</Button>
 										{/if}
 									</Dialog.Footer>
+									
 									{#if $isSubmitting}
 										<div
 											class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
