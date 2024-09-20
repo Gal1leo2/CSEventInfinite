@@ -1,4 +1,3 @@
-
 interface TokenValidateResponse {
     'error-codes': string[];
     success: boolean;
