@@ -263,20 +263,18 @@
 									<p>Powered by: {course.course_team}</p>
 								</div>
 							</Card.Header>
+							<Separator class="my-6 lg:my-6" />
 
 							{#if course.is_submissionproject === true}
-								<Separator class="my-6 lg:my-6" />
 
-								<a
-									href="https://csevent.vercel.app/submission"
-									class={buttonVariants({ variant: 'destructive' })}
-									style="z-index: 1; position: relative;"
-								>
-									<b>Sent Project</b>
-								</a>
-							{/if}
-
-							<Separator class="my-6 lg:my-6" />
+							<a
+								href="https://csevent.vercel.app/submission"
+								class={buttonVariants({ variant: 'destructive' })}
+								style="z-index: 1; position: relative; margin-bottom: 1rem;"
+							>
+								<b>Sent Project</b>
+							</a>
+						{/if}
 
 							<!-- Bottom Left: Course Description -->
 

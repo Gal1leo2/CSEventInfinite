@@ -8,8 +8,7 @@
 	import Wretch from 'wretch';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import { onMount } from 'svelte';
-    import { Upload } from 'lucide-svelte';
-
+	import { Upload } from 'lucide-svelte';
 
 	// Define types
 	interface getuser {
@@ -40,7 +39,9 @@
 	let selectedCourse: string = ''; // Changed to string
 	let studentVerified: boolean = false;
 
-	const isLoading = writable(true);
+	const isStudentLoading = writable(true);
+	const isCourseLoading = writable(true);
+
 	const students = writable<getuser[]>([]);
 	const error = writable<string>('');
 
@@ -59,7 +60,7 @@
 	async function fetchStudents() {
 		try {
 			const csrfToken = await csrf();
-			isLoading.set(true);
+			isStudentLoading.set(true);
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
 				.headers({ 'X-CSRF-Token': csrfToken })
 				.get()
@@ -69,14 +70,14 @@
 		} catch (err) {
 			error.set(getErrorMessage(err));
 		} finally {
-			isLoading.set(false);
+			isStudentLoading.set(false);
 		}
 	}
 
 	async function fetchCourses() {
 		try {
 			const csrfToken = await csrf();
-			isLoading.set(true);
+			isCourseLoading.set(true);
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
 				.headers({ 'X-CSRF-Token': csrfToken })
 				.get()
@@ -85,7 +86,7 @@
 		} catch (err) {
 			error.set(getErrorMessage(err));
 		} finally {
-			isLoading.set(false);
+			isCourseLoading.set(false);
 		}
 	}
 
@@ -139,7 +140,7 @@
 				method: 'POST',
 				body: formData,
 				headers: {
-					'Course-ID': selectedCourse 
+					'Course-ID': selectedCourse
 				}
 			});
 
@@ -171,12 +172,13 @@
 		fetchCourses();
 	});
 </script>
+
 <svelte:head>
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
 </svelte:head>
 
 <div class="upload-container">
-	{#if $isLoading}
+	{#if $isStudentLoading || $isCourseLoading}
 		<Skeleton class="h-[20px] w-[100px] rounded-full" />
 		<Skeleton class="mt-4 h-[20px] w-full rounded-md" />
 		<Skeleton class="mt-4 h-[20px] w-[50%] rounded-md" />
@@ -195,7 +197,7 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						class="lucide lucide-id-card"
-                        color="#3182ce"
+						color="#3182ce"
 						><path d="M16 10h2" /><path d="M16 14h2" /><path d="M6.17 15a3 3 0 0 1 5.66 0" /><circle
 							cx="9"
 							cy="11"
@@ -222,14 +224,14 @@
 					Select Courses and Upload Files
 				</h1>
 
-                <select bind:value={selectedCourse} class="file-input">
-                    <option value="" disabled>Select Course</option>
-                    {#each studentCourses as course}
-                        <option value={course.course_id}>{course.course_name}</option>
-                    {/each}
-                </select>
+				<select bind:value={selectedCourse} class="file-input">
+					<option value="" disabled>Select Course</option>
+					{#each studentCourses as course}
+						<option value={course.course_id}>{course.course_name}</option>
+					{/each}
+				</select>
 
-				<p class="text-red-600 text-sm  text-left">
+				<p class="text-left text-sm text-red-600">
 					*คุณสามารถ Upload หลายไฟล์พร้อมกันได้ โดยการ คลุมทุกไฟล์ที่ต้องการ Upload
 				</p>
 
@@ -269,8 +271,8 @@
 
 <style>
 	:global(body) {
-        font-family: 'Noto Sans Thai';
-        display: flex;
+		font-family: 'Noto Sans Thai';
+		display: flex;
 		justify-content: center;
 		align-items: center;
 		height: 100vh;
@@ -300,46 +302,46 @@
 		gap: 8px;
 	}
 
-    .file-input {
-        appearance: none; 
-        padding: 14px;
-        font-size: 16px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        width: 100%;
-        box-sizing: border-box;
-        background-color: #f9fafb;
-        background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"%3E%3Cpath stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"%3E%3C/path%3E%3C/svg%3E');
-        background-repeat: no-repeat;
-        background-position: right 12px center; /* Adjust position of the arrow */
-        background-size: 1.25rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+	.file-input {
+		appearance: none;
+		padding: 14px;
+		font-size: 16px;
+		border: 2px solid #ddd;
+		border-radius: 8px;
+		width: 100%;
+		box-sizing: border-box;
+		background-color: #f9fafb;
+		background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"%3E%3Cpath stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"%3E%3C/path%3E%3C/svg%3E');
+		background-repeat: no-repeat;
+		background-position: right 12px center; /* Adjust position of the arrow */
+		background-size: 1.25rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
 
-    .file-input:hover {
-        border-color: #3182ce;
-    }
+	.file-input:hover {
+		border-color: #3182ce;
+	}
 
-    .file-input:focus {
-        outline: none;
-        border-color: #3182ce;
-        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.3);
-    }
+	.file-input:focus {
+		outline: none;
+		border-color: #3182ce;
+		box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.3);
+	}
 
-    .file-input:disabled {
-        background-color: #e2e8f0;
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
+	.file-input:disabled {
+		background-color: #e2e8f0;
+		cursor: not-allowed;
+		opacity: 0.7;
+	}
 
-    .file-input option {
-        background-color: #fff;
-        color: #2d3748;
-        padding: 10px;
-    }
+	.file-input option {
+		background-color: #fff;
+		color: #2d3748;
+		padding: 10px;
+	}
 
-    .file-input::-ms-expand {
-        display: none;
-    }
+	.file-input::-ms-expand {
+		display: none;
+	}
 </style>
