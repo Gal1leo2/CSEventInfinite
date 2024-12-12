@@ -110,9 +110,14 @@
 });
 
 
-	let totalCourses = derived(courses, ($courses) => {
+	let canRegisCourses = derived(courses, ($courses) => {
 		return $courses.filter((course) => course.is_visible === '1').length;
 	});
+	let totalCourses = derived(courses, ($courses) => {
+    return $courses.filter((course) => course.is_visible === '2' || course.is_visible === '3').length;
+});
+
+
 
 	let username: string;
 	let password: string;
@@ -178,10 +183,20 @@
 					<CalendarArrowDown class="text-muted-foreground h-6 w-6" />
 				</Card.Header>
 				<Card.Content>
+					<div class="text-2xl font-bold">{$canRegisCourses}</div>
+				</Card.Content>
+			</Card.Root>
+		
+			<Card.Root>
+				<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+					<Card.Title class="text-sm font-medium flex-grow">Future events</Card.Title>
+					<CalendarArrowDown class="text-muted-foreground h-6 w-6 ml-2" />
+				</Card.Header>
+				<Card.Content class="flex items-center justify-between">
 					<div class="text-2xl font-bold">{$totalCourses}</div>
 				</Card.Content>
 			</Card.Root>
-		</div>
+		</div>	
 
 		<!-- Course details -->
 		<div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
@@ -204,7 +219,7 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each $enrollCount.filter(course => course.is_visible !== '3') as course}
+							{#each $enrollCount.filter(course => course.is_visible !== '3' && course.is_visible !== '4') as course}
 							<Table.Row>
 									<Table.Cell>
 										<div class="font-bold">{course.course_name}</div>
