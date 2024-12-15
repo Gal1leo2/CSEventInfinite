@@ -272,13 +272,13 @@
 				<!-- Change courses visibility -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-						Change courses visibility
+						Change courses Register states
 					</Dialog.Trigger>
 					<Dialog.Content
 						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
 					>
 						<div class="grid gap-4">
-							{#each datacourse as course (course.course_id)}
+							{#each datacourse as course}
 								<Card.Root class="col-span-full">
 									<Card.Header class="flex flex-row items-center justify-between">
 										<div class="grid gap-1">
@@ -290,32 +290,20 @@
 										<div class="flex items-center justify-between">
 											<div class="flex items-center">
 												<span
-													class={course.is_visible === '1'
+													class={course.is_visible
 														? 'text-xs font-semibold text-green-500'
-														: course.is_visible === '2'
-															? 'text-xs font-semibold text-yellow-500'
-															: 'text-xs font-semibold text-red-500'}
+														: 'text-xs font-semibold text-red-500'}
 												>
-													{course.is_visible === '1'
-														? 'Visible and can register'
-														: course.is_visible === '2'
-															? 'Visible but registration closed'
-															: 'Not visible'}
+													{course.is_visible ? 'Can Register' : 'Can not Register'}
 												</span>
 											</div>
 
-											<!-- Dropdown to change visibility status -->
-											<select
-											class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
-											bind:value={course.is_visible} 
-											on:change={(e) => updateCourseVisibility(course.course_id, e.target.value)} 
-										  >
-											<option value="1">Visible and can register</option>
-											<option value="2">Visible but registration closed</option>
-											<option value="3">Not visible</option>
-										  </select>
-										  
-										  
+											<Button
+												on:click={() => toggleCourseVisibility(course.course_id, course.is_visible)}
+												class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
+											>
+												Change Status
+											</Button>
 										</div>
 									</Card.Content>
 								</Card.Root>
