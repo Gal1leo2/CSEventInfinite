@@ -21,6 +21,7 @@
 		course_date: string;
 		course_team: string;
 		is_visible: string; 
+		pastEvent:boolean;
 	}
 
 	interface Student {
@@ -111,10 +112,10 @@
 
 
 	let canRegisCourses = derived(courses, ($courses) => {
-		return $courses.filter((course) => course.is_visible === '1').length;
+		return $courses.filter((course) => course.is_visible === '1' ).length;
 	});
 	let totalCourses = derived(courses, ($courses) => {
-    return $courses.filter((course) => course.is_visible === '2' || course.is_visible === '3').length;
+    return $courses.filter((course) => (course.is_visible === '2' || course.is_visible === '3') && course.pastEvent ===false).length;
 });
 
 

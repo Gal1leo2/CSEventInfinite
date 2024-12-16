@@ -41,6 +41,7 @@
 		course_type: string;
 		course_date: string;
 		is_visible: string;
+		pastEvent:boolean
 	}
 
 	//เหมือนจะไม่ใช้แล้ว
@@ -91,8 +92,11 @@
 				.post(formData)
 				.res(() => {
 					toast.success('Create course complete.');
-					toast('Dont forget to add course description !!!!.', {
-						duration: 4000
+					toast('Dont forget to add course description !. ไม่อย่างงั้น คอร์สจะมองไม่เห็นทุกกรณีนะครับ', {
+						duration: 7000
+					});
+					toast('สถานะปัจจุบัน คือมองไม่เห็น ลงทะเบียนไม่ได้ อย่าลืมไปปรับในหน้า จัดการ การมองเห็นคอร์สในหน้าแรก', {
+						duration: 7000
 					});
 				})
 				.catch(() => {
@@ -232,6 +236,26 @@
 			console.error(error);
 		}
 	};
+	const togglePastCourse = async (courseId: string, currentVisibility: boolean) => {
+		try {
+			const newVisibility = !currentVisibility;
+
+			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
+				.put({ pastEvent: newVisibility })
+				.res(() => {
+					toast.success('Course status updated.');
+					const updatedCourses = datacourse.map((course) =>
+						course.course_id === courseId ? { ...course, pastEvent: newVisibility } : course
+					);
+					datacourse = updatedCourses;
+				})
+				.catch(() => {
+					toast.error('Failed to update course status.');
+				});
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
 
 	//Login handle----------------------------------------------------------------------------------------------
@@ -345,6 +369,7 @@
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
+				
 
 				<!-- ADD COURSE DESCRIPTION -->
 				<Dialog.Root>
@@ -483,7 +508,7 @@
 				<!-- Change courses visibility -->
 				<Dialog.Root>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-						Change courses visibility
+						จัดการ การมองเห็นคอร์สในหน้าแรก
 					</Dialog.Trigger>
 					<Dialog.Content
 						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
@@ -508,10 +533,10 @@
 															: 'text-xs font-semibold text-red-500'}
 												>
 													{course.is_visible === '1'
-														? 'Visible and can register'
+														? 'มองเห็น และลงทะเบียนได้'
 														: course.is_visible === '2'
-															? 'Visible but registration closed'
-															: 'Not visible'}
+															? 'มองเห็น แต่ลงทะเบียนไม่ได้'
+															: 'มองไม่เห็น ลงทะเบียนไม่ได้ (หากคอร์สนี้จัดไปแล้ว ให้เลือกอันนี้)'}
 												</span>
 											</div>
 
@@ -521,9 +546,9 @@
 											bind:value={course.is_visible} 
 											on:change={(e) => updateCourseVisibility(course.course_id, e.target.value)} 
 										  >
-											<option value="1">Visible and can register</option>
-											<option value="2">Visible but registration closed</option>
-											<option value="3">Not visible</option>
+											<option value="1">มองเห็น และลงทะเบียนได้</option>
+											<option value="2">มองเห็น แต่ลงทะเบียนไม่ได้</option>
+											<option value="3">มองไม่เห็น ลงทะเบียนไม่ได้ (หากคอร์สนี้จัดไปแล้ว ให้เลือกอันนี้)</option>
 										  </select>
 										  
 										  
@@ -534,6 +559,48 @@
 						</div>
 					</Dialog.Content>
 				</Dialog.Root>
+				<Dialog.Root>
+					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
+						จัดการคอร์ส (อดีต,กำลังจัด)
+					</Dialog.Trigger>
+					<Dialog.Content
+						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
+					>
+						<div class="grid gap-4">
+							{#each datacourse as course}
+								<Card.Root class="col-span-full">
+									<Card.Header class="flex flex-row items-center justify-between">
+										<div class="grid gap-1">
+											<Card.Title class="text-sm font-medium">{course.course_name}</Card.Title>
+											<Card.Description class="text-xs">{course.course_type}</Card.Description>
+										</div>
+									</Card.Header>
+									<Card.Content>
+										<div class="flex items-center justify-between">
+											<div class="flex items-center">
+												<span
+													class={course.pastEvent
+													? 'text-xs font-semibold text-red-500'
+													:'text-xs font-semibold text-green-500'}
+												>
+													{course.pastEvent ? 'คอร์สนี้เป็นอดีตไปแล้ว' : 'อยู่ระหว่างการจัดคอร์ส'}
+												</span>
+											</div>
+
+											<Button
+												on:click={() => togglePastCourse(course.course_id, course.pastEvent)}
+												class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
+											>
+												Change Status
+											</Button>
+										</div>
+									</Card.Content>
+								</Card.Root>
+							{/each}
+						</div>
+					</Dialog.Content>
+				</Dialog.Root>
+				
 			</div>
 		</div>
 		<!-- Right Box -->
@@ -582,6 +649,7 @@
 			{/each}
 		</div>
 	</div>
+	
 	<Toaster />
 
 	<style>
