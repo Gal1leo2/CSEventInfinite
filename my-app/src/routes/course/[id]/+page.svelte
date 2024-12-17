@@ -28,6 +28,7 @@
 		course_img: string;
 		course_team: string;
 		is_submissionproject: boolean;
+		is_personalcomputer:boolean;
 	}
 
 	let courses = writable<Course[]>([]);
@@ -378,18 +379,28 @@
 													>ผู้เข้าร่วมสามารถนำคอมพิวเตอร์มาเองได้</span
 												>
 											</div>
+											{#if course.is_personalcomputer && !$isChecked}
+    <p class="text-sm text-red-500 mt-2">ในคอร์สนี้ต้องนำคอมพิวเตอร์ส่วนตัวมาเอง</p>
+	<p class="text-sm text-red-500 mt-2">กรุณายืนยันการนำคอมพิวเตอร์ส่วนตัวมาเอง</p>
+
+{/if}
 										</div>
 									</div>
 
 									<Dialog.Footer>
 										<Turnstile siteKey="0x4AAAAAAAkTZ_RJ8UwUievi" theme="light" size="flexible" id="cf-turnstile-response" />
-
-										{#if $nameError}
-											<Button type="submit" on:click={submitform}  disabled={$isSubmitting}>Enroll</Button>
-										{:else}
+									
+										{#if $isSubmitting}
+											<Button type="button" disabled class="disabled">Submitting...</Button>
+										{:else if course.is_personalcomputer && !$isChecked}
 											<Button type="button" disabled class="disabled">Enroll</Button>
+										{:else if $nameError}
+											<Button type="button" disabled class="disabled">Enroll</Button>
+										{:else}
+											<Button type="submit" on:click={submitform}>Enroll</Button>
 										{/if}
 									</Dialog.Footer>
+									
 									{#if $isSubmitting}
 										<div
 											class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
