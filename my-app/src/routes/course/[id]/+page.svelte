@@ -364,21 +364,12 @@
 									</div>
 
 									<Dialog.Footer>
-										<Turnstile
-											siteKey="0x4AAAAAAAkTZ_RJ8UwUievi"
-											theme="light"
-											size="flexible"
-											id="cf-turnstile-response"
-										/>
+										<Turnstile siteKey="0x4AAAAAAAkTZ_RJ8UwUievi" theme="light" size="flexible" id="cf-turnstile-response" />
 
-										{#if $isSubmitting}
-											<Button type="button" disabled class="disabled">Submitting...</Button>
-										{:else if course.is_personalcomputer && !$isChecked}
-											<Button type="button" disabled class="disabled">Enroll</Button>
-										{:else if $nameError}
-											<Button type="button" disabled class="disabled">Enroll</Button>
+										{#if $nameError}
+											<Button type="submit" on:click={submitform}  disabled={$isSubmitting}>Enroll</Button>
 										{:else}
-											<Button type="submit" on:click={submitform}>Enroll</Button>
+											<Button type="button" disabled class="disabled">Enroll</Button>
 										{/if}
 									</Dialog.Footer>
 
