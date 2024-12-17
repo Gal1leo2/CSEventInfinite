@@ -28,7 +28,7 @@
 		course_img: string;
 		course_team: string;
 		is_submissionproject: boolean;
-		is_personalcomputer:boolean;
+		is_personalcomputer: boolean;
 	}
 
 	let courses = writable<Course[]>([]);
@@ -88,29 +88,6 @@
 	let stdYear: string;
 	let errorMessage = '';
 
-	const handleSubmit = async (event) => {
-		event.preventDefault();
-		errorMessage = ''; // Clear previous errors
-
-		const formData = new FormData(event.target);
-
-		// Disable form while validating CAPTCHA
-		isSubmitting.set(true);
-
-		const response = await fetch('/your-form-action-url', {
-			method: 'POST',
-			body: formData
-		});
-
-		const result = await response.json();
-
-		if (result.success) {
-			submitform();
-		} else {
-			errorMessage = result.error || 'Failed CAPTCHA validation';
-			isSubmitting.set(false); // Re-enable form after failure
-		}
-	};
 
 	//SUBMIT THE FORM
 	const submitform = async () => {
@@ -196,10 +173,8 @@
 			lastNameError.set(null);
 		}
 	}
-	
-	
+
 	onMount(() => {
-		
 		fetchCoursesDetails(id);
 		//ป้องกันการกด คลิ้กขวา หรือ F12
 		// document.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -240,7 +215,6 @@
 					<div class="flex flex-col lg:flex-row">
 						<!-- Top Left: Image -->
 						<img
-						
 							src={course.course_image}
 							alt="A preview of {course.course_name}"
 							class="mb-4 w-full max-w-full rounded-lg object-cover lg:mb-0 lg:mr-6 lg:h-auto lg:w-1/2"
@@ -267,15 +241,14 @@
 							<Separator class="my-6 lg:my-6" />
 
 							{#if course.is_submissionproject === true}
-
-							<a
-								href="https://csevent.vercel.app/submission"
-								class={buttonVariants({ variant: 'destructive' })}
-								style="z-index: 1; position: relative; margin-bottom: 1rem;"
-							>
-								<b>Sent Project</b>
-							</a>
-						{/if}
+								<a
+									href="https://csevent.vercel.app/submission"
+									class={buttonVariants({ variant: 'destructive' })}
+									style="z-index: 1; position: relative; margin-bottom: 1rem;"
+								>
+									<b>Sent Project</b>
+								</a>
+							{/if}
 
 							<!-- Bottom Left: Course Description -->
 
@@ -380,16 +353,24 @@
 												>
 											</div>
 											{#if course.is_personalcomputer && !$isChecked}
-    <p class="text-sm text-red-500 mt-2">ในคอร์สนี้ต้องนำคอมพิวเตอร์ส่วนตัวมาเอง</p>
-	<p class="text-sm text-red-500 mt-2">กรุณายืนยันการนำคอมพิวเตอร์ส่วนตัวมาเอง</p>
-
-{/if}
+												<p class="mt-2 text-sm text-red-500">
+													ในคอร์สนี้ต้องนำคอมพิวเตอร์ส่วนตัวมาเอง
+												</p>
+												<p class="mt-2 text-sm text-red-500">
+													กรุณายืนยันการนำคอมพิวเตอร์ส่วนตัวมาเอง
+												</p>
+											{/if}
 										</div>
 									</div>
 
 									<Dialog.Footer>
-										<Turnstile siteKey="0x4AAAAAAAkTZ_RJ8UwUievi" theme="light" size="flexible" id="cf-turnstile-response" />
-									
+										<Turnstile
+											siteKey="0x4AAAAAAAkTZ_RJ8UwUievi"
+											theme="light"
+											size="flexible"
+											id="cf-turnstile-response"
+										/>
+
 										{#if $isSubmitting}
 											<Button type="button" disabled class="disabled">Submitting...</Button>
 										{:else if course.is_personalcomputer && !$isChecked}
@@ -400,7 +381,7 @@
 											<Button type="submit" on:click={submitform}>Enroll</Button>
 										{/if}
 									</Dialog.Footer>
-									
+
 									{#if $isSubmitting}
 										<div
 											class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
