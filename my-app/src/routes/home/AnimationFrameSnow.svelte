@@ -1,4 +1,4 @@
-<script lang="js">
+<script>
     import { onMount } from 'svelte'
   
     // a bunch of variables defining the snow and how it falls
@@ -67,7 +67,8 @@
   
       return () => cancelAnimationFrame(frame)
     })
-    </script>
+  </script>
+  
   <style>
     :global(body) {
       min-height: 100%;
@@ -89,14 +90,21 @@
     }
   
     .snowframe {
-      pointer-events: none;
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      overflow: hidden;
-    }
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100vw; 
+  height: 100vh; 
+  pointer-events: none; 
+  z-index: 1000;
+}
+
+    @media (max-width: 600px) {
+  .snowframe {
+    display: none; /* Hide snowflakes on mobile */
+  }
+}
+
   </style>
   
   <div class="snowframe" aria-hidden="true">

@@ -151,7 +151,10 @@
 </script>
 
 <svelte:head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
+
 </svelte:head>
 <div class="fontUse flex min-h-screen min-w-max flex-col">
 	<header class="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-2 md:px-4">
