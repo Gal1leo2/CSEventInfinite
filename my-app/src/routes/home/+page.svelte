@@ -12,7 +12,6 @@
 	import { toast } from 'svelte-sonner';
 	import { Toaster } from 'svelte-sonner';
 	import { Group } from 'lucide-svelte';
-	import AnimationFrameSnow from './AnimationFrameSnow.svelte'
 
 
 	interface Course {
@@ -311,7 +310,6 @@
 		</div>
 	</footer>
 </div>
-<AnimationFrameSnow />
 
 <Toaster></Toaster>
 
