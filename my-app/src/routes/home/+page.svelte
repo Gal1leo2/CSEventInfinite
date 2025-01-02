@@ -170,6 +170,8 @@
 	<!-- Main content with flex-1 to fill available space -->
 	<main class="flex flex-1 flex-col gap-4 bg-gray-50 p-4 md:gap-8 md:p-8">
 		<div class="flex flex-col items-center justify-center py-4 text-black">
+			<h1 class="text-2xl font-bold"><span style="color:#E35205">Happy New Year 2025</span></h1>
+			<h1 class="text-2xl font-bold">I hope this year brings the best opportunities for reskilling and upskilling.</h1>
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">CTRL</span> your future</h1>
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">ALT</span> your dream</h1>
 			<h1 class="text-2xl font-bold"><span style="color:#E35205">SHIFT UP</span> your skills</h1>
@@ -302,7 +304,7 @@
 	<footer class="w-full bg-gray-100">
 		<div class="flex justify-between bg-black/5 p-4 text-xs">
 			<span
-				>© 2024 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> ,
+				>© 2024 - 2025 | Made with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> ,
 				<a href="https://github.com/Gal1leo2">Gal1leo</a></span
 			>
 			<span>Computer Science, King Mongkut's Institute of Technology Ladkrabang</span>
