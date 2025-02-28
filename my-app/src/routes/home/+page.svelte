@@ -1,347 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Site Maintenance</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+<script>
+	import { Calendar, AlertTriangle, Clock, ArrowRight } from 'lucide-svelte';
+</script>
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<svelte:head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans+Thai:400,500,600,700&display=swap" rel="stylesheet" />
+	<title>CSEvent - Maintenance Mode</title>
+</svelte:head>
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(125deg, #6e48aa 0%, #9d50bb 50%, #6e48aa 100%);
-      background-size: 200% 200%;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: #ffffff;
-      padding: 20px;
-      animation: gradientBG 15s ease infinite;
-      overflow: hidden;
-      position: relative;
-    }
+<div class="font-family min-h-screen flex flex-col bg-gray-50">
+	<div class="flex-1 flex items-center justify-center p-4">
+		<div class="max-w-2xl w-full">
+			<div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+				<!-- Orange Header -->
+				<div class="bg-[#E35205] p-6 text-white flex items-center justify-between">
+					<div>
+						<h1 class="text-2xl font-bold">CSEvent</h1>
+						<p class="text-white/80">Short Course Registration System</p>
+					</div>
+					<AlertTriangle class="h-10 w-10" />
+				</div>
+				
+				<!-- Content -->
+				<div class="p-8">
+					<div class="flex flex-col items-center text-center mb-8">
+						<div class="relative mb-6">
+							<div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+								<Clock class="h-12 w-12 text-[#E35205]" />
+							</div>
+							<div class="absolute -bottom-1 -right-1 bg-[#E35205] text-white rounded-full w-8 h-8 flex items-center justify-center">
+								<span class="text-sm font-bold">!</span>
+							</div>
+						</div>
+						
+						<h2 class="text-3xl font-bold text-gray-800 mb-3">We're Upgrading Our Site</h2>
+						<p class="text-gray-600 max-w-md mb-6">
+							The CSEvent registration system is temporarily closed for maintenance while we prepare an exciting new version for you.
+						</p>
+						
+						<div class="w-full max-w-md bg-gray-100 rounded-lg p-6">
+							<div class="flex items-center justify-center gap-2 mb-2">
+								<Calendar class="h-5 w-5 text-[#E35205]" />
+								<span class="font-semibold text-gray-800">Coming Soon</span>
+							</div>
+							<div class="text-3xl font-bold text-[#E35205] mb-3">03/03/2025</div>
+							<p class="text-sm text-gray-600">We're working hard to bring you a better experience</p>
+						</div>
+					</div>
+					
+					<hr class="my-6 border-gray-200" />
+					
+					<div class="flex flex-col md:flex-row gap-6">
+						<div class="flex-1">
+							<h3 class="font-medium text-gray-800 mb-2">What's Happening?</h3>
+							<p class="text-sm text-gray-600 mb-4">
+								We're updating our course registration system with new features and an improved design. The new system will make it easier to find and register for courses.
+							</p>
+						</div>
 
-    .particles {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-    }
+					</div>
+				</div>
+				
+				<!-- Footer -->
+				<div class="border-t border-gray-200 p-6">
+					<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+						<div class="text-center md:text-left">
+							<div class="text-xl font-bold mb-2">
+								<span class="text-[#E35205]">CTRL</span> your future
+								<span class="text-[#E35205]">ALT</span> your dream
+								<span class="text-[#E35205]">SHIFT UP</span> your skills
+							</div>
+						</div>
+						
+						<div class="flex gap-4">
+							<a href="https://facebook.com" class="text-gray-500 hover:text-[#E35205] transition-colors">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+								</svg>
+							</a>
+							<a href="https://github.com" class="text-gray-500 hover:text-[#E35205] transition-colors">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+								</svg>
+							</a>
+							<a href="https://twitter.com" class="text-gray-500 hover:text-[#E35205] transition-colors">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+								</svg>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="text-center mt-6 text-sm text-gray-500">
+				© 2024 - 2025 | Computer Science, King Mongkut's Institute of Technology Ladkrabang
+			</div>
+		</div>
+	</div>
+</div>
 
-    .particle {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.5);
-      animation: float 8s infinite;
-      opacity: 0;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(0) translateX(0);
-        opacity: 0;
-      }
-      50% {
-        opacity: 0.7;
-      }
-      100% {
-        transform: translateY(-100vh) translateX(20px);
-        opacity: 0;
-      }
-    }
-
-    .container {
-      text-align: center;
-      padding: 3rem;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37),
-                  0 2px 5px rgba(0, 0, 0, 0.3),
-                  0 0 80px rgba(255, 255, 255, 0.1) inset;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      width: 90%;
-      max-width: 650px;
-      margin-bottom: 60px;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
-    }
-
-    .container::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 80%);
-      z-index: -1;
-      animation: shine 8s linear infinite;
-    }
-
-    @keyframes shine {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .icon-wrapper {
-      position: relative;
-      display: inline-block;
-      margin-bottom: 1.5rem;
-    }
-
-    .icon {
-      font-size: 5.5rem;
-      margin-bottom: 1rem;
-      animation: float-icon 5s ease-in-out infinite;
-      filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
-    }
-
-    .icon-glow {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      background: radial-gradient(circle, rgba(255, 215, 0, 0.5) 0%, transparent 70%);
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-      animation: pulse 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
-      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
-    }
-
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 600;
-      margin-bottom: 1.2rem;
-      background: linear-gradient(90deg, #ffffff, #f0f0f0, #ffffff);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shine-text 5s linear infinite;
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-    }
-
-    @keyframes shine-text {
-      to { background-position: 200% center; }
-    }
-
-    p {
-      font-size: 1.2rem;
-      font-weight: 300;
-      margin-bottom: 2rem;
-      line-height: 1.7;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .progress-wrapper {
-      position: relative;
-      margin-top: 1rem;
-    }
-
-    .progress {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 30px;
-      height: 12px;
-      width: 100%;
-      overflow: hidden;
-      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-    .progress-bar {
-      background: linear-gradient(90deg, #4CAF50, #8BC34A, #4CAF50);
-      background-size: 200% auto;
-      height: 100%;
-      width: 0%;
-      animation: progress 3s ease-in-out infinite alternate, 
-                 gradientMove 3s linear infinite;
-      box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
-    }
-
-    .progress-label {
-      position: absolute;
-      right: 0;
-      top: -25px;
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.8);
-      animation: progress-text 3s ease-in-out infinite alternate;
-    }
-
-    @keyframes progress {
-      0% { width: 5%; }
-      50% { width: 70%; }
-      100% { width: 95%; }
-    }
-
-    @keyframes progress-text {
-      0% { content: "5%"; }
-      50% { content: "70%"; }
-      100% { content: "95%"; }
-    }
-
-    @keyframes gradientMove {
-      to { background-position: 200% center; }
-    }
-
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes float-icon {
-      0% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-15px) rotate(5deg); }
-      100% { transform: translateY(0px) rotate(0deg); }
-    }
-
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(8px);
-      text-align: center;
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    footer a {
-      color: #FFD700;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      position: relative;
-      padding: 0 3px;
-    }
-
-    footer a::after {
-      content: '';
-      position: absolute;
-      width: 0;
-      height: 2px;
-      bottom: -2px;
-      left: 0;
-      background-color: #FFA500;
-      transition: width 0.3s ease;
-    }
-
-    footer a:hover {
-      color: #FFA500;
-      transform: translateY(-2px);
-    }
-
-    footer a:hover::after {
-      width: 100%;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 15px;
-      }
-      .container {
-        width: 95%;
-        padding: 2rem;
-        margin-bottom: 50px;
-      }
-      h1 {
-        font-size: 2rem;
-      }
-      p {
-        font-size: 1rem;
-      }
-      .icon {
-        font-size: 4.5rem;
-      }
-      footer {
-        padding: 10px;
-        font-size: 0.8rem;
-      }
-    }
-  </style>
-</head>
-<body>
-  <!-- Generate particles dynamically -->
-  <div class="particles" id="particles"></div>
-
-  <div class="container">
-    <div class="icon-wrapper">
-      <div class="icon-glow"></div>
-      <div class="icon">🚧</div>
-    </div>
-    <h1>We're Upgrading Our Site</h1>
-    <p>We're working hard to enhance your experience with exciting new features and improvements. Thank you for your patience as we make these changes.</p>
-    <div class="progress-wrapper">
-      <div class="progress-label">Loading...</div>
-      <div class="progress">
-        <div class="progress-bar"></div>
-      </div>
-    </div>
-  </div>
-  
-  <footer>
-    <p>© 2025 | Crafted with ❤️ by <a href="https://github.com/tony007x">Tony219y</a> & <a href="https://github.com/Gal1leo2">Gal1leo</a> | CS, KMITL</p>
-  </footer>
-
-  <script>
-    // Create particles
-    const particlesContainer = document.getElementById('particles');
-    for (let i = 0; i < 30; i++) {
-      createParticle();
-    }
-
-    function createParticle() {
-      const particle = document.createElement('div');
-      particle.classList.add('particle');
-      
-      // Random size between 5px and 15px
-      const size = Math.random() * 10 + 5;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      
-      // Random position
-      const posX = Math.random() * 100;
-      const posY = Math.random() * 100 + 100;
-      particle.style.left = `${posX}%`;
-      particle.style.top = `${posY}%`;
-      
-      // Random animation duration and delay
-      const duration = Math.random() * 10 + 10;
-      const delay = Math.random() * 5;
-      particle.style.animationDuration = `${duration}s`;
-      particle.style.animationDelay = `${delay}s`;
-      
-      particlesContainer.appendChild(particle);
-      
-      // Remove and recreate particle after animation
-      setTimeout(() => {
-        particle.remove();
-        createParticle();
-      }, (duration + delay) * 1000);
-    }
-  </script>
-</body>
-</html>
+<style>
+	.font-family {
+		font-family: 'Noto Sans Thai', sans-serif;
+	}
+</style>
