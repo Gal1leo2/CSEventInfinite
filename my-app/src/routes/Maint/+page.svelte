@@ -65,13 +65,19 @@
 				<!-- Footer -->
 				<div class="border-t border-gray-200 p-6">
 					<div class="flex flex-col md:flex-row justify-between items-center gap-4">
-						<div class="text-center md:text-left">
-							<div class="text-xl font-bold mb-2">
-								<span class="text-[#E35205]">CTRL</span> your future
-								<span class="text-[#E35205]">ALT</span> your dream
-								<span class="text-[#E35205]">SHIFT UP</span> your skills
-							</div>
-						</div>
+            <div class="text-center md:text-left">
+              <div class="text-xl font-bold mb-2">
+                  <div class="mb-2">
+                      <span class="text-[#E35205]">CTRL</span> your future
+                  </div>
+                  <div class="mb-2">
+                      <span class="text-[#E35205]">ALT</span> your dream
+                  </div>
+                  <div>
+                      <span class="text-[#E35205]">SHIFT UP</span> your skills
+                  </div>
+              </div>
+          </div>
 						
 						<div class="flex gap-4">
 							<a href="https://facebook.com" class="text-gray-500 hover:text-[#E35205] transition-colors">
