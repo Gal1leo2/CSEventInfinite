@@ -4,6 +4,6 @@ import { redirect } from '@sveltejs/kit';
 export function load({ url }) {
   // Check if the path is empty (e.g., user visits the root domain)
   if (url.pathname === '/') {
-    throw redirect(302, '/Maint');
+    throw redirect(302, '/home');
   }
 }
