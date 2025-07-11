@@ -43,7 +43,7 @@
 								<Calendar class="h-5 w-5 text-[#E35205]" />
 								<span class="font-semibold text-gray-800">Coming Soon</span>
 							</div>
-							<div class="text-3xl font-bold text-[#E35205] mb-3">03/03/2025</div>
+							<div class="text-3xl font-bold text-[#E35205] mb-3">21/07/2025</div>
 							<p class="text-sm text-gray-600">We're working hard to bring you a better experience</p>
 						</div>
 					</div>
