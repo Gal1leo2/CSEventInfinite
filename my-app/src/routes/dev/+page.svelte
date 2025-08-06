@@ -34,7 +34,7 @@
 		course_team: string;
 		is_visible: string;
 		is_submissionproject: boolean;
-		pastEvent: boolean;
+		pastevent: boolean;
 		is_personalcomputer: boolean;
 	}
 
@@ -85,7 +85,7 @@
 		course_team: '',
 		is_visible: '0',
 		is_submissionproject: false,
-		pastEvent: false,
+		pastevent: false,
 		is_personalcomputer: false
 	};
 
@@ -122,7 +122,7 @@
 		stats.totalCourses = datacourse.length;
 		stats.activeCourses = datacourse.filter(c => c.is_visible === '1').length;
 		stats.totalStudents = datastudent.length;
-		stats.upcomingEvents = datacourse.filter(c => !c.pastEvent && new Date(c.course_date) > new Date()).length;
+		stats.upcomingEvents = datacourse.filter(c => !c.pastevent && new Date(c.course_date) > new Date()).length;
 	};
 
 	// Create course
@@ -152,7 +152,7 @@
 				course_team: '',
 				is_visible: '0',
 				is_submissionproject: false,
-				pastEvent: false,
+				pastevent: false,
 				is_personalcomputer: false
 			};
 		} catch (error) {
@@ -211,7 +211,7 @@
 	};
 
 	// Toggle past event
-	const togglePastEvent = async (courseId: string, currentStatus: boolean): Promise<void> => {
+	const togglepastevent = async (courseId: string, currentStatus: boolean): Promise<void> => {
 		try {
 			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
@@ -220,12 +220,12 @@
 
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
 				.headers({ 'X-CSRF-Token': csrfToken })
-				.put({ pastEvent: !currentStatus })
+				.put({ pastevent: !currentStatus })
 				.res();
 
 			toast.success('Course status updated');
 			datacourse = datacourse.map(course =>
-				course.course_id === courseId ? { ...course, pastEvent: !currentStatus } : course
+				course.course_id === courseId ? { ...course, pastevent: !currentStatus } : course
 			);
 			updateStats();
 		} catch (error) {
@@ -262,7 +262,7 @@
 		const matchesFilter = selectedFilter.value === 'all' || 
 			(selectedFilter.value === 'active' && course.is_visible === '1') ||
 			(selectedFilter.value === 'hidden' && course.is_visible === '0') ||
-			(selectedFilter.value === 'past' && course.pastEvent);
+			(selectedFilter.value === 'past' && course.pastevent);
 		return matchesSearch && matchesFilter;
 	});
 
@@ -493,7 +493,7 @@
 											<Label for="submission">Submission Project</Label>
 										</div>
 										<div class="flex items-center space-x-2">
-											<Switch id="past" bind:checked={newCourse.pastEvent} />
+											<Switch id="past" bind:checked={newCourse.pastevent} />
 											<Label for="past">Past Event</Label>
 										</div>
 										<div class="flex items-center space-x-2">
@@ -523,7 +523,7 @@
 												<Badge variant={course.is_visible === '1' ? 'default' : 'secondary'}>
 													{course.is_visible === '1' ? 'Active' : 'Hidden'}
 												</Badge>
-												{#if course.pastEvent}
+												{#if course.pastevent}
 													<Badge variant="outline">Past</Badge>
 												{/if}
 											</div>
@@ -538,8 +538,8 @@
 												<DropdownMenu.Item on:click={() => toggleVisibility(course.course_id, course.is_visible)}>
 													{course.is_visible === '1' ? 'Hide' : 'Show'} Course
 												</DropdownMenu.Item>
-												<DropdownMenu.Item on:click={() => togglePastEvent(course.course_id, course.pastEvent)}>
-													Mark as {course.pastEvent ? 'Upcoming' : 'Past'}
+												<DropdownMenu.Item on:click={() => togglepastevent(course.course_id, course.pastevent)}>
+													Mark as {course.pastevent ? 'Upcoming' : 'Past'}
 												</DropdownMenu.Item>
 												<DropdownMenu.Separator />
 												<DropdownMenu.Item on:click={() => deleteCourse(course.course_id)} class="text-red-600">
@@ -616,8 +616,8 @@
 															<DropdownMenu.Item on:click={() => toggleVisibility(course.course_id, course.is_visible)}>
 																{course.is_visible === '1' ? 'Hide' : 'Show'}
 															</DropdownMenu.Item>
-															<DropdownMenu.Item on:click={() => togglePastEvent(course.course_id, course.pastEvent)}>
-																Mark as {course.pastEvent ? 'Upcoming' : 'Past'}
+															<DropdownMenu.Item on:click={() => togglepastevent(course.course_id, course.pastevent)}>
+																Mark as {course.pastevent ? 'Upcoming' : 'Past'}
 															</DropdownMenu.Item>
 															<DropdownMenu.Separator />
 															<DropdownMenu.Item on:click={() => deleteCourse(course.course_id)} class="text-red-600">
