@@ -42,8 +42,8 @@
 		id: number;
 		student_id: string;
 		course_id: string;
-		Fname: string;
-		Lname: string;
+		fname: string;
+		lname: string;
 		laptop: boolean;
 		student_year: number;
 	}
@@ -243,7 +243,7 @@
 	// Export data
 	const exportData = (): void => {
 		const csvContent = datastudent.map(s => 
-			`${s.student_id},${s.Fname},${s.Lname},${s.student_year}`
+			`${s.student_id},${s.fname},${s.lname},${s.student_year}`
 		).join('\n');
 		
 		const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -647,7 +647,7 @@
 									{#each datastudent.slice(0, 20) as student}
 										<tr class="border-b hover:bg-muted/50">
 											<td class="p-4 font-mono">{student.student_id}</td>
-											<td class="p-4">{student.Fname} {student.Lname}</td>
+											<td class="p-4">{student.fname} {student.lname}</td>
 											<td class="p-4">
 												{datacourse.find(c => c.course_id === student.course_id)?.course_name || 'N/A'}
 											</td>
