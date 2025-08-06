@@ -21,17 +21,51 @@
 		TrendingUp, Activity, BarChart3, Grid3x3, List
 	} from 'lucide-svelte';
 
+	// Type definitions
+	interface Course {
+		course_id: string;
+		course_name: string;
+		course_type: string;
+		course_date: string;
+		course_description: string;
+		course_lecture: string;
+		course_location: string;
+		course_img: string;
+		course_team: string;
+		is_visible: string;
+		is_submissionproject: boolean;
+		pastEvent: boolean;
+		is_personalcomputer: boolean;
+	}
+
+	interface Student {
+		id: number;
+		student_id: string;
+		course_id: string;
+		Fname: string;
+		Lname: string;
+		laptop: boolean;
+		student_year: number;
+	}
+
+	interface Stats {
+		totalCourses: number;
+		activeCourses: number;
+		totalStudents: number;
+		upcomingEvents: number;
+	}
+
 	// State management
-	const isLoggedIn = writable(false);
-	let datacourse: any[] = [];
-	let datastudent: any[] = [];
-	let searchTerm = '';
-	let filterType = 'all';
+	const isLoggedIn = writable<boolean>(false);
+	let datacourse: Course[] = [];
+	let datastudent: Student[] = [];
+	let searchTerm: string = '';
+	let filterType: string = 'all';
 	let viewMode: 'grid' | 'list' = 'grid';
-	let isLoading = true;
+	let isLoading: boolean = true;
 
 	// Stats
-	let stats = {
+	let stats: Stats = {
 		totalCourses: 0,
 		activeCourses: 0,
 		totalStudents: 0,
@@ -39,7 +73,7 @@
 	};
 
 	// Create course form
-	let newCourse = {
+	let newCourse: Omit<Course, 'course_id'> = {
 		course_name: '',
 		course_type: '',
 		course_date: '',
@@ -55,11 +89,11 @@
 	};
 
 	// Fetch courses
-	const fetchCourses = async () => {
+	const fetchCourses = async (): Promise<void> => {
 		try {
 			const res = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
 				.get()
-				.json();
+				.json<Course[]>();
 			datacourse = res;
 			updateStats();
 		} catch (error) {
@@ -69,11 +103,11 @@
 	};
 
 	// Fetch students
-	const fetchStudents = async () => {
+	const fetchStudents = async (): Promise<void> => {
 		try {
 			const res = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
 				.get()
-				.json();
+				.json<Student[]>();
 			datastudent = res;
 			updateStats();
 		} catch (error) {
@@ -83,7 +117,7 @@
 	};
 
 	// Update statistics
-	const updateStats = () => {
+	const updateStats = (): void => {
 		stats.totalCourses = datacourse.length;
 		stats.activeCourses = datacourse.filter(c => c.is_visible === '1').length;
 		stats.totalStudents = datastudent.length;
@@ -91,11 +125,11 @@
 	};
 
 	// Create course
-	const createCourse = async () => {
+	const createCourse = async (): Promise<void> => {
 		try {
 			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
-				.json()
+				.json<{ csrfToken: string }>()
 				.then(data => data.csrfToken);
 
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
@@ -127,13 +161,13 @@
 	};
 
 	// Delete course
-	const deleteCourse = async (courseId: string) => {
+	const deleteCourse = async (courseId: string): Promise<void> => {
 		if (!confirm('Are you sure you want to delete this course?')) return;
 
 		try {
 			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
-				.json()
+				.json<{ csrfToken: string }>()
 				.then(data => data.csrfToken);
 
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/delete/${courseId}`)
@@ -150,11 +184,11 @@
 	};
 
 	// Toggle visibility
-	const toggleVisibility = async (courseId: string, currentVisibility: string) => {
+	const toggleVisibility = async (courseId: string, currentVisibility: string): Promise<void> => {
 		try {
 			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
-				.json()
+				.json<{ csrfToken: string }>()
 				.then(data => data.csrfToken);
 
 			const newVisibility = currentVisibility === '1' ? '0' : '1';
@@ -176,11 +210,11 @@
 	};
 
 	// Toggle past event
-	const togglePastEvent = async (courseId: string, currentStatus: boolean) => {
+	const togglePastEvent = async (courseId: string, currentStatus: boolean): Promise<void> => {
 		try {
 			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
-				.json()
+				.json<{ csrfToken: string }>()
 				.then(data => data.csrfToken);
 
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
@@ -200,13 +234,13 @@
 	};
 
 	// Logout
-	const logout = () => {
+	const logout = (): void => {
 		localStorage.removeItem('auth');
 		window.location.pathname = '/login';
 	};
 
 	// Export data
-	const exportData = () => {
+	const exportData = (): void => {
 		const csvContent = datastudent.map(s => 
 			`${s.student_id},${s.Fname},${s.Lname},${s.student_year}`
 		).join('\n');
