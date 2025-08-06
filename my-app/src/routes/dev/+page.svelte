@@ -61,6 +61,7 @@
 	let datastudent: Student[] = [];
 	let searchTerm: string = '';
 	let filterType: string = 'all';
+	let selectedFilter = { value: 'all', label: 'All Courses' };
 	let viewMode: 'grid' | 'list' = 'grid';
 	let isLoading: boolean = true;
 
@@ -258,15 +259,15 @@
 	$: filteredCourses = datacourse.filter(course => {
 		const matchesSearch = course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			course.course_lecture.toLowerCase().includes(searchTerm.toLowerCase());
-		const matchesFilter = filterType === 'all' || 
-			(filterType === 'active' && course.is_visible === '1') ||
-			(filterType === 'hidden' && course.is_visible === '0') ||
-			(filterType === 'past' && course.pastEvent);
+		const matchesFilter = selectedFilter.value === 'all' || 
+			(selectedFilter.value === 'active' && course.is_visible === '1') ||
+			(selectedFilter.value === 'hidden' && course.is_visible === '0') ||
+			(selectedFilter.value === 'past' && course.pastEvent);
 		return matchesSearch && matchesFilter;
 	});
 
 	// Group students by course
-	$: studentsByCourse = datastudent.reduce((acc, student) => {
+	$: studentsByCourse = datastudent.reduce<Record<string, Student[]>>((acc, student) => {
 		if (!acc[student.course_id]) acc[student.course_id] = [];
 		acc[student.course_id].push(student);
 		return acc;
@@ -416,15 +417,15 @@
 								class="pl-10"
 							/>
 						</div>
-						<Select.Root bind:selected={{ value: filterType }}>
+						<Select.Root bind:selected={selectedFilter}>
 							<Select.Trigger class="w-[180px]">
 								<Select.Value placeholder="Filter by..." />
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="all">All Courses</Select.Item>
-								<Select.Item value="active">Active</Select.Item>
-								<Select.Item value="hidden">Hidden</Select.Item>
-								<Select.Item value="past">Past Events</Select.Item>
+								<Select.Item value="all" label="All Courses">All Courses</Select.Item>
+								<Select.Item value="active" label="Active">Active</Select.Item>
+								<Select.Item value="hidden" label="Hidden">Hidden</Select.Item>
+								<Select.Item value="past" label="Past Events">Past Events</Select.Item>
 							</Select.Content>
 						</Select.Root>
 					</div>
