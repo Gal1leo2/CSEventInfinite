@@ -305,23 +305,9 @@
 		<div class="container mx-auto px-4">
 			<div class="flex h-16 items-center justify-between">
 				<div class="flex items-center gap-8">
-					<h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-						CS Event Admin
+					<h1 class="text-2xl font-bold ">
+						CS Event Management
 					</h1>
-					<nav class="hidden md:flex items-center gap-6">
-						<Button variant="ghost" size="sm" class="gap-2">
-							<Grid3x3 class="h-4 w-4" />
-							Dashboard
-						</Button>
-						<Button variant="ghost" size="sm" class="gap-2">
-							<BookOpen class="h-4 w-4" />
-							Courses
-						</Button>
-						<Button variant="ghost" size="sm" class="gap-2">
-							<Users class="h-4 w-4" />
-							Students
-						</Button>
-					</nav>
 				</div>
 				<div class="flex items-center gap-4">
 					<Button variant="outline" size="sm" on:click={exportData} class="gap-2">
