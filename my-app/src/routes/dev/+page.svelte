@@ -1,666 +1,663 @@
-
 <script lang="ts">
-	// @ts-nocheck
 	import { onMount } from 'svelte';
+	import { writable } from 'svelte/store';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Button } from '$lib/components/ui/button';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import CalendarIcon from 'lucide-svelte/icons/calendar';
-	import { DateFormatter, type DateValue, getLocalTimeZone } from '@internationalized/date';
-	import { cn } from '$lib/utils.js';
-	import { Calendar } from '$lib/components/ui/calendar/index.js';
-	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Wretch from 'wretch';
-	import Cookies from 'js-cookie';
-	import toast, { Toaster } from 'svelte-french-toast';
-	import { writable } from 'svelte/store';
-	import * as Card from '$lib/components/ui/card';
+	import { toast } from 'svelte-sonner';
+	import { 
+		Calendar, Users, BookOpen, Settings, LogOut, Plus, Edit, Trash2, 
+		Eye, EyeOff, Search, Filter, Download, Upload, ChevronRight,
+		Clock, MapPin, User, Laptop, GraduationCap, MoreVertical,
+		TrendingUp, Activity, BarChart3, Grid3x3, List
+	} from 'lucide-svelte';
 
-	const df = new DateFormatter('en-US', {
-		dateStyle: 'long'
-	});
+	// State management
+	const isLoggedIn = writable(false);
+	let datacourse: any[] = [];
+	let datastudent: any[] = [];
+	let searchTerm = '';
+	let filterType = 'all';
+	let viewMode: 'grid' | 'list' = 'grid';
+	let isLoading = true;
 
-	let datauser: getuser[] = [];
-	let datacourse: Course[] = [];
+	// Stats
+	let stats = {
+		totalCourses: 0,
+		activeCourses: 0,
+		totalStudents: 0,
+		upcomingEvents: 0
+	};
 
-	interface getuser {
-		id: string;
-		student_id: string;
-		Fname: string;
-		Lname: string;
-		course_id: string;
-		laptop: boolean;
-	}
+	// Create course form
+	let newCourse = {
+		course_name: '',
+		course_type: '',
+		course_date: '',
+		course_description: '',
+		course_lecture: '',
+		course_location: '',
+		course_img: '',
+		course_team: '',
+		is_visible: '0',
+		is_submissionproject: false,
+		pastEvent: false,
+		is_personalcomputer: false
+	};
 
-	interface Course {
-		course_id: any;
-		course_name: string;
-		course_lecture: string;
-		course_type: string;
-		course_date: string;
-		is_visible: string;
-		pastEvent:boolean
-	}
-
-	//เหมือนจะไม่ใช้แล้ว
-	interface Student {
-		id: number;
-		name: string;
-		course_id: string;
-		Fname: String;
-		Lname: String;
-		laptop: boolean;
-	}
-
-	let file: File | null = null;
-
-	const handleFileChange = async (e: Event) => {
-		const target = (await e.target) as HTMLInputElement;
-		if (target && target.files) {
-			file = target.files[0];
+	// Fetch courses
+	const fetchCourses = async () => {
+		try {
+			const res = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
+				.get()
+				.json();
+			datacourse = res;
+			updateStats();
+		} catch (error) {
+			toast.error('Failed to fetch courses');
+			console.error(error);
 		}
+	};
+
+	// Fetch students
+	const fetchStudents = async () => {
+		try {
+			const res = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
+				.get()
+				.json();
+			datastudent = res;
+			updateStats();
+		} catch (error) {
+			toast.error('Failed to fetch students');
+			console.error(error);
+		}
+	};
+
+	// Update statistics
+	const updateStats = () => {
+		stats.totalCourses = datacourse.length;
+		stats.activeCourses = datacourse.filter(c => c.is_visible === '1').length;
+		stats.totalStudents = datastudent.length;
+		stats.upcomingEvents = datacourse.filter(c => !c.pastEvent && new Date(c.course_date) > new Date()).length;
 	};
 
 	// Create course
-	let courseName: string;
-	let courseType: string;
-	let courseDescription: string;
-	let selectedDate: DateValue | undefined = undefined;
-	let courseLecture: string;
-	let courseLocation: string;
-	let courseTeam: string;
-
-	//create
 	const createCourse = async () => {
-		if (!file) {
-			console.error('No file selected.');
-			return;
-		}
-		const formData = new FormData();
-		const date = selectedDate ? selectedDate.toString() : '';
-		formData.append('file', file);
-		formData.append('course_name', courseName || '');
-		formData.append('course_type', courseType || '');
-		formData.append('course_date', date);
-		formData.append('course_lecture', courseLecture || '');
-		formData.append('course_location', courseLocation || '');
-		formData.append('course_team', courseTeam || '');
 		try {
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
-				.post(formData)
-				.res(() => {
-					toast.success('Create course complete.');
-					toast('Dont forget to add course description !. ไม่อย่างงั้น คอร์สจะมองไม่เห็นทุกกรณีนะครับ', {
-						duration: 7000
-					});
-					toast('สถานะปัจจุบัน คือมองไม่เห็น ลงทะเบียนไม่ได้ อย่าลืมไปปรับในหน้า จัดการ การมองเห็นคอร์สในหน้าแรก', {
-						duration: 7000
-					});
-				})
-				.catch(() => {
-					toast.error("This didn't work. Please try again.");
-				});
+			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+				.get()
+				.json()
+				.then(data => data.csrfToken);
+
+			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
+				.headers({ 'X-CSRF-Token': csrfToken })
+				.post(newCourse)
+				.json();
+
+			toast.success('Course created successfully!');
+			fetchCourses();
+			// Reset form
+			newCourse = {
+				course_name: '',
+				course_type: '',
+				course_date: '',
+				course_description: '',
+				course_lecture: '',
+				course_location: '',
+				course_img: '',
+				course_team: '',
+				is_visible: '0',
+				is_submissionproject: false,
+				pastEvent: false,
+				is_personalcomputer: false
+			};
 		} catch (error) {
+			toast.error('Failed to create course');
 			console.error(error);
 		}
 	};
 
-	// Add course description
-	const addCourseDescription = async () => {
-		try {
-			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-course-desciption`)
-				.put({
-					course_id: selectedCourseId,
-					course_description: courseDescription
-				})
-				.res(() => {
-					toast.success('Add Course description complete.');
-				})
-				.catch(() => {
-					toast.error("This didn't work. Please try again.");
-				});
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	// Delete
-	let selectedCourseId: string = '';
-
+	// Delete course
 	const deleteCourse = async (courseId: string) => {
-		console.log(courseId);
+		if (!confirm('Are you sure you want to delete this course?')) return;
 
-		await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/delete/${courseId}`)
-			.delete()
-			.notFound(() => {
-				toast.error('Error deleting course. Please try again.');
-			})
-			.res(() => {
-				toast.success('Course deleted successfully.');
-				datacourse = datacourse.filter((course) => course.course_id !== courseId);
-			})
-			.catch(() => {
-				toast.error("This didn't work. Please try again.");
-			});
-	};
-
-	// Show students in each course
-	let isLoading = writable(true);
-	let students = writable<getuser[]>([]);
-	let filteredStudents = writable<getuser[]>([]);
-	let error = writable<string>('');
-	let allStudents: getuser[] = [];
-	let allCourse: Course[] = [];
-
-	const csrf = async () => {
 		try {
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
-				.json<{ csrfToken: string }>(); // Use the interface
-			console.log('csrf', response.csrfToken);
-			return response.csrfToken; // Access the csrfToken
+				.json()
+				.then(data => data.csrfToken);
+
+			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/delete/${courseId}`)
+				.headers({ 'X-CSRF-Token': csrfToken })
+				.delete()
+				.res();
+
+			toast.success('Course deleted successfully');
+			fetchCourses();
 		} catch (error) {
-			console.error('Failed to fetch CSRF token:', error);
-			throw new Error('Failed to fetch CSRF token'); // Handle errors as needed
+			toast.error('Failed to delete course');
+			console.error(error);
 		}
 	};
-	async function fetchStudents() {
-		try {
-			const csrfToken = await csrf();
-			isLoading.set(true);
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
-				.headers({
-					'X-CSRF-Token': csrfToken
-				})
-				.get()
-				.json<getuser[]>();
-			allStudents = response;
-			datauser = response;
-			students.set(allStudents); // Set the students store
-			console.log(allStudents);
-		} catch (err) {
-			error.set(getErrorMessage(err));
-		} finally {
-			isLoading.set(false);
-		}
-	}
 
-	async function fetchCourses() {
+	// Toggle visibility
+	const toggleVisibility = async (courseId: string, currentVisibility: string) => {
 		try {
-			const csrfToken = await csrf();
-			isLoading.set(true);
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
-				.headers({
-					'X-CSRF-Token': csrfToken
-				})
+			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
 				.get()
-				.json<Course[]>();
-			allCourse = response;
-			datacourse = response;
-			students.set(allStudents); // Set the students store
-			console.log(allStudents);
-		} catch (err) {
-			error.set(getErrorMessage(err));
-		} finally {
-			isLoading.set(false);
-		}
-	}
-	function getErrorMessage(error: unknown): string {
-		if (error instanceof Error) return error.message;
-		return String(error);
-	}
+				.json()
+				.then(data => data.csrfToken);
 
-	function showStudentEachCourse(courseId: string) {
-		if (courseId) {
-			filteredStudents.set(allStudents.filter((student) => student.course_id === courseId));
-		} else {
-			filteredStudents.set([]);
-		}
-	}
-	//Gunner
-	
-	const updateCourseVisibility = async (courseId: string, newVisibility: string) => {
-		try {
+			const newVisibility = currentVisibility === '1' ? '0' : '1';
+
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
+				.headers({ 'X-CSRF-Token': csrfToken })
 				.put({ is_visible: newVisibility })
-				.res(() => {
-					toast.success('Course visibility updated.');
-					datacourse = datacourse.map((course) =>
-						course.course_id === courseId ? { ...course, is_visible: newVisibility } : course
-					);
-				});
+				.res();
+
+			toast.success(`Course ${newVisibility === '1' ? 'shown' : 'hidden'}`);
+			datacourse = datacourse.map(course =>
+				course.course_id === courseId ? { ...course, is_visible: newVisibility } : course
+			);
+			updateStats();
 		} catch (error) {
-			toast.error('Failed to update course visibility.');
+			toast.error('Failed to update visibility');
 			console.error(error);
 		}
 	};
-	const togglePastCourse = async (courseId: string, currentVisibility: boolean) => {
+
+	// Toggle past event
+	const togglePastEvent = async (courseId: string, currentStatus: boolean) => {
 		try {
-			const newVisibility = !currentVisibility;
+			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
+				.get()
+				.json()
+				.then(data => data.csrfToken);
 
 			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
-				.put({ pastEvent: newVisibility })
-				.res(() => {
-					toast.success('Course status updated.');
-					const updatedCourses = datacourse.map((course) =>
-						course.course_id === courseId ? { ...course, pastEvent: newVisibility } : course
-					);
-					datacourse = updatedCourses;
-				})
-				.catch(() => {
-					toast.error('Failed to update course status.');
-				});
+				.headers({ 'X-CSRF-Token': csrfToken })
+				.put({ pastEvent: !currentStatus })
+				.res();
+
+			toast.success('Course status updated');
+			datacourse = datacourse.map(course =>
+				course.course_id === courseId ? { ...course, pastEvent: !currentStatus } : course
+			);
+			updateStats();
 		} catch (error) {
+			toast.error('Failed to update status');
 			console.error(error);
 		}
 	};
 
+	// Logout
+	const logout = () => {
+		localStorage.removeItem('auth');
+		window.location.pathname = '/login';
+	};
 
-	//Login handle----------------------------------------------------------------------------------------------
-	//ยังแก้บั้คไม่เสร็จจจจจ
-	const isLoggedIn = writable(false);
+	// Export data
+	const exportData = () => {
+		const csvContent = datastudent.map(s => 
+			`${s.student_id},${s.Fname},${s.Lname},${s.student_year}`
+		).join('\n');
+		
+		const blob = new Blob([csvContent], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'students.csv';
+		a.click();
+		toast.success('Data exported successfully');
+	};
+
+	// Filtered courses
+	$: filteredCourses = datacourse.filter(course => {
+		const matchesSearch = course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			course.course_lecture.toLowerCase().includes(searchTerm.toLowerCase());
+		const matchesFilter = filterType === 'all' || 
+			(filterType === 'active' && course.is_visible === '1') ||
+			(filterType === 'hidden' && course.is_visible === '0') ||
+			(filterType === 'past' && course.pastEvent);
+		return matchesSearch && matchesFilter;
+	});
+
+	// Group students by course
+	$: studentsByCourse = datastudent.reduce((acc, student) => {
+		if (!acc[student.course_id]) acc[student.course_id] = [];
+		acc[student.course_id].push(student);
+		return acc;
+	}, {});
 
 	onMount(async () => {
-		//auth------------------------
-		const token = await localStorage.getItem('auth');
-		console.log(token);
+		// Check authentication
+		const token = localStorage.getItem('auth');
 		if (token) {
-			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
-				.headers({
-					'Content-type': 'application/json',
-					Authorization: `Bearer ${token}`
-				})
-				.post({})
-				.badRequest(() => {
-					window.location.pathname = 'home';
-				})
-				.unauthorized(async () => {
-					window.location.pathname = 'home';
-				})
-				.res(async () => {
-					isLoggedIn.set(true);
-				});
+			try {
+				await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
+					.headers({
+						'Content-type': 'application/json',
+						Authorization: `Bearer ${token}`
+					})
+					.post({})
+					.res();
+				isLoggedIn.set(true);
+				isLoading = false;
+				fetchCourses();
+				fetchStudents();
+			} catch {
+				window.location.pathname = '/login';
+			}
 		} else {
-			window.location.pathname = 'home';
+			window.location.pathname = '/login';
 		}
-		fetchStudents();
-		fetchCourses();
 	});
 </script>
 
 {#if $isLoggedIn}
-	<div class="flex h-screen w-full">
-		<div class="m-5 flex w-full flex-col border border-[red]">
-			<h1 class="p-5 text-center text-2xl font-bold">Edit Courses</h1>
-			<!-- post Blog -->
-			<div class="m-5 flex h-full flex-col justify-center gap-5 border border-[green] p-5">
-				<!-- CREATE COURSE -->
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
-						>Create Course</Dialog.Trigger
-					>
-					<Dialog.Content class="sm:max-w-[425px]">
-						<Dialog.Header>
-							<Dialog.Title>Create Course</Dialog.Title>
-							<Dialog.Description>
-								Create course here. Click save when you're done.
-							</Dialog.Description>
-						</Dialog.Header>
-						<div class="grid gap-4 py-4">
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="name" class="text-right">Name</Label>
-								<Input id="name" bind:value={courseName} class="col-span-3" />
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="type" class="text-right">Type</Label>
-								<Input id="type" bind:value={courseType} class="col-span-3" />
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="team" class="text-right">Team</Label>
-								<Input id="team" bind:value={courseTeam} class="col-span-3" />
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="date" class="text-right">Date</Label>
-								<Popover.Root>
-									<Popover.Trigger asChild let:builder>
-										<Button
-											variant="outline"
-											class={cn(
-												'w-[280px] justify-start text-left font-normal',
-												!selectedDate && 'text-muted-foreground'
-											)}
-											builders={[builder]}
-										>
-											<CalendarIcon class="mr-2 h-4 w-4" />
-											{selectedDate
-												? df.format(selectedDate.toDate(getLocalTimeZone()))
-												: 'Pick a date'}
-										</Button>
-									</Popover.Trigger>
-									<Popover.Content class="w-auto p-0">
-										<Calendar bind:value={selectedDate} initialFocus />
-									</Popover.Content>
-								</Popover.Root>
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="lec" class="text-right">Lecture</Label>
-								<Input id="lec" bind:value={courseLecture} class="col-span-3" />
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="local" class="text-right">Location</Label>
-								<Input id="local" bind:value={courseLocation} class="col-span-3" />
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<!-- <Input id="local" bind:value={courseLocation}  /> -->
-								<Label for="picture" class="text-right">Picture</Label>
-								<Input id="picture" class="col-span-3" type="file" on:change={handleFileChange} />
-							</div>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+	<!-- Header -->
+	<header class="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-lg dark:bg-gray-900/80">
+		<div class="container mx-auto px-4">
+			<div class="flex h-16 items-center justify-between">
+				<div class="flex items-center gap-8">
+					<h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+						CS Event Admin
+					</h1>
+					<nav class="hidden md:flex items-center gap-6">
+						<Button variant="ghost" size="sm" class="gap-2">
+							<Grid3x3 class="h-4 w-4" />
+							Dashboard
+						</Button>
+						<Button variant="ghost" size="sm" class="gap-2">
+							<BookOpen class="h-4 w-4" />
+							Courses
+						</Button>
+						<Button variant="ghost" size="sm" class="gap-2">
+							<Users class="h-4 w-4" />
+							Students
+						</Button>
+					</nav>
+				</div>
+				<div class="flex items-center gap-4">
+					<Button variant="outline" size="sm" on:click={exportData} class="gap-2">
+						<Download class="h-4 w-4" />
+						Export
+					</Button>
+					<Button variant="destructive" size="sm" on:click={logout} class="gap-2">
+						<LogOut class="h-4 w-4" />
+						Logout
+					</Button>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<div class="container mx-auto p-6">
+		<!-- Stats Cards -->
+		<div class="grid gap-4 md:grid-cols-4 mb-6">
+			<Card.Root>
+				<Card.Content class="p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-muted-foreground">Total Courses</p>
+							<p class="text-3xl font-bold">{stats.totalCourses}</p>
 						</div>
-						<Dialog.Footer>
-							<!-- submit BTN -->
-							<Button
-								type="submit"
-								on:click={() => {
-									createCourse();
-								}}>Save changes</Button
-							>
-						</Dialog.Footer>
-					</Dialog.Content>
-				</Dialog.Root>
-				
-
-				<!-- ADD COURSE DESCRIPTION -->
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
-						>Add Course Description</Dialog.Trigger
-					>
-					<Dialog.Content class="sm:max-w-[1080px]">
-						<Dialog.Header>
-							<Dialog.Title>Add Course Description</Dialog.Title>
-							<Dialog.Description>
-								Provide a description for the selected course. Markdown is supported.
-							</Dialog.Description>
-						</Dialog.Header>
-						<div class="grid gap-4 py-4">
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="course" class="text-right">Course</Label>
-								<select id="course" bind:value={selectedCourseId} class="col-span-3">
-									<option value="" disabled selected>Select a course</option>
-									{#each datacourse as course (course.course_id)}
-										<option value={course.course_id}>{course.course_name}</option>
-									{/each}
-								</select>
-							</div>
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="description" class="text-right">Description</Label>
-								<textarea
-									id="description"
-									bind:value={courseDescription}
-									class="col-span-3"
-									placeholder="Enter course description in markdown"
-									rows="20"
-									cols="30"
-								/>
-							</div>
+						<div class="h-12 w-12 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+							<BookOpen class="h-6 w-6 text-blue-600" />
 						</div>
-						<Dialog.Footer>
-							<Button type="button" on:click={addCourseDescription}>Add Description</Button>
-						</Dialog.Footer>
-					</Dialog.Content>
-				</Dialog.Root>
+					</div>
+				</Card.Content>
+			</Card.Root>
 
-				<!-- DELETE COURSE -->
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}
-						>Delete Course</Dialog.Trigger
-					>
-					<Dialog.Content class="sm:max-w-[425px]">
-						<Dialog.Header>
-							<Dialog.Title>Delete Course</Dialog.Title>
-							<Dialog.Description>
-								Select a course to delete. This action cannot be undone.
-							</Dialog.Description>
-						</Dialog.Header>
-						<div class="grid gap-4 py-4">
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="course" class="text-right">Course</Label>
-								<select id="course" bind:value={selectedCourseId} class="col-span-3">
-									<option value="" disabled selected>Select a course</option>
-									{#each datacourse as course (course.course_id)}
-										<option value={course.course_id}>{course.course_name}</option>
-									{/each}
-								</select>
-							</div>
+			<Card.Root>
+				<Card.Content class="p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-muted-foreground">Active Courses</p>
+							<p class="text-3xl font-bold">{stats.activeCourses}</p>
 						</div>
-						<Dialog.Footer>
-							<Button type="button" on:click={() => deleteCourse(selectedCourseId)}>Delete</Button>
-						</Dialog.Footer>
-					</Dialog.Content>
-				</Dialog.Root>
-				<!-- show student in each course -->
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-						Show student in each course
-					</Dialog.Trigger>
-					<Dialog.Content class="rounded-lg bg-white p-6 shadow-lg sm:max-w-[600px]">
-						<Dialog.Header>
-							<Dialog.Title class="text-lg font-bold">Show Students</Dialog.Title>
-							<Dialog.Description class="text-sm text-gray-500">
-								Select a course to view the list of enrolled students.
-							</Dialog.Description>
-						</Dialog.Header>
+						<div class="h-12 w-12 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+							<Activity class="h-6 w-6 text-green-600" />
+						</div>
+					</div>
+				</Card.Content>
+			</Card.Root>
 
-						<div class="grid gap-4 py-4">
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="course" class="text-right">Course</Label>
-								<select
-									id="course"
-									bind:value={selectedCourseId}
-									class="col-span-3 rounded-md border border-gray-300 p-2 focus:border-blue-300 focus:outline-none focus:ring"
-									on:change={() => showStudentEachCourse(selectedCourseId)}
-								>
-									<option value="" disabled selected>Select a course</option>
-									{#each datacourse as course (course.course_id)}
-										<option value={course.course_id}>{course.course_name}</option>
-									{/each}
-								</select>
-							</div>
+			<Card.Root>
+				<Card.Content class="p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-muted-foreground">Total Students</p>
+							<p class="text-3xl font-bold">{stats.totalStudents}</p>
+						</div>
+						<div class="h-12 w-12 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+							<Users class="h-6 w-6 text-purple-600" />
+						</div>
+					</div>
+				</Card.Content>
+			</Card.Root>
 
-							{#if $isLoading}
-								<p class="text-center text-gray-500">Loading students...</p>
-							{/if}
+			<Card.Root>
+				<Card.Content class="p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-muted-foreground">Upcoming Events</p>
+							<p class="text-3xl font-bold">{stats.upcomingEvents}</p>
+						</div>
+						<div class="h-12 w-12 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+							<Calendar class="h-6 w-6 text-orange-600" />
+						</div>
+					</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
 
-							{#if !$isLoading && $filteredStudents.length > 0}
-								<table class="min-w-full bg-white">
-									<thead>
-										<tr class="w-full border-b bg-gray-100">
-											<th class="px-4 py-2 text-left">Student Name</th>
-											<th class="px-4 py-2 text-left">Student ID</th>
-											<th class="px-4 py-2 text-left">Can bring laptop?</th>
+		<!-- Main Content -->
+		<Tabs.Root value="courses" class="space-y-4">
+			<Tabs.List class="grid w-full grid-cols-2 max-w-md">
+				<Tabs.Trigger value="courses">Courses</Tabs.Trigger>
+				<Tabs.Trigger value="students">Students</Tabs.Trigger>
+			</Tabs.List>
+
+			<!-- Courses Tab -->
+			<Tabs.Content value="courses" class="space-y-4">
+				<!-- Toolbar -->
+				<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+					<div class="flex flex-1 items-center gap-4">
+						<div class="relative flex-1 max-w-sm">
+							<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+							<Input
+								placeholder="Search courses..."
+								bind:value={searchTerm}
+								class="pl-10"
+							/>
+						</div>
+						<Select.Root bind:selected={{ value: filterType }}>
+							<Select.Trigger class="w-[180px]">
+								<Select.Value placeholder="Filter by..." />
+							</Select.Trigger>
+							<Select.Content>
+								<Select.Item value="all">All Courses</Select.Item>
+								<Select.Item value="active">Active</Select.Item>
+								<Select.Item value="hidden">Hidden</Select.Item>
+								<Select.Item value="past">Past Events</Select.Item>
+							</Select.Content>
+						</Select.Root>
+					</div>
+					<div class="flex items-center gap-2">
+						<Button
+							variant={viewMode === 'grid' ? 'default' : 'outline'}
+							size="icon"
+							on:click={() => viewMode = 'grid'}
+						>
+							<Grid3x3 class="h-4 w-4" />
+						</Button>
+						<Button
+							variant={viewMode === 'list' ? 'default' : 'outline'}
+							size="icon"
+							on:click={() => viewMode = 'list'}
+						>
+							<List class="h-4 w-4" />
+						</Button>
+						<Dialog.Root>
+							<Dialog.Trigger>
+								<Button class="gap-2">
+									<Plus class="h-4 w-4" />
+									Create Course
+								</Button>
+							</Dialog.Trigger>
+							<Dialog.Content class="max-w-2xl">
+								<Dialog.Header>
+									<Dialog.Title>Create New Course</Dialog.Title>
+									<Dialog.Description>
+										Fill in the details to create a new course.
+									</Dialog.Description>
+								</Dialog.Header>
+								<div class="grid gap-4 py-4">
+									<div class="grid grid-cols-2 gap-4">
+										<div class="space-y-2">
+											<Label for="name">Course Name</Label>
+											<Input id="name" bind:value={newCourse.course_name} />
+										</div>
+										<div class="space-y-2">
+											<Label for="type">Course Type</Label>
+											<Input id="type" bind:value={newCourse.course_type} />
+										</div>
+									</div>
+									<div class="grid grid-cols-2 gap-4">
+										<div class="space-y-2">
+											<Label for="date">Date</Label>
+											<Input id="date" type="date" bind:value={newCourse.course_date} />
+										</div>
+										<div class="space-y-2">
+											<Label for="location">Location</Label>
+											<Input id="location" bind:value={newCourse.course_location} />
+										</div>
+									</div>
+									<div class="space-y-2">
+										<Label for="lecture">Lecturer</Label>
+										<Input id="lecture" bind:value={newCourse.course_lecture} />
+									</div>
+									<div class="space-y-2">
+										<Label for="description">Description</Label>
+										<Textarea id="description" bind:value={newCourse.course_description} rows={3} />
+									</div>
+									<div class="grid grid-cols-3 gap-4">
+										<div class="flex items-center space-x-2">
+											<Switch id="submission" bind:checked={newCourse.is_submissionproject} />
+											<Label for="submission">Submission Project</Label>
+										</div>
+										<div class="flex items-center space-x-2">
+											<Switch id="past" bind:checked={newCourse.pastEvent} />
+											<Label for="past">Past Event</Label>
+										</div>
+										<div class="flex items-center space-x-2">
+											<Switch id="pc" bind:checked={newCourse.is_personalcomputer} />
+											<Label for="pc">Requires PC</Label>
+										</div>
+									</div>
+								</div>
+								<Dialog.Footer>
+									<Button on:click={createCourse}>Create Course</Button>
+								</Dialog.Footer>
+							</Dialog.Content>
+						</Dialog.Root>
+					</div>
+				</div>
+
+				<!-- Courses Grid/List -->
+				{#if viewMode === 'grid'}
+					<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{#each filteredCourses as course}
+							<Card.Root class="overflow-hidden hover:shadow-lg transition-shadow">
+								<Card.Header class="pb-4">
+									<div class="flex items-start justify-between">
+										<div class="space-y-1">
+											<Card.Title class="line-clamp-1">{course.course_name}</Card.Title>
+											<div class="flex items-center gap-2">
+												<Badge variant={course.is_visible === '1' ? 'default' : 'secondary'}>
+													{course.is_visible === '1' ? 'Active' : 'Hidden'}
+												</Badge>
+												{#if course.pastEvent}
+													<Badge variant="outline">Past</Badge>
+												{/if}
+											</div>
+										</div>
+										<DropdownMenu.Root>
+											<DropdownMenu.Trigger>
+												<Button variant="ghost" size="icon">
+													<MoreVertical class="h-4 w-4" />
+												</Button>
+											</DropdownMenu.Trigger>
+											<DropdownMenu.Content align="end">
+												<DropdownMenu.Item on:click={() => toggleVisibility(course.course_id, course.is_visible)}>
+													{course.is_visible === '1' ? 'Hide' : 'Show'} Course
+												</DropdownMenu.Item>
+												<DropdownMenu.Item on:click={() => togglePastEvent(course.course_id, course.pastEvent)}>
+													Mark as {course.pastEvent ? 'Upcoming' : 'Past'}
+												</DropdownMenu.Item>
+												<DropdownMenu.Separator />
+												<DropdownMenu.Item on:click={() => deleteCourse(course.course_id)} class="text-red-600">
+													Delete Course
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu.Root>
+									</div>
+								</Card.Header>
+								<Card.Content class="space-y-2">
+									<div class="space-y-2 text-sm">
+										<div class="flex items-center gap-2 text-muted-foreground">
+											<User class="h-3 w-3" />
+											<span class="line-clamp-1">{course.course_lecture}</span>
+										</div>
+										<div class="flex items-center gap-2 text-muted-foreground">
+											<MapPin class="h-3 w-3" />
+											<span class="line-clamp-1">{course.course_location}</span>
+										</div>
+										<div class="flex items-center gap-2 text-muted-foreground">
+											<Calendar class="h-3 w-3" />
+											<span>{new Date(course.course_date).toLocaleDateString()}</span>
+										</div>
+									</div>
+									{#if studentsByCourse[course.course_id]}
+										<div class="pt-2 border-t">
+											<p class="text-sm font-medium">
+												{studentsByCourse[course.course_id].length} students enrolled
+											</p>
+										</div>
+									{/if}
+								</Card.Content>
+							</Card.Root>
+						{/each}
+					</div>
+				{:else}
+					<!-- List View -->
+					<Card.Root>
+						<Card.Content class="p-0">
+							<div class="relative overflow-x-auto">
+								<table class="w-full text-sm">
+									<thead class="border-b bg-muted/50">
+										<tr>
+											<th class="p-4 text-left font-medium">Course Name</th>
+											<th class="p-4 text-left font-medium">Lecturer</th>
+											<th class="p-4 text-left font-medium">Date</th>
+											<th class="p-4 text-left font-medium">Location</th>
+											<th class="p-4 text-left font-medium">Students</th>
+											<th class="p-4 text-left font-medium">Status</th>
+											<th class="p-4 text-left font-medium">Actions</th>
 										</tr>
 									</thead>
 									<tbody>
-										{#each $filteredStudents as Student}
-											<tr class="border-b">
-												<td class="px-4 py-2">{Student.Fname} {Student.Lname}</td>
-												<td class="px-4 py-2">{Student.student_id}</td>
-												<td class="px-4 py-2">{Student.laptop}</td>
+										{#each filteredCourses as course}
+											<tr class="border-b hover:bg-muted/50">
+												<td class="p-4 font-medium">{course.course_name}</td>
+												<td class="p-4">{course.course_lecture}</td>
+												<td class="p-4">{new Date(course.course_date).toLocaleDateString()}</td>
+												<td class="p-4">{course.course_location}</td>
+												<td class="p-4">{studentsByCourse[course.course_id]?.length || 0}</td>
+												<td class="p-4">
+													<Badge variant={course.is_visible === '1' ? 'default' : 'secondary'}>
+														{course.is_visible === '1' ? 'Active' : 'Hidden'}
+													</Badge>
+												</td>
+												<td class="p-4">
+													<DropdownMenu.Root>
+														<DropdownMenu.Trigger>
+															<Button variant="ghost" size="sm">
+																<MoreVertical class="h-4 w-4" />
+															</Button>
+														</DropdownMenu.Trigger>
+														<DropdownMenu.Content align="end">
+															<DropdownMenu.Item on:click={() => toggleVisibility(course.course_id, course.is_visible)}>
+																{course.is_visible === '1' ? 'Hide' : 'Show'}
+															</DropdownMenu.Item>
+															<DropdownMenu.Item on:click={() => togglePastEvent(course.course_id, course.pastEvent)}>
+																Mark as {course.pastEvent ? 'Upcoming' : 'Past'}
+															</DropdownMenu.Item>
+															<DropdownMenu.Separator />
+															<DropdownMenu.Item on:click={() => deleteCourse(course.course_id)} class="text-red-600">
+																Delete
+															</DropdownMenu.Item>
+														</DropdownMenu.Content>
+													</DropdownMenu.Root>
+												</td>
 											</tr>
 										{/each}
 									</tbody>
 								</table>
-							{/if}
+							</div>
+						</Card.Content>
+					</Card.Root>
+				{/if}
+			</Tabs.Content>
 
-							<!-- Error Handling -->
-							{#if $error}
-								<p class="text-red-500">{error}</p>
-							{/if}
-
-							<!-- No students found for the selected course -->
-							{#if !$isLoading && $filteredStudents.length === 0 && selectedCourseId}
-								<p class="text-center text-gray-500">No students enrolled in this course.</p>
+			<!-- Students Tab -->
+			<Tabs.Content value="students" class="space-y-4">
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Enrolled Students</Card.Title>
+						<Card.Description>
+							Total of {datastudent.length} students enrolled across all courses
+						</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<div class="relative overflow-x-auto">
+							<table class="w-full text-sm">
+								<thead class="border-b bg-muted/50">
+									<tr>
+										<th class="p-4 text-left font-medium">Student ID</th>
+										<th class="p-4 text-left font-medium">Name</th>
+										<th class="p-4 text-left font-medium">Course</th>
+										<th class="p-4 text-left font-medium">Year</th>
+										<th class="p-4 text-left font-medium">Laptop</th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each datastudent.slice(0, 20) as student}
+										<tr class="border-b hover:bg-muted/50">
+											<td class="p-4 font-mono">{student.student_id}</td>
+											<td class="p-4">{student.Fname} {student.Lname}</td>
+											<td class="p-4">
+												{datacourse.find(c => c.course_id === student.course_id)?.course_name || 'N/A'}
+											</td>
+											<td class="p-4">
+												<Badge variant="outline">Year {student.student_year}</Badge>
+											</td>
+											<td class="p-4">
+												{#if student.laptop}
+													<Laptop class="h-4 w-4 text-green-600" />
+												{:else}
+													<span class="text-muted-foreground">-</span>
+												{/if}
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+							{#if datastudent.length > 20}
+								<div class="p-4 text-center text-sm text-muted-foreground">
+									Showing 20 of {datastudent.length} students
+								</div>
 							{/if}
 						</div>
-					</Dialog.Content>
-				</Dialog.Root>
-				<!-- Change courses visibility -->
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-						จัดการ การมองเห็นคอร์สในหน้าแรก
-					</Dialog.Trigger>
-					<Dialog.Content
-						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
-					>
-						<div class="grid gap-4">
-							{#each datacourse as course (course.course_id)}
-								<Card.Root class="col-span-full">
-									<Card.Header class="flex flex-row items-center justify-between">
-										<div class="grid gap-1">
-											<Card.Title class="text-sm font-medium">{course.course_name}</Card.Title>
-											<Card.Description class="text-xs">{course.course_type}</Card.Description>
-										</div>
-									</Card.Header>
-									<Card.Content>
-										<div class="flex items-center justify-between">
-											<div class="flex items-center">
-												<span
-													class={course.is_visible === '1'
-														? 'text-xs font-semibold text-green-500'
-														: course.is_visible === '2'
-															? 'text-xs font-semibold text-yellow-500'
-															: 'text-xs font-semibold text-red-500'}
-												>
-													{course.is_visible === '1'
-														? 'มองเห็น และลงทะเบียนได้'
-														: course.is_visible === '2'
-															? 'มองเห็น แต่ลงทะเบียนไม่ได้'
-															: 'มองไม่เห็น ลงทะเบียนไม่ได้ (หากคอร์สนี้จัดไปแล้ว ให้เลือกอันนี้)'}
-												</span>
-											</div>
-
-											<!-- Dropdown to change visibility status -->
-											<select
-											class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
-											bind:value={course.is_visible} 
-											on:change={(e) => updateCourseVisibility(course.course_id, e.target.value)} 
-										  >
-											<option value="1">มองเห็น และลงทะเบียนได้</option>
-											<option value="2">มองเห็น แต่ลงทะเบียนไม่ได้</option>
-											<option value="3">มองไม่เห็น ลงทะเบียนไม่ได้ (หากคอร์สนี้จัดไปแล้ว ให้เลือกอันนี้)</option>
-										  </select>
-										  
-										  
-										</div>
-									</Card.Content>
-								</Card.Root>
-							{/each}
-						</div>
-					</Dialog.Content>
-				</Dialog.Root>
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
-						จัดการคอร์ส (อดีต,กำลังจัด)
-					</Dialog.Trigger>
-					<Dialog.Content
-						class="max-h-[80vh] max-w-[40vw] overflow-auto rounded-lg bg-white p-4 shadow-lg"
-					>
-						<div class="grid gap-4">
-							{#each datacourse as course}
-								<Card.Root class="col-span-full">
-									<Card.Header class="flex flex-row items-center justify-between">
-										<div class="grid gap-1">
-											<Card.Title class="text-sm font-medium">{course.course_name}</Card.Title>
-											<Card.Description class="text-xs">{course.course_type}</Card.Description>
-										</div>
-									</Card.Header>
-									<Card.Content>
-										<div class="flex items-center justify-between">
-											<div class="flex items-center">
-												<span
-													class={course.pastEvent
-													? 'text-xs font-semibold text-red-500'
-													:'text-xs font-semibold text-green-500'}
-												>
-													{course.pastEvent ? 'คอร์สนี้เป็นอดีตไปแล้ว' : 'อยู่ระหว่างการจัดคอร์ส'}
-												</span>
-											</div>
-
-											<Button
-												on:click={() => togglePastCourse(course.course_id, course.pastEvent)}
-												class="rounded bg-gray-200 px-2 py-1 text-xs font-bold text-black hover:bg-gray-300"
-											>
-												Change Status
-											</Button>
-										</div>
-									</Card.Content>
-								</Card.Root>
-							{/each}
-						</div>
-					</Dialog.Content>
-				</Dialog.Root>
-				
-			</div>
-		</div>
-		<!-- Right Box -->
-		<div class="m-5 flex w-full flex-col">
-			<div class="flex w-full flex-col border-b bg-gray-300 p-5">
-				<div class="flex w-full justify-between text-center">
-					<h1 class="w-1/5 font-bold">COURSE_ID</h1>
-					<h1 class="w-1/5 font-bold">NAME</h1>
-					<h1 class="w-1/5 font-bold">LECTURE</h1>
-					<h1 class="w-1/5 font-bold">TYPE</h1>
-					<h1 class="w-1/5 font-bold">DATE</h1>
-				</div>
-			</div>
-			{#each datacourse as data}
-				<div class="flex w-full flex-col border-b bg-[#ffffff] p-3">
-					<div class="flex w-full items-center justify-between gap-5 text-center">
-						<h1 class=" w-1/5 text-xs">{data.course_id}</h1>
-						<h1 class=" w-1/5 text-xs">{data.course_name}</h1>
-						<h1 class=" w-1/5 text-xs">{data.course_lecture}</h1>
-						<h1 class=" w-1/5 text-xs">{data.course_type}</h1>
-						<h1 class=" w-1/5 text-xs">{data.course_date}</h1>
-					</div>
-				</div>
-			{/each}
-		</div>
+					</Card.Content>
+				</Card.Root>
+			</Tabs.Content>
+		</Tabs.Root>
 	</div>
-	<div class="flex">
-		<div class="m-5 flex w-full flex-col">
-			<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
-				<div class="flex w-full justify-between">
-					<h1 class="font-mono font-bold">ID</h1>
-					<h1 class="font-mono font-bold">STUDENT_ID</h1>
-					<h1 class="font-mono font-bold">FIRSTNAME</h1>
-					<h1 class="font-mono font-bold">LASTNAME</h1>
-				</div>
-			</div>
-			{#each datauser as data}
-				<div class="flex w-full flex-col border-b bg-[#ffffff] p-5">
-					<div class="flex w-full justify-between">
-						<h1 class="font-mono font-bold">{data.id}</h1>
-						<h1 class="font-mono font-bold">{data.student_id}</h1>
-						<h1 class="font-mono font-bold">{data.Fname}</h1>
-						<h1 class="font-mono font-bold">{data.Lname}</h1>
-					</div>
-				</div>
-			{/each}
-		</div>
+</div>
+{:else}
+	<div class="flex h-screen items-center justify-center">
+		<div class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
 	</div>
-	
-	<Toaster />
-
-	<style>
-		.lined-textarea {
-			background: linear-gradient(to bottom, #ddd 1px, transparent 1px);
-			background-size: 100% 24px;
-			line-height: 24px;
-			padding: 8px;
-			border: 1px solid #ccc;
-			border-radius: 5px;
-			resize: vertical;
-		}
-	</style>
 {/if}
