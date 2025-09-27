@@ -21,6 +21,7 @@
 		course_team: string;
 		is_visible: string;
 		pastEvent: boolean;
+		location_seats: number;
 	}
 
 	interface StatsResponse {
@@ -349,15 +350,17 @@
 									</div>
 
 									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-2">
-											<div class="relative h-2 w-20 overflow-hidden rounded-full bg-gray-200">
-												<div
-													class="absolute left-0 top-0 h-full rounded-full bg-[#E35205]"
-													style="width: {Math.min((course.enroll_count / 45) * 100, 100)}%"
-												></div>
-											</div>
-											<span class="text-xs text-gray-500">{course.enroll_count} enrolled</span>
-										</div>
+<div class="flex items-center gap-2">
+    <div class="relative h-2 w-20 overflow-hidden rounded-full bg-gray-200">
+        <div
+            class="absolute left-0 top-0 h-full rounded-full bg-[#E35205]"
+            style="width: {Math.min((course.enroll_count / Math.max(course.location_seats, 1)) * 100, 100)}%"
+        ></div>
+    </div>
+    <span class="text-xs text-gray-500">
+        {course.enroll_count}/{course.location_seats} enrolled
+    </span>
+</div>
 
 										{#if course.is_visible === '1'}
 											<a
