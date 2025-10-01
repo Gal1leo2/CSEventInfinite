@@ -38,7 +38,7 @@
         <div class="border-t mt-8 pt-6">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <p class="text-sm text-gray-600 mb-4 md:mb-0">
-                    © 2024 - 2025 | Made with ❤️ by <a href="https://github.com/Gal1leo2" class="text-[#E35205]">Gal1leo</a> <a href="https://github.com/tony219y" class="text-[#E35205]">Tony219y</a>
+                    © 2024 - 2025 | Made with ❤️ by <a href="https://github.com/Gal1leo2" class="text-[#E35205]">Gal1leo</a>, <a href="https://github.com/tony219y" class="text-[#E35205]">Tony219y</a>
                 </p>
                 <p class="text-sm text-gray-600">
                     Computer Science, King Mongkut's Institute of Technology Ladkrabang
