@@ -48,9 +48,7 @@
 				.json<StatsResponse>();
 			stats.set(response);
 		} catch (err) {
-			error.set(getErrorMessage(err));
-		} finally {
-			isLoading.set(false);
+			throw err;
 		}
 	}
 
@@ -74,7 +72,6 @@
 	async function fetchCourses() {
 		try {
 			const csrfToken = await csrf();
-			isLoading.set(true);
 			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
 				.headers({
 					'X-CSRF-Token': csrfToken
@@ -83,9 +80,7 @@
 				.json<Course[]>();
 			courses.set(response);
 		} catch (err: unknown) {
-			error.set(getErrorMessage(err));
-		} finally {
-			isLoading.set(false);
+			throw err;
 		}
 	}
 
@@ -147,8 +142,14 @@
 	});
 
 	onMount(async () => {
-		fetchCourses();
-		fetchStats();
+		isLoading.set(true);
+		try {
+			await Promise.all([fetchCourses(), fetchStats()]);
+		} catch (err) {
+			error.set(getErrorMessage(err));
+		} finally {
+			isLoading.set(false);
+		}
 	});
 </script>
 
@@ -305,7 +306,11 @@
 						<p class="mt-1 text-gray-500">No courses match the current filter criteria</p>
 					</div>
 				{:else}
-					<div class="grid gap-6 p-6 md:grid-cols-1 lg:grid-cols-2">
+					<div
+						class="grid gap-6 p-6 md:grid-cols-1 lg:grid-cols-2 {$isLoading
+							? 'pointer-events-none opacity-50'
+							: ''}"
+					>
 						{#each $filteredCourses as course}
 							<Card.Root
 								class="overflow-hidden border-0 shadow-sm transition-shadow hover:shadow-md"
@@ -350,17 +355,20 @@
 									</div>
 
 									<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-    <div class="relative h-2 w-20 overflow-hidden rounded-full bg-gray-200">
-        <div
-            class="absolute left-0 top-0 h-full rounded-full bg-[#E35205]"
-            style="width: {Math.min((course.enroll_count / Math.max(course.location_seats, 1)) * 100, 100)}%"
-        ></div>
-    </div>
-    <span class="text-xs text-gray-500">
-        {course.enroll_count}/{course.location_seats} enrolled
-    </span>
-</div>
+										<div class="flex items-center gap-2">
+											<div class="relative h-2 w-20 overflow-hidden rounded-full bg-gray-200">
+												<div
+													class="absolute left-0 top-0 h-full rounded-full bg-[#E35205]"
+													style="width: {Math.min(
+														(course.enroll_count / Math.max(course.location_seats, 1)) * 100,
+														100
+													)}%"
+												></div>
+											</div>
+											<span class="text-xs text-gray-500">
+												{course.enroll_count}/{course.location_seats} enrolled
+											</span>
+										</div>
 
 										{#if course.is_visible === '1'}
 											<a
