@@ -32,6 +32,7 @@
 		course_team: string;
 		is_submissionproject: boolean;
 		is_personalcomputer: boolean;
+		is_visible: number;
 	}
 
 	let courses = writable<Course[]>([]);
@@ -73,10 +74,16 @@
 				.get()
 				.json<Course[]>();
 
+			if (response.length === 0 || response[0].is_visible !== 1) {
+				goto('/home');
+				return;
+			}
+
 			response.forEach((course) => (course.course_image = course.course_img));
 			courses.set(response);
 		} catch (err: unknown) {
 			error.set(getErrorMessage(err));
+			goto('/home');
 		} finally {
 			isLoading.set(false);
 		}
