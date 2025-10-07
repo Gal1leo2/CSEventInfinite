@@ -74,7 +74,7 @@
 				.get()
 				.json<Course[]>();
 
-			if (response.length === 0 || response[0].is_visible !== 1) {
+			if (response.length === 0 || Number(response[0].is_visible) !== 1) {
 				goto('/home');
 				return;
 			}
