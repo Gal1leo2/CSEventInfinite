@@ -20,8 +20,8 @@
 
 	// Initialize Supabase
 	const supabase = createClient(
-		'https://cseventdb.poomzi.com' ,
-		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTk1MTA4MDAsImV4cCI6MTkxNzI3NzIwMH0.8QxMbL-HG6l7cv5Sif4JtrcMie4gapkZ52eIvLWlhKc' 
+		'https://cseventdb.poomzi.com',
+		'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTk1MTA4MDAsImV4cCI6MTkxNzI3NzIwMH0.8QxMbL-HG6l7cv5Sif4JtrcMie4gapkZ52eIvLWlhKc'
 	);
 
 	// Types
@@ -74,8 +74,8 @@
 	let batchId: string | null = null;
 
 	onMount(async () => {
-		// Check authentication
-		const token = localStorage.getItem('auth');
+		// Skip auth for testing
+		isLoggedIn.set(true);
 
 		if (canvas) {
 			ctx = canvas.getContext('2d')!;
@@ -319,10 +319,14 @@
 							nameBox.y + nameBox.height / 2 + fontSettings.size / 3
 						);
 
+						// Generate certificate number
+						const certNumber = `CERT-${new Date().getFullYear()}-${String(i + 1).padStart(4, '0')}`;
+
 						// Create certificate record first to get UUID
 						const { data: certRecord, error: certError } = await supabase
 							.from('certificates')
 							.insert({
+								certificate_number: certNumber,
 								batch_id: batchId,
 								template_id: templateRecord.id,
 								recipient_name: name,
@@ -447,7 +451,6 @@
 		<header class="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-lg">
 			<div class="container mx-auto px-4">
 				<div class="flex h-16 items-center justify-between">
-					<h1 class="text-2xl font-bold">Certificate Generator</h1>
 					<Button variant="destructive" size="sm" on:click={logout} class="gap-2">
 						<LogOut class="h-4 w-4" />
 						Logout
@@ -458,7 +461,7 @@
 
 		<div class="container mx-auto p-6 max-w-7xl">
 			<!-- Progress Steps -->
-			<Card.Root class="mb-6">
+			<!-- <Card.Root class="mb-6">
 				<Card.Content class="p-6">
 					<div class="flex items-center justify-between">
 						{#each [{ num: 1, label: 'Upload Template' }, { num: 2, label: 'Position Name' }, { num: 3, label: 'Upload CSV' }, { num: 4, label: 'Generate' }] as s, i}
@@ -486,7 +489,7 @@
 						{/each}
 					</div>
 				</Card.Content>
-			</Card.Root>
+			</Card.Root> -->
 
 			<!-- Step 1: Upload Template -->
 			{#if step === 1}
