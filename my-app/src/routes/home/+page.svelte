@@ -176,8 +176,7 @@
 					<span class="text-[#E35205]">SHIFT UP</span> your skills
 				</h1>
 				<p class="mb-6 text-gray-300">
-					Let's expand our knowledge with our short courses led by our computer science members.
-				</p>
+Let’s expand your knowledge through short courses and events led by our Computer Science, KMITL members.				</p>
 				<a
 					href="#courses"
 					class="inline-flex items-center rounded-md bg-[#E35205] px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-[#FF6B2B]"
