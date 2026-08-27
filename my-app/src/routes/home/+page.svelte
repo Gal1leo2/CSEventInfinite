@@ -20,7 +20,7 @@
 		course_date: string;
 		course_team: string;
 		is_visible: string;
-		pastEvent: boolean;
+		pastevent: boolean;
 		location_seats: number;
 	}
 
@@ -92,6 +92,15 @@
 		});
 	}
 
+	// A course is past when staff flagged it, or once its scheduled day has ended.
+	function isPastCourse(course: Course): boolean {
+		if (course.pastevent) return true;
+		const [year, month, day] = (course.course_date ?? '').split('T')[0].split('-').map(Number);
+		if (!year || !month || !day) return false;
+		const endOfCourseDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+		return endOfCourseDay.getTime() < Date.now();
+	}
+
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
 		const options: Intl.DateTimeFormatOptions = {
@@ -114,11 +123,9 @@
 		if ($selectedTab === 'open') {
 			return $enrollCount.filter((course) => course.is_visible === '1');
 		} else if ($selectedTab === 'closed') {
-			return $enrollCount.filter(
-				(course) => course.is_visible === '2' && course.pastEvent === false
-			);
+			return $enrollCount.filter((course) => course.is_visible === '2' && !isPastCourse(course));
 		} else if ($selectedTab === 'past') {
-			return $enrollCount.filter((course) => course.pastEvent === true);
+			return $enrollCount.filter((course) => isPastCourse(course));
 		} else {
 			return $enrollCount.filter(
 				(course) => course.is_visible !== '3' && course.is_visible !== '4'
@@ -133,7 +140,7 @@
 	let totalCourses = derived(courses, ($courses) => {
 		return $courses.filter(
 			(course) =>
-				(course.is_visible === '2' || course.is_visible === '3') && course.pastEvent === false
+				(course.is_visible === '2' || course.is_visible === '3') && !isPastCourse(course)
 		).length;
 	});
 

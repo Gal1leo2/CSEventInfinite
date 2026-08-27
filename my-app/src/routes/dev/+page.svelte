@@ -15,32 +15,24 @@
 	import Wretch from 'wretch';
 	import { toast } from 'svelte-sonner';
 	import {
-		Calendar,
-		Users,
-		BookOpen,
-		Settings,
-		LogOut,
-		Plus,
-		Edit,
-		Trash2,
-		Eye,
-		EyeOff,
-		Search,
-		Filter,
-		Download,
-		Upload,
-		ChevronRight,
-		Clock,
-		MapPin,
-		User,
-		Laptop,
-		GraduationCap,
-		MoreVertical,
-		TrendingUp,
 		Activity,
-		BarChart3,
+		Archive,
+		BookOpen,
+		Calendar,
+		Check,
+		Download,
 		Grid3x3,
-		List
+		Laptop,
+		List,
+		LogOut,
+		MapPin,
+		MoreVertical,
+		Pencil,
+		Plus,
+		Search,
+		Trash2,
+		User,
+		Users
 	} from 'lucide-svelte';
 
 	// Type definitions
@@ -58,7 +50,14 @@
 		is_submissionproject: boolean;
 		pastevent: boolean;
 		is_personalcomputer: boolean;
+		location_seats: number;
 	}
+
+	// Seats binds as a string through the shared Input component, so it is
+	// coerced back to a number right before the request goes out.
+	type CourseForm = Omit<Course, 'course_id' | 'location_seats'> & {
+		location_seats: number | string;
+	};
 
 	interface Student {
 		id: number;
@@ -72,31 +71,68 @@
 
 	interface Stats {
 		totalCourses: number;
-		activeCourses: number;
+		openCourses: number;
 		totalStudents: number;
 		upcomingEvents: number;
 	}
 
-	// State management
-	const isLoggedIn = writable<boolean>(false);
-	let datacourse: Course[] = [];
-	let datastudent: Student[] = [];
-	let searchTerm: string = '';
-	let filterType: string = 'all';
-	let selectedFilter = { value: 'all', label: 'All Courses' };
-	let viewMode: 'grid' | 'list' = 'grid';
-	let isLoading: boolean = true;
+	const API = import.meta.env.VITE_API_BASE_URL;
 
-	// Stats
-	let stats: Stats = {
-		totalCourses: 0,
-		activeCourses: 0,
-		totalStudents: 0,
-		upcomingEvents: 0
+	// The five is_visible states the public site understands.
+	const VISIBILITY = [
+		{
+			value: '0',
+			label: 'Draft',
+			hint: 'Hidden from the public list. Registration blocked.',
+			badge: 'border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+		},
+		{
+			value: '1',
+			label: 'Open',
+			hint: 'Listed publicly with a Register button. Students can enroll.',
+			badge: 'border-green-200 bg-green-100 text-green-800 dark:border-green-900 dark:bg-green-900/30 dark:text-green-300'
+		},
+		{
+			value: '2',
+			label: 'Closed',
+			hint: 'Listed publicly, but marked "Registration Closed".',
+			badge: 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900 dark:bg-amber-900/30 dark:text-amber-300'
+		},
+		{
+			value: '3',
+			label: 'Archived',
+			hint: 'Hidden from the main list. Shows under the Past tab.',
+			badge: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+		},
+		{
+			value: '4',
+			label: 'Archived (alt)',
+			hint: 'Behaves exactly like Archived. Legacy value kept for old rows.',
+			badge: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+		}
+	];
+
+	const ARCHIVED = '3';
+	const ARCHIVED_STATES = ['3', '4'];
+
+	const visibilityMeta = (value: string) =>
+		VISIBILITY.find((v) => v.value === String(value)) ?? {
+			value: String(value),
+			label: `Unknown (${value})`,
+			hint: 'Not a value the public site recognises.',
+			badge: 'border-red-200 bg-red-100 text-red-800 dark:border-red-900 dark:bg-red-900/30 dark:text-red-300'
+		};
+
+	const isArchivedState = (value: string): boolean => ARCHIVED_STATES.includes(String(value));
+
+	// A date counts as past only once its whole day has ended, in local time.
+	const isPastDate = (courseDate: string): boolean => {
+		const [year, month, day] = (courseDate ?? '').split('T')[0].split('-').map(Number);
+		if (!year || !month || !day) return false;
+		return new Date(year, month - 1, day, 23, 59, 59, 999).getTime() < Date.now();
 	};
 
-	// Create course form
-	let newCourse: Omit<Course, 'course_id'> = {
+	const emptyForm = (): CourseForm => ({
 		course_name: '',
 		course_type: '',
 		course_date: '',
@@ -108,229 +144,330 @@
 		is_visible: '0',
 		is_submissionproject: false,
 		pastevent: false,
-		is_personalcomputer: false
+		is_personalcomputer: false,
+		location_seats: 50
+	});
+
+	// State management
+	const isLoggedIn = writable<boolean>(false);
+	let datacourse: Course[] = [];
+	let datastudent: Student[] = [];
+	let searchTerm: string = '';
+	let selectedFilter = { value: 'all', label: 'All courses' };
+	let viewMode: 'grid' | 'list' = 'grid';
+
+	// Course form (shared by create and edit)
+	let formOpen = false;
+	let formMode: 'create' | 'edit' = 'create';
+	let editingId: string | null = null;
+	let form: CourseForm = emptyForm();
+	let saving = false;
+	let touched = false;
+
+	let stats: Stats = {
+		totalCourses: 0,
+		openCourses: 0,
+		totalStudents: 0,
+		upcomingEvents: 0
 	};
 
-	// Fetch courses
+	// CSRF tokens are single-use on the backend, so every mutation fetches a fresh one.
+	const csrf = async (): Promise<string> => {
+		const res = await Wretch(`${API}/user/csrf-token`).get().json<{ csrfToken: string }>();
+		return res.csrfToken;
+	};
+
+	// PUT /course/update-visible doubles as the generic partial-update endpoint.
+	const patchCourse = async (courseId: string, patch: Record<string, unknown>): Promise<void> => {
+		const csrfToken = await csrf();
+		await Wretch(`${API}/course/update-visible/${courseId}`)
+			.headers({ 'X-CSRF-Token': csrfToken })
+			.put(patch)
+			.res();
+	};
+
 	const fetchCourses = async (): Promise<void> => {
 		try {
-			const res = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
-				.get()
-				.json<Course[]>();
-			datacourse = res;
+			datacourse = await Wretch(`${API}/user/getcourse`).get().json<Course[]>();
 			updateStats();
+			await autoArchivePastCourses();
 		} catch (error) {
 			toast.error('Failed to fetch courses');
 			console.error(error);
 		}
 	};
 
-	// Fetch students
 	const fetchStudents = async (): Promise<void> => {
 		try {
 			const token = localStorage.getItem('auth');
-			const res = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/students`)
-				.headers({
-					Authorization: `Bearer ${token}`
-				})
+			datastudent = await Wretch(`${API}/admin/students`)
+				.headers({ Authorization: `Bearer ${token}` })
 				.get()
 				.json<Student[]>();
-			datastudent = res;
 			updateStats();
 		} catch (error) {
 			toast.error('Failed to fetch students');
 			console.error(error);
 		}
 	};
-	// Update statistics
+
 	const updateStats = (): void => {
 		stats.totalCourses = datacourse.length;
-		stats.activeCourses = datacourse.filter((c) => c.is_visible === '1').length;
+		stats.openCourses = datacourse.filter((c) => String(c.is_visible) === '1').length;
 		stats.totalStudents = datastudent.length;
 		stats.upcomingEvents = datacourse.filter(
-			(c) => !c.pastevent && new Date(c.course_date) > new Date()
+			(c) => !c.pastevent && !isPastDate(c.course_date)
 		).length;
 	};
 
-	// Create course
-	const createCourse = async (): Promise<void> => {
-		try {
-			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
-				.get()
-				.json<{ csrfToken: string }>()
-				.then((data) => data.csrfToken);
+	// Any course whose date has passed is forced to Archived (is_visible = 3).
+	const autoArchivePastCourses = async (): Promise<void> => {
+		const stale = datacourse.filter(
+			(c) => isPastDate(c.course_date) && !isArchivedState(c.is_visible)
+		);
+		if (stale.length === 0) return;
 
-			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/create`)
-				.headers({ 'X-CSRF-Token': csrfToken })
-				.post(newCourse)
-				.json();
+		const progress = toast.loading(
+			`Archiving ${stale.length} past ${stale.length === 1 ? 'course' : 'courses'}…`
+		);
+		let archived = 0;
+		for (const course of stale) {
+			try {
+				await patchCourse(course.course_id, { is_visible: ARCHIVED });
+				datacourse = datacourse.map((c) =>
+					c.course_id === course.course_id ? { ...c, is_visible: ARCHIVED } : c
+				);
+				archived++;
+			} catch (error) {
+				console.error(`Failed to auto-archive course ${course.course_id}`, error);
+			}
+		}
 
-			toast.success('Course created successfully!');
-			fetchCourses();
-			// Reset form
-			newCourse = {
-				course_name: '',
-				course_type: '',
-				course_date: '',
-				course_description: '',
-				course_lecture: '',
-				course_location: '',
-				course_img: '',
-				course_team: '',
-				is_visible: '0',
-				is_submissionproject: false,
-				pastevent: false,
-				is_personalcomputer: false
-			};
-		} catch (error) {
-			toast.error('Failed to create course');
-			console.error(error);
+		toast.dismiss(progress);
+		updateStats();
+		if (archived > 0) {
+			toast.success(
+				`Auto-archived ${archived} past ${archived === 1 ? 'course' : 'courses'} (is_visible → 3)`
+			);
+		}
+		if (archived < stale.length) {
+			toast.error(`${stale.length - archived} past ${
+				stale.length - archived === 1 ? 'course' : 'courses'
+			} could not be archived`);
 		}
 	};
 
-	// Delete course
-	const deleteCourse = async (courseId: string): Promise<void> => {
-		if (!confirm('Are you sure you want to delete this course?')) return;
+	const openCreate = (): void => {
+		formMode = 'create';
+		editingId = null;
+		form = emptyForm();
+		touched = false;
+		formOpen = true;
+	};
+
+	const openEdit = (course: Course): void => {
+		formMode = 'edit';
+		editingId = course.course_id;
+		form = {
+			course_name: course.course_name ?? '',
+			course_type: course.course_type ?? '',
+			course_date: (course.course_date ?? '').split('T')[0],
+			course_description: course.course_description ?? '',
+			course_lecture: course.course_lecture ?? '',
+			course_location: course.course_location ?? '',
+			course_img: course.course_img ?? '',
+			course_team: course.course_team ?? '',
+			is_visible: String(course.is_visible ?? '0'),
+			is_submissionproject: Boolean(course.is_submissionproject),
+			pastevent: Boolean(course.pastevent),
+			is_personalcomputer: Boolean(course.is_personalcomputer),
+			location_seats: course.location_seats ?? 0
+		};
+		touched = false;
+		formOpen = true;
+	};
+
+	const saveCourse = async (): Promise<void> => {
+		touched = true;
+		if (!isValid) {
+			toast.error('Fill in the highlighted fields first');
+			return;
+		}
+
+		saving = true;
+		const payload = {
+			...form,
+			is_visible: effectiveVisibility,
+			location_seats: Number(form.location_seats) || 0
+		};
 
 		try {
-			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
-				.get()
-				.json<{ csrfToken: string }>()
-				.then((data) => data.csrfToken);
+			if (formMode === 'edit' && editingId) {
+				await patchCourse(editingId, payload);
+				toast.success('Course updated');
+			} else {
+				const csrfToken = await csrf();
+				const created = await Wretch(`${API}/course/create`)
+					.headers({ 'X-CSRF-Token': csrfToken })
+					.post(payload)
+					.json<Course>();
 
-			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/delete/${courseId}`)
-				.headers({ 'X-CSRF-Token': csrfToken })
-				.delete()
-				.res();
+				// POST /course/create hardcodes is_visible to '0' and ignores
+				// location_seats, so those two are written back straight away.
+				if (created?.course_id) {
+					try {
+						await patchCourse(created.course_id, {
+							is_visible: payload.is_visible,
+							location_seats: payload.location_seats
+						});
+					} catch (error) {
+						console.error(error);
+						toast.error('Course created, but visibility and seats did not save. Edit it to retry.');
+					}
+				}
+				toast.success('Course created');
+			}
 
-			toast.success('Course deleted successfully');
-			fetchCourses();
+			formOpen = false;
+			await fetchCourses();
 		} catch (error) {
-			toast.error('Failed to delete course');
+			toast.error(formMode === 'edit' ? 'Failed to update course' : 'Failed to create course');
 			console.error(error);
+		} finally {
+			saving = false;
 		}
 	};
 
-	// Toggle visibility
-	const toggleVisibility = async (courseId: string, currentVisibility: string): Promise<void> => {
+	const setVisibility = async (course: Course, value: string): Promise<void> => {
+		if (String(course.is_visible) === value) return;
+		if (isPastDate(course.course_date) && !isArchivedState(value)) {
+			toast.error('This event date has passed. Change the date first to reopen it.');
+			return;
+		}
+
 		try {
-			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
-				.get()
-				.json<{ csrfToken: string }>()
-				.then((data) => data.csrfToken);
-
-			const newVisibility = currentVisibility === '1' ? '0' : '1';
-
-			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
-				.headers({ 'X-CSRF-Token': csrfToken })
-				.put({ is_visible: newVisibility })
-				.res();
-
-			toast.success(`Course ${newVisibility === '1' ? 'shown' : 'hidden'}`);
-			datacourse = datacourse.map((course) =>
-				course.course_id === courseId ? { ...course, is_visible: newVisibility } : course
+			await patchCourse(course.course_id, { is_visible: value });
+			datacourse = datacourse.map((c) =>
+				c.course_id === course.course_id ? { ...c, is_visible: value } : c
 			);
 			updateStats();
+			toast.success(`Visibility set to ${value} · ${visibilityMeta(value).label}`);
 		} catch (error) {
 			toast.error('Failed to update visibility');
 			console.error(error);
 		}
 	};
 
-	// Toggle past event
-	const togglepastevent = async (courseId: string, currentStatus: boolean): Promise<void> => {
+	const togglePastFlag = async (course: Course): Promise<void> => {
 		try {
-			const csrfToken = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
-				.get()
-				.json<{ csrfToken: string }>()
-				.then((data) => data.csrfToken);
-
-			await Wretch(`${import.meta.env.VITE_API_BASE_URL}/course/update-visible/${courseId}`)
-				.headers({ 'X-CSRF-Token': csrfToken })
-				.put({ pastevent: !currentStatus })
-				.res();
-
-			toast.success('Course status updated');
-			datacourse = datacourse.map((course) =>
-				course.course_id === courseId ? { ...course, pastevent: !currentStatus } : course
+			await patchCourse(course.course_id, { pastevent: !course.pastevent });
+			datacourse = datacourse.map((c) =>
+				c.course_id === course.course_id ? { ...c, pastevent: !course.pastevent } : c
 			);
 			updateStats();
+			toast.success('Course status updated');
 		} catch (error) {
 			toast.error('Failed to update status');
 			console.error(error);
 		}
 	};
 
-	// Logout
+	const deleteCourse = async (course: Course): Promise<void> => {
+		if (!confirm(`Delete "${course.course_name}"? This also removes its enrolled students.`)) return;
+
+		try {
+			const csrfToken = await csrf();
+			await Wretch(`${API}/course/delete/${course.course_id}`)
+				.headers({ 'X-CSRF-Token': csrfToken })
+				.delete()
+				.res();
+
+			toast.success('Course deleted successfully');
+			await fetchCourses();
+		} catch (error) {
+			toast.error('Failed to delete course');
+			console.error(error);
+		}
+	};
+
 	const logout = (): void => {
 		localStorage.removeItem('auth');
 		window.location.pathname = '/login';
 	};
 
-	// Export data
-	const exportData = (): void => {
+	const downloadCsv = (filename: string, headers: string, rows: string[]): void => {
 		const BOM = '\uFEFF';
-		const headers = 'Student ID,First Name,Last Name,Year,Course,Has Laptop\n';
-		const csvContent =
-			BOM +
-			headers +
-			datastudent
-				.map((s) => {
-					const courseName =
-						datacourse.find((c) => c.course_id === s.course_id)?.course_name || 'N/A';
-					return `${s.student_id},"${s.fname}","${s.lname}",${s.student_year},"${courseName}",${s.laptop ? 'Yes' : 'No'}`;
-				})
-				.join('\n');
-
-		const blob = new Blob([csvContent], { type: 'text/csv' });
+		const blob = new Blob([BOM + headers + rows.join('\n')], {
+			type: 'text/csv;charset=utf-8;'
+		});
 		const url = window.URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = 'students.csv';
-		a.click();
-		toast.success('Data exported successfully');
-	};
-	// Export data for specific course
-	const exportCourseData = (courseId: string, courseName: string): void => {
-		const courseStudents = studentsByCourse[courseId] || [];
-
-		// Add UTF-8 BOM for proper Thai character encoding
-		const BOM = '\uFEFF';
-		const headers = 'Student ID,First Name,Last Name,Year,Has Laptop\n';
-		const csvContent =
-			BOM +
-			headers +
-			courseStudents
-				.map(
-					(s) =>
-						`${s.student_id},"${s.fname}","${s.lname}",${s.student_year},${s.laptop ? 'Yes' : 'No'}`
-				)
-				.join('\n');
-
-		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `${courseName.replace(/[^a-zA-Z0-9]/g, '_')}_students.csv`;
+		a.download = filename;
 		a.click();
 		window.URL.revokeObjectURL(url);
+	};
+
+	const exportData = (): void => {
+		downloadCsv(
+			'students.csv',
+			'Student ID,First Name,Last Name,Year,Course,Has Laptop\n',
+			datastudent.map((s) => {
+				const courseName =
+					datacourse.find((c) => c.course_id === s.course_id)?.course_name || 'N/A';
+				return `${s.student_id},"${s.fname}","${s.lname}",${s.student_year},"${courseName}",${s.laptop ? 'Yes' : 'No'}`;
+			})
+		);
+		toast.success('Data exported successfully');
+	};
+
+	const exportCourseData = (courseId: string, courseName: string): void => {
+		const courseStudents = studentsByCourse[courseId] || [];
+		downloadCsv(
+			`${courseName.replace(/[^a-zA-Z0-9]/g, '_')}_students.csv`,
+			'Student ID,First Name,Last Name,Year,Has Laptop\n',
+			courseStudents.map(
+				(s) =>
+					`${s.student_id},"${s.fname}","${s.lname}",${s.student_year},${s.laptop ? 'Yes' : 'No'}`
+			)
+		);
 		toast.success(`Exported ${courseStudents.length} students for ${courseName}`);
 	};
 
-	// Filtered courses
+	// A past date locks the form to Archived. Derived rather than written back
+	// into `form`, so there is no cyclical reactive dependency.
+	$: formDatePast = isPastDate(form.course_date);
+	$: effectiveVisibility =
+		formDatePast && !isArchivedState(form.is_visible) ? ARCHIVED : form.is_visible;
+
+	$: errors = {
+		course_name: form.course_name.trim() ? '' : 'Course name is required',
+		course_type: form.course_type.trim() ? '' : 'Course type is required',
+		course_date: form.course_date ? '' : 'Date is required',
+		course_lecture: form.course_lecture.trim() ? '' : 'Lecturer is required',
+		course_location: form.course_location.trim() ? '' : 'Location is required',
+		location_seats: Number(form.location_seats) > 0 ? '' : 'Seats must be at least 1'
+	};
+	$: isValid = Object.values(errors).every((message) => !message);
+
 	$: filteredCourses = datacourse.filter((course) => {
+		const needle = searchTerm.toLowerCase();
 		const matchesSearch =
-			course.course_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			course.course_lecture.toLowerCase().includes(searchTerm.toLowerCase());
+			!needle ||
+			[course.course_name, course.course_lecture, course.course_team, course.course_type]
+				.filter(Boolean)
+				.some((field) => String(field).toLowerCase().includes(needle));
+
+		const filter = selectedFilter.value;
 		const matchesFilter =
-			selectedFilter.value === 'all' ||
-			(selectedFilter.value === 'active' && course.is_visible === '1') ||
-			(selectedFilter.value === 'hidden' && course.is_visible === '0') ||
-			(selectedFilter.value === 'past' && course.pastevent);
+			filter === 'all' ||
+			(filter === 'past' && (isPastDate(course.course_date) || course.pastevent)) ||
+			(filter === 'archived' && isArchivedState(course.is_visible)) ||
+			(['0', '1', '2'].includes(filter) && String(course.is_visible) === filter);
+
 		return matchesSearch && matchesFilter;
 	});
 
-	// Group students by course
 	$: studentsByCourse = datastudent.reduce<Record<string, Student[]>>((acc, student) => {
 		if (!acc[student.course_id]) acc[student.course_id] = [];
 		acc[student.course_id].push(student);
@@ -338,11 +475,10 @@
 	}, {});
 
 	onMount(async () => {
-		// Check authentication
 		const token = localStorage.getItem('auth');
 		if (token) {
 			try {
-				await Wretch(`${import.meta.env.VITE_API_BASE_URL}/admin/auth`)
+				await Wretch(`${API}/admin/auth`)
 					.headers({
 						'Content-type': 'application/json',
 						Authorization: `Bearer ${token}`
@@ -350,7 +486,6 @@
 					.post({})
 					.res();
 				isLoggedIn.set(true);
-				isLoading = false;
 				fetchCourses();
 				fetchStudents();
 			} catch {
@@ -370,10 +505,8 @@
 		<header class="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-lg dark:bg-gray-900/80">
 			<div class="container mx-auto px-4">
 				<div class="flex h-16 items-center justify-between">
-					<div class="flex items-center gap-8">
-						<h1 class="text-2xl font-bold">CS Event Management</h1>
-					</div>
-					<div class="flex items-center gap-4">
+					<h1 class="text-2xl font-bold">CS Event Management</h1>
+					<div class="flex items-center gap-2">
 						<Button variant="outline" size="sm" on:click={exportData} class="gap-2">
 							<Download class="h-4 w-4" />
 							Export
@@ -410,8 +543,8 @@
 					<Card.Content class="p-6">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-muted-foreground text-sm font-medium">Active Courses</p>
-								<p class="text-3xl font-bold">{stats.activeCourses}</p>
+								<p class="text-muted-foreground text-sm font-medium">Open for Registration</p>
+								<p class="text-3xl font-bold">{stats.openCourses}</p>
 							</div>
 							<div
 								class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/20"
@@ -471,17 +604,23 @@
 								<Search
 									class="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
 								/>
-								<Input placeholder="Search courses..." bind:value={searchTerm} class="pl-10" />
+								<Input
+									placeholder="Search name, lecturer, team…"
+									bind:value={searchTerm}
+									class="pl-10"
+								/>
 							</div>
 							<Select.Root bind:selected={selectedFilter}>
-								<Select.Trigger class="w-[180px]">
-									<Select.Value placeholder="Filter by..." />
+								<Select.Trigger class="w-[190px]">
+									<Select.Value placeholder="Filter by…" />
 								</Select.Trigger>
 								<Select.Content>
-									<Select.Item value="all" label="All Courses">All Courses</Select.Item>
-									<Select.Item value="active" label="Active">Active</Select.Item>
-									<Select.Item value="hidden" label="Hidden">Hidden</Select.Item>
-									<Select.Item value="past" label="Past Events">Past Events</Select.Item>
+									<Select.Item value="all" label="All courses">All courses</Select.Item>
+									<Select.Item value="0" label="0 · Draft">0 · Draft</Select.Item>
+									<Select.Item value="1" label="1 · Open">1 · Open</Select.Item>
+									<Select.Item value="2" label="2 · Closed">2 · Closed</Select.Item>
+									<Select.Item value="archived" label="3/4 · Archived">3/4 · Archived</Select.Item>
+									<Select.Item value="past" label="Past events">Past events</Select.Item>
 								</Select.Content>
 							</Select.Root>
 						</div>
@@ -500,91 +639,52 @@
 							>
 								<List class="h-4 w-4" />
 							</Button>
-							<Dialog.Root>
-								<Dialog.Trigger>
-									<Button class="gap-2">
-										<Plus class="h-4 w-4" />
-										Create Course
-									</Button>
-								</Dialog.Trigger>
-								<Dialog.Content class="max-w-2xl">
-									<Dialog.Header>
-										<Dialog.Title>Create New Course</Dialog.Title>
-										<Dialog.Description>
-											Fill in the details to create a new course.
-										</Dialog.Description>
-									</Dialog.Header>
-									<div class="grid gap-4 py-4">
-										<div class="grid grid-cols-2 gap-4">
-											<div class="space-y-2">
-												<Label for="name">Course Name</Label>
-												<Input id="name" bind:value={newCourse.course_name} />
-											</div>
-											<div class="space-y-2">
-												<Label for="type">Course Type</Label>
-												<Input id="type" bind:value={newCourse.course_type} />
-											</div>
-										</div>
-										<div class="grid grid-cols-2 gap-4">
-											<div class="space-y-2">
-												<Label for="date">Date</Label>
-												<Input id="date" type="date" bind:value={newCourse.course_date} />
-											</div>
-											<div class="space-y-2">
-												<Label for="location">Location</Label>
-												<Input id="location" bind:value={newCourse.course_location} />
-											</div>
-										</div>
-										<div class="space-y-2">
-											<Label for="lecture">Lecturer</Label>
-											<Input id="lecture" bind:value={newCourse.course_lecture} />
-										</div>
-										<div class="space-y-2">
-											<Label for="description">Description</Label>
-											<Textarea
-												id="description"
-												bind:value={newCourse.course_description}
-												rows={3}
-											/>
-										</div>
-										<div class="grid grid-cols-3 gap-4">
-											<div class="flex items-center space-x-2">
-												<Switch id="submission" bind:checked={newCourse.is_submissionproject} />
-												<Label for="submission">Submission Project</Label>
-											</div>
-											<div class="flex items-center space-x-2">
-												<Switch id="past" bind:checked={newCourse.pastevent} />
-												<Label for="past">Past Event</Label>
-											</div>
-											<div class="flex items-center space-x-2">
-												<Switch id="pc" bind:checked={newCourse.is_personalcomputer} />
-												<Label for="pc">Requires PC</Label>
-											</div>
-										</div>
-									</div>
-									<Dialog.Footer>
-										<Button on:click={createCourse}>Create Course</Button>
-									</Dialog.Footer>
-								</Dialog.Content>
-							</Dialog.Root>
+							<Button class="gap-2" on:click={openCreate}>
+								<Plus class="h-4 w-4" />
+								New Course
+							</Button>
 						</div>
 					</div>
 
-					<!-- Courses Grid/List -->
-					{#if viewMode === 'grid'}
+					{#if filteredCourses.length === 0}
+						<Card.Root>
+							<Card.Content class="flex flex-col items-center justify-center gap-2 p-12 text-center">
+								<BookOpen class="text-muted-foreground/40 h-12 w-12" />
+								<p class="font-medium">No courses match this filter</p>
+								<p class="text-muted-foreground text-sm">
+									Try a different filter, or create a new course.
+								</p>
+							</Card.Content>
+						</Card.Root>
+					{:else if viewMode === 'grid'}
 						<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-							{#each filteredCourses as course}
-								<Card.Root class="overflow-hidden transition-shadow hover:shadow-lg">
+							{#each filteredCourses as course (course.course_id)}
+								{@const meta = visibilityMeta(course.is_visible)}
+								<Card.Root class="flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
+									{#if course.course_img}
+										<img
+											src={course.course_img}
+											alt=""
+											class="bg-muted h-32 w-full object-cover"
+											loading="lazy"
+										/>
+									{/if}
 									<Card.Header class="pb-4">
-										<div class="flex items-start justify-between">
-											<div class="space-y-1">
-												<Card.Title class="line-clamp-1">{course.course_name}</Card.Title>
-												<div class="flex items-center gap-2">
-													<Badge variant={course.is_visible === '1' ? 'default' : 'secondary'}>
-														{course.is_visible === '1' ? 'Active' : 'Hidden'}
+										<div class="flex items-start justify-between gap-2">
+											<div class="min-w-0 space-y-1">
+												<Card.Title class="line-clamp-2 text-base">{course.course_name}</Card.Title>
+												<div class="flex flex-wrap items-center gap-1.5">
+													<Badge variant="outline" class={meta.badge}>
+														{course.is_visible} · {meta.label}
 													</Badge>
-													{#if course.pastevent}
-														<Badge variant="outline">Past</Badge>
+													{#if isPastDate(course.course_date)}
+														<Badge variant="outline" class="gap-1">
+															<Archive class="h-3 w-3" />
+															Past
+														</Badge>
+													{/if}
+													{#if course.course_type}
+														<Badge variant="secondary">{course.course_type}</Badge>
 													{/if}
 												</div>
 											</div>
@@ -594,57 +694,82 @@
 														<MoreVertical class="h-4 w-4" />
 													</Button>
 												</DropdownMenu.Trigger>
-												<DropdownMenu.Content align="end">
+												<DropdownMenu.Content align="end" class="w-60">
+													<DropdownMenu.Item on:click={() => openEdit(course)}>
+														<Pencil class="mr-2 h-4 w-4" />
+														Edit course
+													</DropdownMenu.Item>
 													<DropdownMenu.Item
 														on:click={() => exportCourseData(course.course_id, course.course_name)}
 													>
 														<Download class="mr-2 h-4 w-4" />
-														Export Students
+														Export students
+													</DropdownMenu.Item>
+													<DropdownMenu.Separator />
+													<DropdownMenu.Label>Visibility</DropdownMenu.Label>
+													{#each VISIBILITY as option}
+														<DropdownMenu.Item
+															disabled={isPastDate(course.course_date) &&
+																!isArchivedState(option.value)}
+															on:click={() => setVisibility(course, option.value)}
+														>
+															<span class="mr-2 flex h-4 w-4 items-center justify-center">
+																{#if String(course.is_visible) === option.value}
+																	<Check class="h-4 w-4" />
+																{/if}
+															</span>
+															{option.value} · {option.label}
+														</DropdownMenu.Item>
+													{/each}
+													{#if isPastDate(course.course_date)}
+														<p class="text-muted-foreground px-2 py-1.5 text-xs">
+															Date has passed — change the date to reopen.
+														</p>
+													{/if}
+													<DropdownMenu.Separator />
+													<DropdownMenu.Item on:click={() => togglePastFlag(course)}>
+														Mark as {course.pastevent ? 'upcoming' : 'past'}
 													</DropdownMenu.Item>
 													<DropdownMenu.Separator />
 													<DropdownMenu.Item
-														on:click={() => toggleVisibility(course.course_id, course.is_visible)}
-													>
-														{course.is_visible === '1' ? 'Hide' : 'Show'} Course
-													</DropdownMenu.Item>
-													<DropdownMenu.Item
-														on:click={() => togglepastevent(course.course_id, course.pastevent)}
-													>
-														Mark as {course.pastevent ? 'Upcoming' : 'Past'}
-													</DropdownMenu.Item>
-													<DropdownMenu.Separator />
-													<DropdownMenu.Item
-														on:click={() => deleteCourse(course.course_id)}
+														on:click={() => deleteCourse(course)}
 														class="text-red-600"
 													>
-														Delete Course
+														<Trash2 class="mr-2 h-4 w-4" />
+														Delete course
 													</DropdownMenu.Item>
 												</DropdownMenu.Content>
 											</DropdownMenu.Root>
 										</div>
 									</Card.Header>
-									<Card.Content class="space-y-2">
+									<Card.Content class="mt-auto space-y-2">
 										<div class="space-y-2 text-sm">
 											<div class="text-muted-foreground flex items-center gap-2">
-												<User class="h-3 w-3" />
+												<User class="h-3 w-3 shrink-0" />
 												<span class="line-clamp-1">{course.course_lecture}</span>
 											</div>
 											<div class="text-muted-foreground flex items-center gap-2">
-												<MapPin class="h-3 w-3" />
+												<MapPin class="h-3 w-3 shrink-0" />
 												<span class="line-clamp-1">{course.course_location}</span>
 											</div>
 											<div class="text-muted-foreground flex items-center gap-2">
-												<Calendar class="h-3 w-3" />
+												<Calendar class="h-3 w-3 shrink-0" />
 												<span>{new Date(course.course_date).toLocaleDateString()}</span>
 											</div>
 										</div>
-										{#if studentsByCourse[course.course_id]}
-											<div class="border-t pt-2">
-												<p class="text-sm font-medium">
-													{studentsByCourse[course.course_id].length} students enrolled
-												</p>
+										<div class="flex items-center justify-between border-t pt-2 text-sm">
+											<span class="font-medium">
+												{studentsByCourse[course.course_id]?.length || 0}/{course.location_seats} enrolled
+											</span>
+											<div class="text-muted-foreground flex items-center gap-2">
+												{#if course.is_personalcomputer}
+													<Laptop class="h-4 w-4" />
+												{/if}
+												{#if course.is_submissionproject}
+													<Badge variant="outline" class="text-xs">Project</Badge>
+												{/if}
 											</div>
-										{/if}
+										</div>
 									</Card.Content>
 								</Card.Root>
 							{/each}
@@ -662,21 +787,26 @@
 												<th class="p-4 text-left font-medium">Date</th>
 												<th class="p-4 text-left font-medium">Location</th>
 												<th class="p-4 text-left font-medium">Students</th>
-												<th class="p-4 text-left font-medium">Status</th>
+												<th class="p-4 text-left font-medium">Visibility</th>
 												<th class="p-4 text-left font-medium">Actions</th>
 											</tr>
 										</thead>
 										<tbody>
-											{#each filteredCourses as course}
+											{#each filteredCourses as course (course.course_id)}
+												{@const meta = visibilityMeta(course.is_visible)}
 												<tr class="hover:bg-muted/50 border-b">
 													<td class="p-4 font-medium">{course.course_name}</td>
 													<td class="p-4">{course.course_lecture}</td>
-													<td class="p-4">{new Date(course.course_date).toLocaleDateString()}</td>
+													<td class="p-4 whitespace-nowrap">
+														{new Date(course.course_date).toLocaleDateString()}
+													</td>
 													<td class="p-4">{course.course_location}</td>
-													<td class="p-4">{studentsByCourse[course.course_id]?.length || 0}</td>
+													<td class="p-4 whitespace-nowrap">
+														{studentsByCourse[course.course_id]?.length || 0}/{course.location_seats}
+													</td>
 													<td class="p-4">
-														<Badge variant={course.is_visible === '1' ? 'default' : 'secondary'}>
-															{course.is_visible === '1' ? 'Active' : 'Hidden'}
+														<Badge variant="outline" class={meta.badge}>
+															{course.is_visible} · {meta.label}
 														</Badge>
 													</td>
 													<td class="p-4">
@@ -686,33 +816,50 @@
 																	<MoreVertical class="h-4 w-4" />
 																</Button>
 															</DropdownMenu.Trigger>
-															<DropdownMenu.Content align="end">
+															<DropdownMenu.Content align="end" class="w-60">
+																<DropdownMenu.Item on:click={() => openEdit(course)}>
+																	<Pencil class="mr-2 h-4 w-4" />
+																	Edit course
+																</DropdownMenu.Item>
 																<DropdownMenu.Item
 																	on:click={() =>
 																		exportCourseData(course.course_id, course.course_name)}
 																>
 																	<Download class="mr-2 h-4 w-4" />
-																	Export
+																	Export students
+																</DropdownMenu.Item>
+																<DropdownMenu.Separator />
+																<DropdownMenu.Label>Visibility</DropdownMenu.Label>
+																{#each VISIBILITY as option}
+																	<DropdownMenu.Item
+																		disabled={isPastDate(course.course_date) &&
+																			!isArchivedState(option.value)}
+																		on:click={() => setVisibility(course, option.value)}
+																	>
+																		<span class="mr-2 flex h-4 w-4 items-center justify-center">
+																			{#if String(course.is_visible) === option.value}
+																				<Check class="h-4 w-4" />
+																			{/if}
+																		</span>
+																		{option.value} · {option.label}
+																	</DropdownMenu.Item>
+																{/each}
+																{#if isPastDate(course.course_date)}
+																	<p class="text-muted-foreground px-2 py-1.5 text-xs">
+																		Date has passed — change the date to reopen.
+																	</p>
+																{/if}
+																<DropdownMenu.Separator />
+																<DropdownMenu.Item on:click={() => togglePastFlag(course)}>
+																	Mark as {course.pastevent ? 'upcoming' : 'past'}
 																</DropdownMenu.Item>
 																<DropdownMenu.Separator />
 																<DropdownMenu.Item
-																	on:click={() =>
-																		toggleVisibility(course.course_id, course.is_visible)}
-																>
-																	{course.is_visible === '1' ? 'Hide' : 'Show'}
-																</DropdownMenu.Item>
-																<DropdownMenu.Item
-																	on:click={() =>
-																		togglepastevent(course.course_id, course.pastevent)}
-																>
-																	Mark as {course.pastevent ? 'Upcoming' : 'Past'}
-																</DropdownMenu.Item>
-																<DropdownMenu.Separator />
-																<DropdownMenu.Item
-																	on:click={() => deleteCourse(course.course_id)}
+																	on:click={() => deleteCourse(course)}
 																	class="text-red-600"
 																>
-																	Delete
+																	<Trash2 class="mr-2 h-4 w-4" />
+																	Delete course
 																</DropdownMenu.Item>
 															</DropdownMenu.Content>
 														</DropdownMenu.Root>
@@ -783,6 +930,197 @@
 			</Tabs.Root>
 		</div>
 	</div>
+
+	<!-- Create / Edit course -->
+	<Dialog.Root bind:open={formOpen}>
+		<Dialog.Content class="max-h-[90vh] max-w-3xl overflow-y-auto">
+			<Dialog.Header>
+				<Dialog.Title>
+					{formMode === 'edit' ? 'Edit course' : 'Create new course'}
+				</Dialog.Title>
+				<Dialog.Description>
+					Every column on the course record is editable here.
+				</Dialog.Description>
+			</Dialog.Header>
+
+			<div class="grid gap-6 py-2">
+				<!-- Basics -->
+				<div class="space-y-4">
+					<h3 class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+						Basics
+					</h3>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="space-y-2">
+							<Label for="name">Course name <span class="text-red-500">*</span></Label>
+							<Input id="name" bind:value={form.course_name} placeholder="Intro to Something" />
+							{#if touched && errors.course_name}
+								<p class="text-xs text-red-500">{errors.course_name}</p>
+							{/if}
+						</div>
+						<div class="space-y-2">
+							<Label for="type">Course type <span class="text-red-500">*</span></Label>
+							<Input
+								id="type"
+								bind:value={form.course_type}
+								list="course-types"
+								placeholder="Web Development"
+							/>
+							<datalist id="course-types">
+								{#each [...new Set(datacourse.map((c) => c.course_type).filter(Boolean))] as type}
+									<option value={type}></option>
+								{/each}
+							</datalist>
+							{#if touched && errors.course_type}
+								<p class="text-xs text-red-500">{errors.course_type}</p>
+							{/if}
+						</div>
+					</div>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="space-y-2">
+							<Label for="date">Date <span class="text-red-500">*</span></Label>
+							<Input id="date" type="date" bind:value={form.course_date} />
+							{#if touched && errors.course_date}
+								<p class="text-xs text-red-500">{errors.course_date}</p>
+							{/if}
+						</div>
+						<div class="space-y-2">
+							<Label for="seats">Seats <span class="text-red-500">*</span></Label>
+							<Input id="seats" type="number" min="1" bind:value={form.location_seats} />
+							{#if touched && errors.location_seats}
+								<p class="text-xs text-red-500">{errors.location_seats}</p>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<!-- People and place -->
+				<div class="space-y-4">
+					<h3 class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+						People &amp; place
+					</h3>
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="space-y-2">
+							<Label for="lecture">Lecturer <span class="text-red-500">*</span></Label>
+							<Input id="lecture" bind:value={form.course_lecture} placeholder="Name [Nickname]" />
+							{#if touched && errors.course_lecture}
+								<p class="text-xs text-red-500">{errors.course_lecture}</p>
+							{/if}
+						</div>
+						<div class="space-y-2">
+							<Label for="team">Team</Label>
+							<Input
+								id="team"
+								bind:value={form.course_team}
+								list="course-teams"
+								placeholder="CS DEV"
+							/>
+							<datalist id="course-teams">
+								{#each [...new Set(datacourse.map((c) => c.course_team).filter(Boolean))] as team}
+									<option value={team}></option>
+								{/each}
+							</datalist>
+						</div>
+					</div>
+					<div class="space-y-2">
+						<Label for="location">Location <span class="text-red-500">*</span></Label>
+						<Input id="location" bind:value={form.course_location} placeholder="224 อาคารจุฬาภรณ์" />
+						{#if touched && errors.course_location}
+							<p class="text-xs text-red-500">{errors.course_location}</p>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Content -->
+				<div class="space-y-4">
+					<h3 class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+						Content
+					</h3>
+					<div class="space-y-2">
+						<Label for="img">Cover image URL</Label>
+						<Input id="img" bind:value={form.course_img} placeholder="https://…" />
+						{#if form.course_img}
+							<img
+								src={form.course_img}
+								alt="Cover preview"
+								class="bg-muted h-32 w-full rounded-md border object-cover"
+							/>
+						{/if}
+					</div>
+					<div class="space-y-2">
+						<Label for="description">Description (Markdown)</Label>
+						<Textarea id="description" bind:value={form.course_description} rows={6} />
+					</div>
+				</div>
+
+				<!-- Options -->
+				<div class="space-y-4">
+					<h3 class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+						Options
+					</h3>
+					<div class="grid gap-4 sm:grid-cols-3">
+						<div class="flex items-center space-x-2">
+							<Switch id="submission" bind:checked={form.is_submissionproject} />
+							<Label for="submission">Submission project</Label>
+						</div>
+						<div class="flex items-center space-x-2">
+							<Switch id="pc" bind:checked={form.is_personalcomputer} />
+							<Label for="pc">Requires own laptop</Label>
+						</div>
+						<div class="flex items-center space-x-2">
+							<Switch id="past" bind:checked={form.pastevent} />
+							<Label for="past">Past event</Label>
+						</div>
+					</div>
+				</div>
+
+				<!-- Visibility -->
+				<div class="space-y-3">
+					<h3 class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+						Visibility (is_visible)
+					</h3>
+					<div class="grid gap-2 sm:grid-cols-5">
+						{#each VISIBILITY as option}
+							{@const locked = formDatePast && !isArchivedState(option.value)}
+							<button
+								type="button"
+								disabled={locked}
+								on:click={() => (form.is_visible = option.value)}
+								class="flex flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 {effectiveVisibility ===
+								option.value
+									? 'border-primary ring-primary bg-primary/5 ring-1'
+									: 'hover:bg-muted'}"
+							>
+								<span class="text-muted-foreground font-mono text-xs">{option.value}</span>
+								<span class="text-sm font-medium">{option.label}</span>
+							</button>
+						{/each}
+					</div>
+					<p class="text-muted-foreground text-sm">{visibilityMeta(effectiveVisibility).hint}</p>
+					{#if formDatePast}
+						<p
+							class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-300"
+						>
+							This date has already passed, so visibility is locked to Archived. Pick a future date to
+							open registration.
+						</p>
+					{/if}
+				</div>
+			</div>
+
+			<Dialog.Footer class="gap-2">
+				<Button variant="outline" on:click={() => (formOpen = false)} disabled={saving}>
+					Cancel
+				</Button>
+				<Button on:click={saveCourse} disabled={saving}>
+					{#if saving}
+						Saving…
+					{:else}
+						{formMode === 'edit' ? 'Save changes' : 'Create course'}
+					{/if}
+				</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
 {:else}
 	<div class="flex h-screen items-center justify-center">
 		<div
