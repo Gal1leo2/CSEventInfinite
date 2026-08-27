@@ -522,7 +522,19 @@
 
 		<div class="container mx-auto p-6">
 			<!-- Stats Cards -->
+			<div class="mb-6 grid gap-4 md:grid-cols-4">
+				<Card.Root>
+					<Card.Content class="p-6">
+						<div class="flex items-center justify-between">
+							<div>
+								<p class="text-muted-foreground text-sm font-medium">Total Courses</p>
+								<p class="text-3xl font-bold">{stats.totalCourses}</p>
+							</div>
+						</div>
+					</Card.Content>
+				</Card.Root>
 
+			
 			<!-- Main Content -->
 			<Tabs.Root value="courses" class="space-y-4">
 				<Tabs.List class="grid w-full max-w-md grid-cols-2">
