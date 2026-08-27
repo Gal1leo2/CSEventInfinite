@@ -534,7 +534,10 @@
 					</Card.Content>
 				</Card.Root>
 
-			
+
+
+			</div>
+
 			<!-- Main Content -->
 			<Tabs.Root value="courses" class="space-y-4">
 				<Tabs.List class="grid w-full max-w-md grid-cols-2">
