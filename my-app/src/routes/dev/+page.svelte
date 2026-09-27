@@ -14,9 +14,11 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Wretch from 'wretch';
 	import { toast } from 'svelte-sonner';
+	import { API, adminToken, csrf } from '$lib/api';
+	import BrandMark from '$lib/components/site/BrandMark.svelte';
 	import {
-		Activity,
 		Archive,
+		Award,
 		BookOpen,
 		Calendar,
 		Check,
@@ -75,8 +77,6 @@
 		totalStudents: number;
 		upcomingEvents: number;
 	}
-
-	const API = import.meta.env.VITE_API_BASE_URL;
 
 	// The five is_visible states the public site understands.
 	const VISIBILITY = [
@@ -171,17 +171,17 @@
 		upcomingEvents: 0
 	};
 
-	// CSRF tokens are single-use on the backend, so every mutation fetches a fresh one.
-	const csrf = async (): Promise<string> => {
-		const res = await Wretch(`${API}/user/csrf-token`).get().json<{ csrfToken: string }>();
-		return res.csrfToken;
-	};
+	// Every mutation carries the admin token so the API can tell admins from anonymous
+	// callers, plus a fresh CSRF token (they are single-use on the backend).
+	const mutationHeaders = async (): Promise<Record<string, string>> => ({
+		'X-CSRF-Token': await csrf(),
+		Authorization: `Bearer ${adminToken()}`
+	});
 
 	// PUT /course/update-visible doubles as the generic partial-update endpoint.
 	const patchCourse = async (courseId: string, patch: Record<string, unknown>): Promise<void> => {
-		const csrfToken = await csrf();
 		await Wretch(`${API}/course/update-visible/${courseId}`)
-			.headers({ 'X-CSRF-Token': csrfToken })
+			.headers(await mutationHeaders())
 			.put(patch)
 			.res();
 	};
@@ -306,9 +306,8 @@
 				await patchCourse(editingId, payload);
 				toast.success('Course updated');
 			} else {
-				const csrfToken = await csrf();
 				const created = await Wretch(`${API}/course/create`)
-					.headers({ 'X-CSRF-Token': csrfToken })
+					.headers(await mutationHeaders())
 					.post(payload)
 					.json<Course>();
 
@@ -376,9 +375,8 @@
 		if (!confirm(`Delete "${course.course_name}"? This also removes its enrolled students.`)) return;
 
 		try {
-			const csrfToken = await csrf();
 			await Wretch(`${API}/course/delete/${course.course_id}`)
-				.headers({ 'X-CSRF-Token': csrfToken })
+				.headers(await mutationHeaders())
 				.delete()
 				.res();
 
@@ -498,44 +496,58 @@
 </script>
 
 {#if $isLoggedIn}
-	<div
-		class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
-	>
+	<div class="min-h-screen bg-background">
 		<!-- Header -->
-		<header class="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-lg dark:bg-gray-900/80">
-			<div class="container mx-auto px-4">
-				<div class="flex h-16 items-center justify-between">
-					<h1 class="text-2xl font-bold">CS Event Management</h1>
-					<div class="flex items-center gap-2">
-						<Button variant="outline" size="sm" on:click={exportData} class="gap-2">
-							<Download class="h-4 w-4" />
-							Export
-						</Button>
-						<Button variant="destructive" size="sm" on:click={logout} class="gap-2">
-							<LogOut class="h-4 w-4" />
-							Logout
-						</Button>
-					</div>
+		<header
+			class="sticky top-0 z-50 border-b border-charcoal-900/[0.06] bg-background/80 backdrop-blur-xl"
+		>
+			<div class="h-[3px] bg-brand-500"></div>
+			<div class="container flex h-16 items-center justify-between gap-3">
+				<BrandMark href="/dev" subtitle="Admin console" />
+				<div class="flex items-center gap-2">
+					<Button href="/dev/certificate" variant="ghost" size="sm" class="gap-2">
+						<Award class="h-4 w-4" />
+						<span class="hidden sm:inline">Certificates</span>
+					</Button>
+					<Button variant="outline" size="sm" on:click={exportData} class="gap-2">
+						<Download class="h-4 w-4" />
+						<span class="hidden sm:inline">Export</span>
+					</Button>
+					<Button variant="ghost" size="sm" on:click={logout} class="gap-2 text-red-600 hover:bg-red-50 hover:text-red-700">
+						<LogOut class="h-4 w-4" />
+						<span class="hidden sm:inline">Logout</span>
+					</Button>
 				</div>
 			</div>
 		</header>
 
-		<div class="container mx-auto p-6">
-			<!-- Stats Cards -->
-			<div class="mb-6 grid gap-4 md:grid-cols-4">
-				<Card.Root>
-					<Card.Content class="p-6">
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-muted-foreground text-sm font-medium">Total Courses</p>
-								<p class="text-3xl font-bold">{stats.totalCourses}</p>
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
+		<div class="container py-8">
+			<div class="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+				<div>
+					<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
+						// Dashboard
+					</p>
+					<h1 class="mt-2 font-display text-3xl font-bold tracking-tight text-charcoal-950">
+						Course management
+					</h1>
+				</div>
 
-
-
+				<!-- Stats Cards -->
+				<div
+					class="flex items-center gap-4 rounded-2xl border border-charcoal-900/10 bg-card px-5 py-4 shadow-sm"
+				>
+					<span
+						class="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200"
+					>
+						<BookOpen class="h-5 w-5" />
+					</span>
+					<div>
+						<p class="text-sm font-medium text-muted-foreground">Total Courses</p>
+						<p class="font-display text-3xl font-bold leading-none text-charcoal-950">
+							{stats.totalCourses}
+						</p>
+					</div>
+				</div>
 			</div>
 
 			<!-- Main Content -->

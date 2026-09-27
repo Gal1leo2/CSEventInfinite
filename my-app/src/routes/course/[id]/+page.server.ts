@@ -1,56 +1,62 @@
+import { env } from '$env/dynamic/private';
+import type { Actions } from './$types';
+
 interface TokenValidateResponse {
-    'error-codes': string[];
-    success: boolean;
-    action: string;
-    cdata: string;
+	'error-codes': string[];
+	success: boolean;
+	action: string;
+	cdata: string;
 }
 
 async function validateToken(token: string, secret: string) {
-    const response = await fetch(
-        'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-        {
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-                response: token,
-                secret: secret,
-            }),
-        },
-    );
+	const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+		method: 'POST',
+		headers: {
+			'content-type': 'application/json'
+		},
+		body: JSON.stringify({
+			response: token,
+			secret: secret
+		})
+	});
 
-    const data: TokenValidateResponse = await response.json();
+	const data: TokenValidateResponse = await response.json();
 
-    return {
-        // Return the status
-        success: data.success,
+	return {
+		// Return the status
+		success: data.success,
 
-        // Return the first error if it exists
-        error: data['error-codes']?.length ? data['error-codes'][0] : null,
-    };
+		// Return the first error if it exists
+		error: data['error-codes']?.length ? data['error-codes'][0] : null
+	};
 }
 
-export const actions = {
-    default: async ({ request }) => {
-        const data = await request.formData();
+export const actions: Actions = {
+	default: async ({ request }) => {
+		const data = await request.formData();
 
-        const token = data.get('cf-turnstile-response'); // CAPTCHA response from form
+		const token = data.get('cf-turnstile-response'); // CAPTCHA response from form
+		if (typeof token !== 'string' || !token) {
+			return { error: 'Invalid CAPTCHA' };
+		}
 
-        // Use the imported secret key from environment variables
-        const SECRET_KEY = '0x4AAAAAAAkTZwT9rp20WBQs-cCAb3ZLQug'; 
+		const secret = env.TURNSTILE_SECRET_KEY;
+		if (!secret) {
+			console.error('TURNSTILE_SECRET_KEY is not set');
+			return { error: 'CAPTCHA is not configured' };
+		}
 
-        const { success, error } = await validateToken(token, SECRET_KEY);
+		const { success, error } = await validateToken(token, secret);
 
-        if (!success) {
-            return {
-                error: error || 'Invalid CAPTCHA',
-            };
-        }
+		if (!success) {
+			return {
+				error: error || 'Invalid CAPTCHA'
+			};
+		}
 
-        // CAPTCHA is valid, return success
-        return {
-            success: true,
-        };
-    },
+		// CAPTCHA is valid, return success
+		return {
+			success: true
+		};
+	}
 };

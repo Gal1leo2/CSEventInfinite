@@ -1,6 +1,7 @@
 <script>
 	import '../app.css';
 	import { dev } from '$app/environment';
+	import { Toaster } from 'svelte-sonner';
 
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 	import { inject } from '@vercel/analytics'
@@ -10,3 +11,6 @@
 </script>
 
 <slot></slot>
+
+<!-- One toaster for every page; pages only call toast(). -->
+<Toaster richColors closeButton position="top-center" />

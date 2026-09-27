@@ -8,9 +8,13 @@ const config: Config = {
 	theme: {
 		container: {
 			center: true,
-			padding: "2rem",
+			padding: {
+				DEFAULT: "1rem",
+				sm: "1.5rem",
+				lg: "2rem"
+			},
 			screens: {
-				"2xl": "1400px"
+				"2xl": "1280px"
 			}
 		},
 		extend: {
@@ -47,6 +51,33 @@ const config: Config = {
 				card: {
 					DEFAULT: "hsl(var(--card) / <alpha-value>)",
 					foreground: "hsl(var(--card-foreground) / <alpha-value>)"
+				},
+				// Sampled from the ComSci KMITL logo: amber #FC9C18, charcoal #494C54.
+				brand: {
+					50: "#FFF8EC",
+					100: "#FFEDCF",
+					200: "#FED89A",
+					300: "#FDC05E",
+					400: "#FCAB36",
+					500: "#FC9C18",
+					600: "#E27E06",
+					700: "#B85F08",
+					800: "#944A0E",
+					900: "#793D0F",
+					950: "#462004"
+				},
+				charcoal: {
+					50: "#F6F6F7",
+					100: "#EAEBED",
+					200: "#D4D6DA",
+					300: "#B2B5BC",
+					400: "#898D97",
+					500: "#6B6F7A",
+					600: "#575A64",
+					700: "#494C54",
+					800: "#393B42",
+					900: "#27292E",
+					950: "#18191D"
 				}
 			},
 			borderRadius: {
@@ -55,7 +86,29 @@ const config: Config = {
 				sm: "calc(var(--radius) - 4px)"
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				sans: ['"IBM Plex Sans Thai"', ...fontFamily.sans],
+				display: ["Prompt", '"IBM Plex Sans Thai"', ...fontFamily.sans],
+				mono: ['"JetBrains Mono"', ...fontFamily.mono]
+			},
+			keyframes: {
+				"orbit-spin": {
+					to: { transform: "rotate(360deg)" }
+				},
+				"fade-up": {
+					from: { opacity: "0", transform: "translateY(12px)" },
+					to: { opacity: "1", transform: "translateY(0)" }
+				},
+				"pop-in": {
+					"0%": { opacity: "0", transform: "scale(0.6)" },
+					"70%": { opacity: "1", transform: "scale(1.06)" },
+					"100%": { transform: "scale(1)" }
+				}
+			},
+			animation: {
+				"orbit-slow": "orbit-spin 60s linear infinite",
+				"orbit-slower": "orbit-spin 90s linear infinite reverse",
+				"fade-up": "fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
+				"pop-in": "pop-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both"
 			}
 		}
 	},

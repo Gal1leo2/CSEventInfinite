@@ -1,58 +1,249 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
-    --primary: 24.6 95% 53.1%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
-    --destructive: 0 72.22% 50.59%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 24.6 95% 53.1%;
-    --radius: 0.75rem;
-  }
-  .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
-    --primary: 20.5 90.2% 48.2%;
-    --primary-foreground: 60 9.1% 97.8%;
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 60 9.1% 97.8%;
-    --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 20.5 90.2% 48.2%;
-  }
+	/* Brand: amber #FC9C18 (35 97% 54%) and charcoal #494C54 (224 7% 31%). Amber is
+	   too light for white text, so primary buttons carry dark ink instead. */
+	:root {
+		--background: 36 25% 98%;
+		--foreground: 224 12% 12%;
+		--card: 0 0% 100%;
+		--card-foreground: 224 12% 12%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 224 12% 12%;
+		--primary: 35 97% 54%;
+		--primary-foreground: 224 14% 10%;
+		--secondary: 36 18% 94%;
+		--secondary-foreground: 224 12% 16%;
+		--muted: 36 16% 94.5%;
+		--muted-foreground: 224 6% 40%;
+		--accent: 36 100% 95%;
+		--accent-foreground: 28 85% 26%;
+		--destructive: 0 72% 51%;
+		--destructive-foreground: 0 0% 100%;
+		--border: 30 10% 88%;
+		--input: 30 10% 85%;
+		--ring: 35 97% 54%;
+		--radius: 0.875rem;
+	}
+	.dark {
+		--background: 225 10% 8%;
+		--foreground: 36 20% 96%;
+		--card: 225 9% 11%;
+		--card-foreground: 36 20% 96%;
+		--popover: 225 9% 11%;
+		--popover-foreground: 36 20% 96%;
+		--primary: 35 97% 54%;
+		--primary-foreground: 224 14% 10%;
+		--secondary: 225 7% 17%;
+		--secondary-foreground: 36 20% 96%;
+		--muted: 225 7% 17%;
+		--muted-foreground: 225 5% 64%;
+		--accent: 30 40% 16%;
+		--accent-foreground: 36 95% 70%;
+		--destructive: 0 62% 45%;
+		--destructive-foreground: 0 0% 100%;
+		--border: 225 7% 19%;
+		--input: 225 7% 22%;
+		--ring: 35 97% 54%;
+	}
 }
- 
+
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+	* {
+		@apply border-border;
+	}
+	html {
+		scroll-behavior: smooth;
+		scroll-padding-top: 5rem;
+	}
+	body {
+		@apply bg-background font-sans text-foreground antialiased;
+		font-feature-settings: 'ss01';
+	}
+	::selection {
+		@apply bg-brand-200 text-charcoal-950;
+	}
+}
+
+@layer components {
+	/* Keyboard keycap, used for the CTRL / ALT / SHIFT hero lines. */
+	.keycap {
+		@apply inline-flex cursor-pointer select-none items-center justify-center gap-1.5 rounded-[0.6em] border border-charcoal-200 bg-white px-[0.45em] pb-[0.12em] pt-[0.04em] align-[0.06em] font-mono font-bold text-charcoal-900;
+		font-size: 0.72em;
+		line-height: 1.25;
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: transparent;
+		transition:
+			transform 90ms ease-out,
+			box-shadow 90ms ease-out,
+			background-color 150ms,
+			border-color 150ms;
+		box-shadow:
+			inset 0 -0.14em 0 hsl(224 7% 86%),
+			0 0.08em 0 hsl(224 7% 78%),
+			0 0.35em 0.8em -0.3em hsl(224 20% 10% / 0.25);
+	}
+	.keycap:hover {
+		transform: translateY(-0.03em);
+	}
+	.keycap-brand {
+		@apply border-brand-600 bg-brand-500 text-charcoal-950;
+		box-shadow:
+			inset 0 -0.14em 0 hsl(33 95% 45%),
+			0 0.08em 0 hsl(30 90% 38%),
+			0 0.35em 0.8em -0.3em hsl(30 90% 30% / 0.45);
+	}
+	/* Held down: the cap sinks, its edge disappears and it glows amber. */
+	.keycap.is-down {
+		@apply border-brand-400 bg-brand-100;
+		transform: translateY(0.1em);
+		box-shadow:
+			inset 0 -0.03em 0 hsl(35 90% 80%),
+			0 0 0 0.14em hsl(35 97% 54% / 0.28);
+	}
+	.keycap-brand.is-down {
+		@apply border-brand-600 bg-brand-400;
+		box-shadow:
+			inset 0 -0.03em 0 hsl(33 95% 45%),
+			0 0 0 0.14em hsl(35 97% 54% / 0.35);
+	}
+
+	/* One press per key on page load, staggered with animation-delay. Backwards fill
+	   only, so it never pins the transform and the hold effect still works after. */
+	.keycap-press {
+		animation: key-press 0.45s ease-in-out backwards;
+	}
+
+	/* The "AI" style of the hero word: twinkling sparkles, a gradient that keeps
+	   flowing, a soft glow behind, and a left-to-right reveal like a streamed answer. */
+	.ai-word {
+		@apply relative inline-flex items-baseline gap-[0.08em];
+		isolation: isolate;
+	}
+	.ai-glow {
+		@apply absolute -inset-x-[0.15em] inset-y-[0.2em] -z-10 rounded-full;
+		background: linear-gradient(90deg, #7c3aed, #d946ef, #3b82f6, #06b6d4);
+		filter: blur(0.4em);
+		opacity: 0.3;
+		animation: ai-glow 3s ease-in-out infinite;
+	}
+	.ai-sparkle {
+		@apply h-[0.72em] w-[0.72em] shrink-0 self-center overflow-visible;
+		animation: ai-twinkle 2.4s ease-in-out infinite;
+		transform-origin: 42% 50%;
+	}
+	.ai-sparkle-small {
+		transform-box: fill-box;
+		transform-origin: center;
+		animation: ai-twinkle 1.6s ease-in-out infinite reverse;
+	}
+	.ai-text {
+		@apply pr-[0.04em];
+		background: linear-gradient(90deg, #7c3aed, #c026d3, #2563eb, #06b6d4, #7c3aed);
+		background-size: 200% auto;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		animation: ai-shimmer 3s linear infinite;
+	}
+	.ai-word.is-active .ai-text {
+		animation:
+			ai-shimmer 3s linear infinite,
+			ai-reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+	}
+
+	/* Blinking terminal cursor. */
+	.caret {
+		animation: caret-blink 1s steps(1) infinite;
+	}
+
+	/* Faint dot grid, like a breadboard. */
+	.bg-dot-grid {
+		background-image: radial-gradient(hsl(224 7% 31% / 0.14) 1px, transparent 1px);
+		background-size: 22px 22px;
+	}
+
+	/* Trace line with node dots at both ends, echoing the S in the logo. */
+	.trace {
+		@apply relative h-px bg-charcoal-200;
+	}
+	.trace::before,
+	.trace::after {
+		content: '';
+		@apply absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-charcoal-300;
+	}
+	.trace::before {
+		@apply left-0;
+	}
+	.trace::after {
+		@apply right-0;
+	}
+}
+
+@keyframes ai-shimmer {
+	to {
+		background-position: 200% center;
+	}
+}
+
+@keyframes ai-reveal {
+	from {
+		clip-path: inset(-25% 100% -25% 0);
+	}
+	to {
+		clip-path: inset(-25% -5% -25% 0);
+	}
+}
+
+@keyframes ai-glow {
+	0%,
+	100% {
+		opacity: 0.22;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
+@keyframes ai-twinkle {
+	0%,
+	100% {
+		transform: scale(1) rotate(0deg);
+	}
+	50% {
+		transform: scale(0.72) rotate(45deg);
+	}
+}
+
+@keyframes caret-blink {
+	50% {
+		opacity: 0;
+	}
+}
+
+@keyframes key-press {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	45% {
+		transform: translateY(0.08em);
+		box-shadow:
+			inset 0 -0.05em 0 hsl(224 7% 86%),
+			0 0.02em 0 hsl(224 7% 78%),
+			0 0.1em 0.3em -0.2em hsl(224 20% 10% / 0.25);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }

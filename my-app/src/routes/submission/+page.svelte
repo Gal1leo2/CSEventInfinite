@@ -1,17 +1,29 @@
 <script lang="ts">
-	import { LibraryIcon } from 'lucide-svelte';
-	import { Input } from '$lib/components/ui/input';
-	import { Button } from '$lib/components/ui/button';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
-	import { writable } from 'svelte/store';
-	import toast, { Toaster } from 'svelte-french-toast';
-	import Wretch from 'wretch';
-	import { Skeleton } from '$lib/components/ui/skeleton';
+	import {
+		ArrowRight,
+		BadgeCheck,
+		Check,
+		ChevronDown,
+		CircleAlert,
+		CloudUpload,
+		FileText,
+		LoaderCircle,
+		RotateCw,
+		TriangleAlert,
+		X
+	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import { Upload } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
+	import Wretch from 'wretch';
+	import { API, csrf, getErrorMessage } from '$lib/api';
+	import type { Course } from '$lib/course';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import SiteFooter from '$lib/components/site/SiteFooter.svelte';
+	import SiteHeader from '$lib/components/site/SiteHeader.svelte';
 
-	// Define types
-	interface getuser {
+	interface Enrollment {
 		id: string;
 		student_id: string;
 		Fname: string;
@@ -20,111 +32,140 @@
 		laptop: boolean;
 	}
 
-	interface Course {
-		course_id: any;
-		course_name: string;
-		course_lecture: string;
-		course_type: string;
-		course_date: string;
-		is_visible: boolean;
-	}
+	// Without this the upload would post to `undefined/upload`.
+	const STORAGE: string | undefined = import.meta.env.VITE_API_STORAGE;
 
-	let datauser: getuser[] = [];
-	let datacourse: Course[] = [];
-	let files: File[] = [];
-	let isUploading: boolean = false;
-	let showAlert: boolean = false;
-	let studentId: string = '';
+	const canUpload = Boolean(STORAGE);
+
+	const STEPS = ['Student ID', 'Upload files'];
+
+	let enrollments: Enrollment[] = [];
+	let courses: Course[] = [];
+	let isLoading = true;
+	let loadError = '';
+
+	let studentId = '';
+	let verifiedId = '';
 	let studentCourses: Course[] = [];
-	let selectedCourse: string = ''; // Changed to string
-	let studentVerified: boolean = false;
+	let selectedCourse = '';
 
-	const isStudentLoading = writable(true);
-	const isCourseLoading = writable(true);
+	let files: File[] = [];
+	let isDragging = false;
+	let isUploading = false;
+	let showConfirm = false;
 
-	const students = writable<getuser[]>([]);
-	const error = writable<string>('');
-
-	const csrf = async () => {
-		try {
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/csrf-token`)
-				.get()
-				.json<{ csrfToken: string }>();
-			return response.csrfToken;
-		} catch (error) {
-			console.error('Failed to fetch CSRF token:', error);
-			throw new Error('Failed to fetch CSRF token');
-		}
-	};
+	$: step = verifiedId ? 2 : 1;
+	$: totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+	$: selectedCourseName =
+		studentCourses.find((course) => String(course.course_id) === selectedCourse)?.course_name ?? '';
 
 	async function fetchStudents() {
-		try {
-			const csrfToken = await csrf();
-			isStudentLoading.set(true);
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getuser`)
-				.headers({ 'X-CSRF-Token': csrfToken })
-				.get()
-				.json<getuser[]>();
-			datauser = response;
-			students.set(response);
-		} catch (err) {
-			error.set(getErrorMessage(err));
-		} finally {
-			isStudentLoading.set(false);
-		}
+		const csrfToken = await csrf();
+		enrollments = await Wretch(`${API}/user/getuser`)
+			.headers({ 'X-CSRF-Token': csrfToken })
+			.get()
+			.json<Enrollment[]>();
 	}
 
 	async function fetchCourses() {
+		const csrfToken = await csrf();
+		courses = await Wretch(`${API}/user/getcourse`)
+			.headers({ 'X-CSRF-Token': csrfToken })
+			.get()
+			.json<Course[]>();
+	}
+
+	async function load() {
+		isLoading = true;
+		loadError = '';
 		try {
-			const csrfToken = await csrf();
-			isCourseLoading.set(true);
-			const response = await Wretch(`${import.meta.env.VITE_API_BASE_URL}/user/getcourse`)
-				.headers({ 'X-CSRF-Token': csrfToken })
-				.get()
-				.json<Course[]>();
-			datacourse = response;
+			await Promise.all([fetchStudents(), fetchCourses()]);
 		} catch (err) {
-			error.set(getErrorMessage(err));
+			loadError = getErrorMessage(err);
 		} finally {
-			isCourseLoading.set(false);
+			isLoading = false;
 		}
 	}
 
-	function getErrorMessage(error: unknown): string {
-		if (error instanceof Error) return error.message;
-		return String(error);
-	}
+	function checkStudentId() {
+		const id = studentId.trim();
+		const matches = enrollments.filter((user) => String(user.student_id) === id);
 
-	async function checkStudentId() {
-		const student = datauser.filter((user) => user.student_id === studentId);
-		if (student.length > 0) {
-			const studentCourseIds = student.map((user) => user.course_id);
-			const uniqueCourseIds = [...new Set(studentCourseIds)];
-			studentCourses = datacourse.filter((course) => uniqueCourseIds.includes(course.course_id));
-			studentVerified = true;
-		} else {
+		if (!id || matches.length === 0) {
 			toast.error('Student ID not found.');
 			studentCourses = [];
-			studentVerified = false;
+			verifiedId = '';
+			return;
 		}
+
+		const courseIds = new Set(matches.map((user) => String(user.course_id)));
+		studentCourses = courses.filter((course) => courseIds.has(String(course.course_id)));
+		selectedCourse = studentCourses.length === 1 ? String(studentCourses[0].course_id) : '';
+		files = [];
+		verifiedId = id;
 	}
 
-	const handleFileChange = (event: Event) => {
-		const input = event.target as HTMLInputElement;
-		if (input.files) {
-			files = Array.from(input.files).map((file) => {
-				const newFileName = `${studentId}_${file.name}`;
-				return new File([file], newFileName, { type: file.type });
-			});
-		}
-	};
+	function changeStudent() {
+		verifiedId = '';
+		studentCourses = [];
+		selectedCourse = '';
+		files = [];
+	}
 
-	const uploadFiles = async () => {
+	// Every file is prefixed with the student ID so staff can tell submissions apart.
+	function setFiles(list: FileList | null | undefined) {
+		if (!list || list.length === 0) return;
+		files = Array.from(list).map(
+			(file) => new File([file], `${verifiedId}_${file.name}`, { type: file.type })
+		);
+	}
+
+	function handleFileChange(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		setFiles(input.files);
+		// Clear it so picking the same file again still fires `change`.
+		input.value = '';
+	}
+
+	function handleDrop(event: DragEvent) {
+		isDragging = false;
+		if (!canUpload || isUploading) return;
+		setFiles(event.dataTransfer?.files);
+	}
+
+	// dragleave also fires when the pointer moves onto a child, so ignore those.
+	function handleDragLeave(event: DragEvent) {
+		const zone = event.currentTarget as Node;
+		if (!zone.contains(event.relatedTarget as Node | null)) isDragging = false;
+	}
+
+	function removeFile(index: number) {
+		files = files.filter((_, i) => i !== index);
+	}
+
+	function formatSize(bytes: number): string {
+		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	}
+
+	function requestUpload() {
 		if (files.length === 0) {
 			toast.error('Please select files to upload.');
 			return;
 		}
+		if (!selectedCourse) {
+			toast.error('Please select a course.');
+			return;
+		}
+		showConfirm = true;
+	}
 
+	async function uploadFiles() {
+		if (!STORAGE) return;
+		if (files.length === 0) {
+			toast.error('Please select files to upload.');
+			return;
+		}
 		if (!selectedCourse) {
 			toast.error('Please select a course.');
 			return;
@@ -136,7 +177,7 @@
 		files.forEach((file) => formData.append('files', file));
 
 		try {
-			const response = await fetch(`${import.meta.env.VITE_API_STORAGE}/upload`, {
+			const response = await fetch(`${STORAGE}/upload`, {
 				method: 'POST',
 				body: formData,
 				headers: {
@@ -144,204 +185,358 @@
 				}
 			});
 
-			const result = await response.json();
+			const result = await response.json().catch(() => ({}));
 
 			if (response.ok) {
 				toast.success('Files uploaded successfully!');
+				files = [];
 			} else {
-				toast.error('Error: ' + result.error);
+				toast.error('Error: ' + (result.error ?? response.statusText));
 			}
 		} catch (error) {
-			toast.error('Error: ' + (error as Error).message);
+			toast.error('Error: ' + getErrorMessage(error));
 		} finally {
 			isUploading = false;
 		}
-	};
+	}
 
-	const handleAlertAction = () => {
+	function confirmUpload() {
+		showConfirm = false;
 		uploadFiles();
-		setShowAlert(false);
-	};
+	}
 
-	const setShowAlert = (show: boolean) => {
-		showAlert = show;
-	};
-
-	onMount(() => {
-		fetchStudents();
-		fetchCourses();
-	});
+	onMount(load);
 </script>
 
 <svelte:head>
-	<link href="https://fonts.googleapis.com/css?family=Noto Sans Thai" rel="stylesheet" />
+	<title>Submit project · CSEvent</title>
+	<meta name="description" content="Upload your short course project files" />
 </svelte:head>
 
-<div class="upload-container">
-	{#if $isStudentLoading || $isCourseLoading}
-		<Skeleton class="h-[20px] w-[100px] rounded-full" />
-		<Skeleton class="mt-4 h-[20px] w-full rounded-md" />
-		<Skeleton class="mt-4 h-[20px] w-[50%] rounded-md" />
-	{:else}
-		{#if !studentVerified}
-			<div>
-				<h1>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="lucide lucide-id-card"
-						color="#3182ce"
-						><path d="M16 10h2" /><path d="M16 14h2" /><path d="M6.17 15a3 3 0 0 1 5.66 0" /><circle
-							cx="9"
-							cy="11"
-							r="2"
-						/><rect x="2" y="5" width="20" height="14" rx="2" /></svg
-					>
-					Enter Student ID
-				</h1>
-				<Input
-					id="student-id"
-					type="text"
-					placeholder="Enter Student ID"
-					bind:value={studentId}
-					class="file-input"
-				/>
-				<Button class="upload-button mt-4" on:click={checkStudentId}>Check Student ID</Button>
-			</div>
-		{/if}
+<div class="flex min-h-screen flex-col">
+	<SiteHeader />
 
-		{#if studentVerified}
-			<div>
-				<h1>
-					<Upload size={24} color="#3182ce" />
-					Select Courses and Upload Files
-				</h1>
+	<main class="relative flex-1 overflow-hidden">
+		<div
+			class="bg-dot-grid pointer-events-none absolute inset-x-0 top-0 h-80 [mask-image:linear-gradient(to_bottom,black,transparent)]"
+		></div>
 
-				<select bind:value={selectedCourse} class="file-input">
-					<option value="" disabled>Select Course</option>
-					{#each studentCourses as course}
-						<option value={course.course_id}>{course.course_name}</option>
-					{/each}
-				</select>
-
-				<p class="text-left text-sm text-red-600">
-					*คุณสามารถ Upload หลายไฟล์พร้อมกันได้ โดยการ คลุมทุกไฟล์ที่ต้องการ Upload
+		<div class="relative mx-auto w-full max-w-xl px-4 pb-20 pt-10 sm:px-6 sm:pt-14">
+			<div class="animate-fade-up">
+				<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
+					// Project submission
 				</p>
-
-				<Input id="files" type="file" multiple on:change={handleFileChange} class="file-input" />
-
-				<Button
-					class="upload-button mt-4"
-					on:click={() => setShowAlert(true)}
-					disabled={files.length === 0 || isUploading}
+				<h1
+					class="mt-2 font-display text-3xl font-bold tracking-tight text-charcoal-950 sm:text-4xl"
 				>
-					{isUploading ? 'Uploading...' : 'Upload'}
-				</Button>
-
-				{#if showAlert}
-					<AlertDialog.Root open={showAlert} on:openChange={() => setShowAlert(false)}>
-						<AlertDialog.Trigger />
-						<AlertDialog.Content>
-							<AlertDialog.Header>
-								<AlertDialog.Title>Confirm Upload</AlertDialog.Title>
-								<AlertDialog.Description>
-									Are you sure you want to upload these files? This action cannot be undone.
-								</AlertDialog.Description>
-							</AlertDialog.Header>
-							<AlertDialog.Footer>
-								<AlertDialog.Cancel on:click={() => setShowAlert(false)}>Cancel</AlertDialog.Cancel>
-								<AlertDialog.Action on:click={handleAlertAction}>Upload</AlertDialog.Action>
-							</AlertDialog.Footer>
-						</AlertDialog.Content>
-					</AlertDialog.Root>
-				{/if}
+					Submit your project
+				</h1>
+				<p class="mt-2 text-charcoal-600">
+					Verify your student ID, pick your course, then upload your files.
+				</p>
 			</div>
-		{/if}
-	{/if}
 
-	<Toaster />
+			<div
+				class="mt-8 overflow-hidden rounded-2xl border border-charcoal-900/10 bg-card shadow-sm"
+			>
+				<!-- Step indicator -->
+				<ol class="flex items-center gap-3 border-b border-charcoal-900/10 px-5 py-4 sm:px-6">
+					{#each STEPS as label, i}
+						{@const number = i + 1}
+						{@const done = step > number}
+						{@const active = step === number}
+						<li
+							class="flex items-center gap-2.5 {i < STEPS.length - 1 ? 'flex-1' : ''}"
+							aria-current={active ? 'step' : undefined}
+						>
+							<span
+								class="grid h-7 w-7 shrink-0 place-items-center rounded-full font-mono text-xs font-bold {done
+									? 'bg-charcoal-950 text-white'
+									: active
+										? 'bg-brand-500 text-charcoal-950'
+										: 'bg-charcoal-100 text-charcoal-500'}"
+							>
+								{#if done}
+									<Check class="h-3.5 w-3.5" />
+									<span class="sr-only">Completed:</span>
+								{:else}
+									{number}
+								{/if}
+							</span>
+							<span
+								class="whitespace-nowrap text-sm font-semibold {active || done
+									? 'text-charcoal-950'
+									: 'text-charcoal-500'}">{label}</span
+							>
+							{#if i < STEPS.length - 1}
+								<span
+									aria-hidden="true"
+									class="ml-1 h-px flex-1 {done ? 'bg-charcoal-950' : 'bg-charcoal-200'}"
+								></span>
+							{/if}
+						</li>
+					{/each}
+				</ol>
+
+				<div class="p-5 sm:p-6">
+					{#if isLoading}
+						<div class="space-y-4" aria-busy="true" aria-label="Loading">
+							<div class="h-4 w-28 animate-pulse rounded bg-charcoal-100"></div>
+							<div class="h-11 w-full animate-pulse rounded-xl bg-charcoal-100"></div>
+							<div class="h-11 w-full animate-pulse rounded-xl bg-charcoal-100"></div>
+						</div>
+					{:else if loadError}
+						<div role="alert" class="rounded-xl border border-red-200 bg-red-50 p-4">
+							<div class="flex gap-3">
+								<CircleAlert class="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+								<div class="min-w-0">
+									<p class="font-semibold text-red-900">We couldn't load student records</p>
+									<p class="mt-1 break-words text-sm text-red-800">{loadError}</p>
+								</div>
+							</div>
+							<button
+								type="button"
+								on:click={load}
+								class="mt-4 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+							>
+								<RotateCw class="h-4 w-4" />
+								Try again
+							</button>
+						</div>
+					{:else if step === 1}
+						<!-- Step 1: student ID -->
+						<form on:submit|preventDefault={checkStudentId} class="space-y-5">
+							<div>
+								<Label for="student-id" class="text-sm font-semibold text-charcoal-900">
+									Student ID
+								</Label>
+								<Input
+									id="student-id"
+									bind:value={studentId}
+									inputmode="numeric"
+									autocomplete="off"
+									maxlength={16}
+									placeholder="e.g. 67050123"
+									class="mt-1.5 h-12 font-mono text-base tracking-wider"
+								/>
+								<p class="mt-1.5 text-sm text-charcoal-500">
+									Use the ID you enrolled in the course with.
+								</p>
+							</div>
+
+							<button
+								type="submit"
+								disabled={!studentId.trim()}
+								class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 font-semibold text-charcoal-950 transition hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								Check Student ID
+								<ArrowRight class="h-4 w-4" />
+							</button>
+						</form>
+					{:else}
+						<!-- Step 2: course + files -->
+						<div class="space-y-6">
+							<div
+								class="flex items-center justify-between gap-3 rounded-xl bg-charcoal-50 px-4 py-3 ring-1 ring-inset ring-charcoal-900/10"
+							>
+								<div class="flex min-w-0 items-center gap-3">
+									<BadgeCheck class="h-5 w-5 shrink-0 text-emerald-600" />
+									<div class="min-w-0">
+										<p class="text-xs text-charcoal-500">Verified student ID</p>
+										<p class="truncate font-mono font-semibold text-charcoal-950">{verifiedId}</p>
+									</div>
+								</div>
+								<button
+									type="button"
+									on:click={changeStudent}
+									disabled={isUploading}
+									class="shrink-0 rounded-lg px-2 py-1 text-sm font-semibold text-brand-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+								>
+									Change
+								</button>
+							</div>
+
+							{#if !canUpload}
+								<div
+									role="status"
+									class="flex gap-3 rounded-xl border border-brand-300 bg-brand-50 p-4 text-brand-900"
+								>
+									<TriangleAlert class="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
+									<div>
+										<p class="font-semibold">Uploads are not configured yet</p>
+										<p class="mt-0.5 text-sm text-brand-800">
+											The storage server hasn't been set up. Please check back later or contact the
+											course staff.
+										</p>
+									</div>
+								</div>
+							{/if}
+
+							<div>
+								<Label for="course" class="text-sm font-semibold text-charcoal-900">Course</Label>
+								{#if studentCourses.length === 0}
+									<p
+										class="mt-1.5 rounded-xl border border-dashed border-charcoal-900/15 px-4 py-3 text-sm text-charcoal-600"
+									>
+										No courses found for this student ID.
+									</p>
+								{:else}
+									<div class="relative mt-1.5">
+										<select
+											id="course"
+											bind:value={selectedCourse}
+											disabled={isUploading}
+											class="flex h-11 w-full cursor-pointer appearance-none rounded-md border border-input bg-background py-2 pl-3 pr-10 text-sm text-charcoal-950 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+										>
+											<option value="" disabled>Select Course</option>
+											{#each studentCourses as course (course.course_id)}
+												<option value={String(course.course_id)}>{course.course_name}</option>
+											{/each}
+										</select>
+										<ChevronDown
+											class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-charcoal-500"
+										/>
+									</div>
+								{/if}
+							</div>
+
+							<div>
+								<p id="files-label" class="text-sm font-semibold text-charcoal-900">Files</p>
+								<label
+									class="mt-1.5 block {canUpload && !isUploading
+										? 'cursor-pointer'
+										: 'cursor-not-allowed'}"
+									on:dragenter|preventDefault={() => (isDragging = canUpload && !isUploading)}
+									on:dragover|preventDefault={() => (isDragging = canUpload && !isUploading)}
+									on:dragleave|preventDefault={handleDragLeave}
+									on:drop|preventDefault={handleDrop}
+								>
+									<input
+										type="file"
+										multiple
+										disabled={!canUpload || isUploading}
+										aria-labelledby="files-label"
+										aria-describedby="files-hint"
+										on:change={handleFileChange}
+										class="peer sr-only"
+									/>
+									<span
+										class="flex flex-col items-center rounded-xl border-2 border-dashed px-5 py-8 text-center transition peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-disabled:opacity-60 {isDragging
+											? 'border-brand-500 bg-brand-50'
+											: 'border-charcoal-900/15 bg-charcoal-50/60 hover:border-brand-400 hover:bg-brand-50/50'}"
+									>
+										<span
+											class="grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200"
+										>
+											<CloudUpload class="h-6 w-6" />
+										</span>
+										<span class="mt-3 font-semibold text-charcoal-950">
+											{isDragging ? 'Drop files here' : 'Choose files to upload'}
+										</span>
+										<span class="mt-1 text-sm text-charcoal-500">
+											Click to browse, or drag and drop them here
+										</span>
+									</span>
+								</label>
+								<p id="files-hint" class="mt-2 text-sm text-charcoal-600">
+									*คุณสามารถ Upload หลายไฟล์พร้อมกันได้ โดยการ คลุมทุกไฟล์ที่ต้องการ Upload
+								</p>
+
+								{#if files.length > 0}
+									<div class="mt-4">
+										<div class="flex items-center justify-between text-xs text-charcoal-500">
+											<span
+												>{files.length}
+												{files.length === 1 ? 'file' : 'files'} selected</span
+											>
+											<span class="font-mono">{formatSize(totalBytes)}</span>
+										</div>
+										<ul
+											class="mt-2 divide-y divide-charcoal-900/[0.07] rounded-xl border border-charcoal-900/10"
+										>
+											{#each files as file, i (file.name + i)}
+												<li class="flex items-center gap-3 px-3 py-2.5">
+													<FileText class="h-4 w-4 shrink-0 text-brand-600" />
+													<span class="min-w-0 flex-1 truncate text-sm text-charcoal-900" title={file.name}
+														>{file.name}</span
+													>
+													<span class="shrink-0 font-mono text-xs text-charcoal-500"
+														>{formatSize(file.size)}</span
+													>
+													<button
+														type="button"
+														on:click={() => removeFile(i)}
+														disabled={isUploading}
+														aria-label="Remove {file.name}"
+														class="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-charcoal-500 transition hover:bg-charcoal-100 hover:text-charcoal-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+													>
+														<X class="h-4 w-4" />
+													</button>
+												</li>
+											{/each}
+										</ul>
+									</div>
+								{/if}
+							</div>
+
+							<button
+								type="button"
+								on:click={requestUpload}
+								disabled={!canUpload || files.length === 0 || isUploading}
+								class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 font-semibold text-charcoal-950 transition hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{#if isUploading}
+									<LoaderCircle class="h-4 w-4 animate-spin" />
+									Uploading…
+								{:else}
+									<CloudUpload class="h-4 w-4" />
+									Upload
+								{/if}
+							</button>
+						</div>
+					{/if}
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<SiteFooter />
 </div>
 
-<style>
-	:global(body) {
-		font-family: 'Noto Sans Thai';
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 100vh;
-		background-color: #e2e8f0;
-		margin: 0;
-	}
-
-	.upload-container {
-		background: #ffffff;
-		padding: 40px;
-		border-radius: 12px;
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-		text-align: center;
-		max-width: 600px; /* Increased width */
-		width: 100%;
-		border: 1px solid #ddd;
-	}
-
-	h1 {
-		color: #2d3748;
-		margin-bottom: 20px;
-		font-size: 20px;
-		font-weight: 600;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-	}
-
-	.file-input {
-		appearance: none;
-		padding: 14px;
-		font-size: 16px;
-		border: 2px solid #ddd;
-		border-radius: 8px;
-		width: 100%;
-		box-sizing: border-box;
-		background-color: #f9fafb;
-		background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"%3E%3Cpath stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"%3E%3C/path%3E%3C/svg%3E');
-		background-repeat: no-repeat;
-		background-position: right 12px center; /* Adjust position of the arrow */
-		background-size: 1.25rem;
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-
-	.file-input:hover {
-		border-color: #3182ce;
-	}
-
-	.file-input:focus {
-		outline: none;
-		border-color: #3182ce;
-		box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.3);
-	}
-
-	.file-input:disabled {
-		background-color: #e2e8f0;
-		cursor: not-allowed;
-		opacity: 0.7;
-	}
-
-	.file-input option {
-		background-color: #fff;
-		color: #2d3748;
-		padding: 10px;
-	}
-
-	.file-input::-ms-expand {
-		display: none;
-	}
-</style>
+<AlertDialog.Root bind:open={showConfirm}>
+	<AlertDialog.Content class="w-[calc(100vw-2rem)] rounded-2xl sm:rounded-2xl">
+		<AlertDialog.Header>
+			<AlertDialog.Title class="font-display text-xl text-charcoal-950">Confirm Upload</AlertDialog.Title>
+			<AlertDialog.Description class="text-charcoal-600">
+				Are you sure you want to upload these files? This action cannot be undone.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<dl class="rounded-xl bg-charcoal-50 p-4 text-sm ring-1 ring-inset ring-charcoal-900/10">
+			<div class="flex justify-between gap-4">
+				<dt class="text-charcoal-500">Student ID</dt>
+				<dd class="font-mono font-semibold text-charcoal-950">{verifiedId}</dd>
+			</div>
+			<div class="mt-2 flex justify-between gap-4">
+				<dt class="shrink-0 text-charcoal-500">Course</dt>
+				<dd class="min-w-0 text-right font-semibold text-charcoal-950">{selectedCourseName}</dd>
+			</div>
+			<div class="mt-2 flex justify-between gap-4">
+				<dt class="text-charcoal-500">Files</dt>
+				<dd class="font-semibold text-charcoal-950">
+					{files.length} · <span class="font-mono font-normal">{formatSize(totalBytes)}</span>
+				</dd>
+			</div>
+		</dl>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel
+				class="h-11 rounded-xl border-charcoal-900/15 font-semibold text-charcoal-900 hover:bg-charcoal-50"
+				>Cancel</AlertDialog.Cancel
+			>
+			<AlertDialog.Action
+				on:click={confirmUpload}
+				class="h-11 rounded-xl bg-brand-500 font-semibold text-charcoal-950 hover:bg-brand-400"
+				>Upload</AlertDialog.Action
+			>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
