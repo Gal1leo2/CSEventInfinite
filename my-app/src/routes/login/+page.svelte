@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowLeft, Eye, EyeOff, LoaderCircle, LogIn, ShieldCheck, UsersRound } from 'lucide-svelte';
+	import { ArrowLeft, Eye, EyeOff, LoaderCircle, LogIn } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import Wretch from 'wretch';
 	import { API } from '$lib/api';
@@ -10,14 +10,21 @@
 
 	let username = '';
 	let password = '';
-	let role: 'admin' | 'staff' = 'admin';
 	let showPassword = false;
 	let submitting = false;
 
-	const ROLES = [
-		{ value: 'admin', label: 'Admin', hint: 'Courses, students, certificates', icon: ShieldCheck },
-		{ value: 'staff', label: 'Staff', hint: 'Course staff console', icon: UsersRound }
-	] as const;
+	// Everyone signs in through the same endpoint. Accounts whose token says they are staff
+	// land on the staff console; everyone else on the admin dashboard. Both pages re-check
+	// the token with the API, so this only picks the page.
+	function landingPage(token: string): string {
+		try {
+			const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+			if (String(payload?.role ?? '').toLowerCase() === 'staff') return '/forcoursestaff';
+		} catch {
+			// Not a JWT we can read; fall through to the dashboard.
+		}
+		return '/dev';
+	}
 
 	// wretch has already parsed the error body into `json` by the time a catcher runs.
 	const messageOf = (e: { json?: { message?: string } }, fallback: string) =>
@@ -44,11 +51,7 @@
 					const data = await e.json();
 					toast.success('Login Successfully!');
 					localStorage.setItem('auth', data.token);
-					if (role === 'admin') {
-						window.location.pathname = '/dev'; // Admin  (poom and gun)path
-					} else if (role === 'staff') {
-						window.location.pathname = '/forcoursestaff'; // Staff path
-					}
+					window.location.pathname = landingPage(data.token);
 				});
 		} catch (error) {
 			toast.error('An unexpected error occurred');
@@ -80,15 +83,6 @@
 				</div>
 			</div>
 		</div>
-
-		<div class="relative">
-			<p class="font-display text-3xl font-bold leading-snug">
-				Run every short course <br />from one console.
-			</p>
-			<p class="mt-3 max-w-md text-charcoal-300">
-				Publish courses, manage enrollments and issue certificates for Computer Science, KMITL.
-			</p>
-		</div>
 	</aside>
 
 	<!-- Form -->
@@ -104,32 +98,6 @@
 			<p class="mt-2 text-charcoal-600">Enter your credentials to access the panel.</p>
 
 			<form on:submit|preventDefault={login} class="mt-8 space-y-5">
-				<fieldset>
-					<legend class="text-sm font-semibold text-charcoal-900">Sign in as</legend>
-					<div class="mt-2 grid grid-cols-2 gap-2">
-						{#each ROLES as option}
-							<label class="relative">
-								<input
-									type="radio"
-									name="role"
-									value={option.value}
-									bind:group={role}
-									class="peer sr-only"
-								/>
-								<span
-									class="flex h-full cursor-pointer flex-col gap-1 rounded-xl border border-charcoal-900/15 p-3 transition hover:bg-charcoal-50 peer-checked:border-brand-500 peer-checked:bg-brand-50 peer-checked:ring-1 peer-checked:ring-brand-500 peer-focus-visible:ring-2 peer-focus-visible:ring-ring"
-								>
-									<span class="flex items-center gap-2 font-semibold text-charcoal-950">
-										<svelte:component this={option.icon} class="h-4 w-4 text-brand-700" />
-										{option.label}
-									</span>
-									<span class="text-xs text-charcoal-500">{option.hint}</span>
-								</span>
-							</label>
-						{/each}
-					</div>
-				</fieldset>
-
 				<div class="space-y-1.5">
 					<Label for="username" class="text-sm font-semibold text-charcoal-900">Username</Label>
 					<Input
@@ -184,7 +152,7 @@
 						Signing in…
 					{:else}
 						<LogIn class="h-4 w-4" />
-						Sign in as {role === 'admin' ? 'Admin' : 'Staff'}
+						Sign in
 					{/if}
 				</button>
 			</form>

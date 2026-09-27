@@ -524,7 +524,7 @@
 		<div class="container py-8">
 			<div class="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
 				<div>
-					<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
+					<p class="text-sm font-semibold text-brand-700">
 						// Dashboard
 					</p>
 					<h1 class="mt-2 font-display text-3xl font-bold tracking-tight text-charcoal-950">

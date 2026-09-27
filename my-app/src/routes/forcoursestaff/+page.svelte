@@ -286,7 +286,7 @@
 
 		<main class="container space-y-8 pb-20 pt-8 sm:pt-10">
 			<div class="animate-fade-up">
-				<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
+				<p class="text-sm font-semibold text-brand-700">
 					// Staff console
 				</p>
 				<h1
@@ -606,7 +606,7 @@
 		>
 			{#if rosterCourse}
 				<div class="border-b border-brand-200 bg-brand-50 px-6 pb-5 pr-12 pt-6">
-					<p class="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-brand-800">
+					<p class="text-sm font-semibold text-brand-800">
 						Enrolled students
 					</p>
 					<Dialog.Title

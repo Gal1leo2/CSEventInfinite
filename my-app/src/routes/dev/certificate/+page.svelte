@@ -443,7 +443,7 @@
 		</header>
 
 		<div class="container max-w-6xl py-8">
-			<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
+			<p class="text-sm font-semibold text-brand-700">
 				// Certificates
 			</p>
 			<h1 class="mt-2 font-display text-3xl font-bold tracking-tight text-charcoal-950">

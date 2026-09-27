@@ -61,7 +61,7 @@
 							</span>
 							<div>
 								<h1 class="font-display text-2xl font-bold sm:text-3xl">Certificate verified</h1>
-								<p class="mt-0.5 font-mono text-xs uppercase tracking-[0.18em] text-emerald-300">
+								<p class="mt-0.5 text-sm font-medium capitalize text-emerald-300">
 									{certificate.status ?? 'Valid'}
 								</p>
 							</div>
@@ -75,7 +75,7 @@
 							aria-hidden="true"
 							class="pointer-events-none absolute -bottom-10 -right-10 w-56 opacity-[0.06]"
 						/>
-						<p class="font-mono text-[11px] uppercase tracking-[0.18em] text-charcoal-500">
+						<p class="text-sm text-charcoal-500">
 							Awarded to
 						</p>
 						<p class="mt-1 font-display text-3xl font-bold leading-tight text-charcoal-950 sm:text-4xl">
@@ -84,7 +84,7 @@
 
 						<dl class="relative mt-8 grid gap-6 border-t border-charcoal-900/10 pt-6 sm:grid-cols-2">
 							<div class="sm:col-span-2">
-								<dt class="font-mono text-[11px] uppercase tracking-[0.16em] text-charcoal-500">
+								<dt class="text-sm text-charcoal-500">
 									Certificate no.
 								</dt>
 								<dd class="mt-1 break-all font-mono font-semibold text-charcoal-950">
@@ -93,7 +93,7 @@
 							</div>
 							{#if issued}
 								<div>
-									<dt class="font-mono text-[11px] uppercase tracking-[0.16em] text-charcoal-500">
+									<dt class="text-sm text-charcoal-500">
 										Issue date
 									</dt>
 									<dd class="mt-1 font-semibold text-charcoal-950">{issued}</dd>
@@ -101,7 +101,7 @@
 							{/if}
 							{#if certificate.student_id}
 								<div>
-									<dt class="font-mono text-[11px] uppercase tracking-[0.16em] text-charcoal-500">
+									<dt class="text-sm text-charcoal-500">
 										Student ID
 									</dt>
 									<dd class="mt-1 font-mono font-semibold text-charcoal-950">
@@ -124,7 +124,7 @@
 					</div>
 
 					<div
-						class="border-t border-charcoal-900/10 bg-charcoal-50 px-6 py-4 text-center font-mono text-[11px] text-charcoal-500 sm:px-10"
+						class="border-t border-charcoal-900/10 bg-charcoal-50 px-6 py-4 text-center text-xs text-charcoal-500 sm:px-10"
 					>
 						Issued by Computer Science, KMITL via CSEvent · ID {certificate.id}
 					</div>

@@ -22,13 +22,13 @@
 				Short Course Registration System for Computer Science students at King Mongkut's Institute
 				of Technology Ladkrabang
 			</p>
-			<p class="mt-4 font-mono text-xs uppercase tracking-[0.16em] text-charcoal-400">
+			<p class="mt-4 text-sm text-charcoal-400">
 				Powered by <span class="text-brand-400">CS Infinite</span>
 			</p>
 		</div>
 
 		<div>
-			<h3 class="font-mono text-xs font-medium uppercase tracking-[0.16em] text-white">
+			<h3 class="text-sm font-semibold text-white">
 				Connect with CS KMITL
 			</h3>
 			<ul class="mt-4 flex gap-3">

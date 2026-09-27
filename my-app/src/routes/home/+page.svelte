@@ -257,7 +257,7 @@
 									<span
 										class="text-brand-600 transition duration-300 ease-out [grid-area:1/1] {held.alt
 											? ''
-											: 'translate-y-[0.3em] opacity-0'}">ความฝันของคุณ</span
+											: 'translate-y-[0.3em] opacity-0'}">Passion</span
 									>
 								</span>
 							</span>
@@ -394,7 +394,7 @@
 							{tab.label}
 							{#if !isLoading}
 								<span
-									class="rounded-full px-1.5 font-mono text-[11px] {selectedTab === tab.value
+									class="rounded-full px-1.5 text-[11px] font-semibold tabular-nums {selectedTab === tab.value
 										? 'bg-brand-500 text-charcoal-950'
 										: 'bg-charcoal-100 text-charcoal-600'}">{tabs[tab.value].length}</span
 								>

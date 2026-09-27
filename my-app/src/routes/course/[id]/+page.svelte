@@ -274,7 +274,7 @@
 					<div class="lg:sticky lg:top-24">
 						<div class="overflow-hidden rounded-2xl border border-charcoal-900/10 bg-card shadow-lg">
 							<div class="flex items-center justify-between bg-brand-500 px-5 py-3 text-charcoal-950">
-								<span class="font-mono text-xs font-bold uppercase tracking-[0.16em]"
+								<span class="text-sm font-semibold"
 									>Registration open</span
 								>
 								<Ticket class="h-5 w-5" />
@@ -313,7 +313,7 @@
 									<div class="mt-5">
 										<div class="flex items-center justify-between text-sm">
 											<span class="text-charcoal-600"
-												><span class="font-mono font-bold text-charcoal-950">{enrolled}</span>/{capacity}
+												><span class="font-bold tabular-nums text-charcoal-950">{enrolled}</span>/{capacity}
 												enrolled</span
 											>
 											<span
@@ -358,9 +358,10 @@
 				<!-- Description + FAQ -->
 				<div class="space-y-8 lg:col-start-1 lg:row-start-1 lg:pt-10">
 					<article class="rounded-2xl border border-charcoal-900/10 bg-card p-6 shadow-sm sm:p-8">
+						<p class="text-sm font-semibold text-brand-700">// About this course</p>
 						{#if course.course_description?.trim()}
 							<div
-								class="prose max-w-none text-charcoal-700 prose-headings:font-display prose-headings:text-charcoal-950 prose-li:marker:text-brand-500 prose-a:text-brand-700 prose-strong:text-charcoal-950 prose-img:rounded-xl"
+								class="prose mt-4 max-w-none text-charcoal-700 prose-headings:font-display prose-headings:text-charcoal-950 prose-li:marker:text-brand-500 prose-a:text-brand-700 prose-strong:text-charcoal-950 prose-img:rounded-xl"
 							>
 								{@html marked.parse(course.course_description ?? '')}
 							</div>
@@ -369,7 +370,7 @@
 						<div
 							class="flex items-center gap-4 rounded-xl bg-brand-50 {course.course_description?.trim()
 								? 'mt-8'
-								: ''} p-4 ring-1 ring-inset ring-brand-200"
+								: 'mt-4'} p-4 ring-1 ring-inset ring-brand-200"
 						>
 							<span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-500 text-charcoal-950">
 								<Zap class="h-5 w-5" />
@@ -384,7 +385,8 @@
 					</article>
 
 					<section class="rounded-2xl border border-charcoal-900/10 bg-card p-6 shadow-sm sm:p-8">
-						<h2 class="font-display text-2xl font-bold text-charcoal-950">
+						<p class="text-sm font-semibold text-brand-700">// FAQ</p>
+						<h2 class="mt-1 font-display text-2xl font-bold text-charcoal-950">
 							Frequently asked questions
 						</h2>
 						<Accordion.Root class="mt-4">
@@ -414,7 +416,7 @@
 				<div class="flex items-center gap-3">
 					<div class="min-w-0 flex-1">
 						<p class="truncate text-sm font-semibold text-charcoal-950">{course.course_name}</p>
-						<p class="font-mono text-xs text-charcoal-500">
+						<p class="text-xs text-charcoal-500">
 							{formatCourseDate(course.course_date)}{seatsLeft !== null && capacity > 0
 								? ` · ${seatsLeft} seats left`
 								: ''}
@@ -458,7 +460,7 @@
 	<Dialog.Root bind:open={enrollOpen}>
 		<Dialog.Content class="max-h-[92vh] gap-0 overflow-y-auto p-0 sm:max-w-lg">
 			<div class="border-b border-brand-200 bg-brand-50 px-6 pb-5 pt-6">
-				<p class="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-brand-800">
+				<p class="text-sm font-semibold text-brand-800">
 					Enrollment
 				</p>
 				<Dialog.Title class="mt-1 pr-6 font-display text-xl font-bold leading-snug text-charcoal-950">

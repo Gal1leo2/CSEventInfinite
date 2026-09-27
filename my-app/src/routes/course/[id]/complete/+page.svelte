@@ -178,7 +178,7 @@
 							<span class="grid h-10 w-10 place-items-center rounded-xl bg-white p-1">
 								<img src="/brand/cs-logo-320.png" alt="" class="h-full w-full object-contain" />
 							</span>
-							<span class="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-brand-400">
+							<span class="text-sm font-semibold text-brand-400">
 								CSEvent · Admission
 							</span>
 						</div>

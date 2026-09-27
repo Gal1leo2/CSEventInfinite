@@ -29,7 +29,7 @@
 		>
 		{#if subtitle}
 			<span
-				class="mt-1 block font-mono text-[10px] font-medium uppercase tracking-[0.16em] {tone ===
+				class="mt-0.5 block text-xs font-medium {tone ===
 				'dark'
 					? 'text-charcoal-300'
 					: 'text-charcoal-500'}">{subtitle}</span

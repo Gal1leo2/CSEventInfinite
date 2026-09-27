@@ -24,11 +24,11 @@
 			<div
 				class="absolute left-3 top-3 min-w-[3.25rem] rounded-xl bg-white/95 px-2 py-1.5 text-center shadow-md backdrop-blur"
 			>
-				<div class="font-mono text-[10px] font-bold uppercase tracking-wider text-brand-700">
+				<div class="text-[11px] font-bold uppercase text-brand-700">
 					{date.month}
 				</div>
 				<div class="font-display text-xl font-bold leading-none text-charcoal-950">{date.day}</div>
-				<div class="mt-0.5 font-mono text-[9px] text-charcoal-500">{date.year}</div>
+				<div class="mt-0.5 text-[10px] text-charcoal-500">{date.year}</div>
 			</div>
 		{/if}
 		<div class="absolute right-3 top-3">
@@ -73,7 +73,7 @@
 		<div class="mt-auto pt-5">
 			<div class="flex items-center justify-between text-xs">
 				<span class="font-medium text-charcoal-600">
-					<span class="font-mono font-bold text-charcoal-950">{enrolled}</span>/{capacity} enrolled
+					<span class="font-bold tabular-nums text-charcoal-950">{enrolled}</span>/{capacity} enrolled
 				</span>
 				{#if status === 'open' && full}
 					<span class="font-semibold text-red-600">Full</span>
