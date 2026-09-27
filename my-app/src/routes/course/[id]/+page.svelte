@@ -358,13 +358,19 @@
 				<!-- Description + FAQ -->
 				<div class="space-y-8 lg:col-start-1 lg:row-start-1 lg:pt-10">
 					<article class="rounded-2xl border border-charcoal-900/10 bg-card p-6 shadow-sm sm:p-8">
-						<div
-							class="prose max-w-none text-charcoal-700 prose-headings:font-display prose-headings:text-charcoal-950 prose-li:marker:text-brand-500 prose-a:text-brand-700 prose-strong:text-charcoal-950 prose-img:rounded-xl"
-						>
-							{@html marked.parse(course.course_description ?? '')}
-						</div>
+						{#if course.course_description?.trim()}
+							<div
+								class="prose max-w-none text-charcoal-700 prose-headings:font-display prose-headings:text-charcoal-950 prose-li:marker:text-brand-500 prose-a:text-brand-700 prose-strong:text-charcoal-950 prose-img:rounded-xl"
+							>
+								{@html marked.parse(course.course_description ?? '')}
+							</div>
+						{/if}
 
-						<div class="mt-8 flex items-center gap-4 rounded-xl bg-brand-50 p-4 ring-1 ring-inset ring-brand-200">
+						<div
+							class="flex items-center gap-4 rounded-xl bg-brand-50 {course.course_description?.trim()
+								? 'mt-8'
+								: ''} p-4 ring-1 ring-inset ring-brand-200"
+						>
 							<span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-500 text-charcoal-950">
 								<Zap class="h-5 w-5" />
 							</span>
