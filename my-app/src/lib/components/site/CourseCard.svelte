@@ -37,10 +37,12 @@
 	</div>
 
 	<div class="flex flex-1 flex-col p-5">
-		<p class="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-brand-700">
+		<p
+			class="self-start rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-800 ring-1 ring-inset ring-brand-200"
+		>
 			{course.course_type}
 		</p>
-		<h3 class="mt-1.5 line-clamp-2 font-display text-lg font-semibold leading-snug text-charcoal-950">
+		<h3 class="mt-2.5 line-clamp-2 font-display text-lg font-semibold leading-snug text-charcoal-950">
 			{#if status === 'open'}
 				<a
 					href="/course/{course.course_id}"

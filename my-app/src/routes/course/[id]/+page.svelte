@@ -226,7 +226,7 @@
 						<div class="mt-6 flex flex-wrap items-center gap-2">
 							<StatusPill status="open" />
 							<span
-								class="rounded-full border border-white/15 px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-brand-300"
+								class="rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-semibold text-brand-300"
 							>
 								{course.course_type}
 							</span>
@@ -358,11 +358,8 @@
 				<!-- Description + FAQ -->
 				<div class="space-y-8 lg:col-start-1 lg:row-start-1 lg:pt-10">
 					<article class="rounded-2xl border border-charcoal-900/10 bg-card p-6 shadow-sm sm:p-8">
-						<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
-							// About this course
-						</p>
 						<div
-							class="prose mt-4 max-w-none text-charcoal-700 prose-headings:font-display prose-headings:text-charcoal-950 prose-li:marker:text-brand-500 prose-a:text-brand-700 prose-strong:text-charcoal-950 prose-img:rounded-xl"
+							class="prose max-w-none text-charcoal-700 prose-headings:font-display prose-headings:text-charcoal-950 prose-li:marker:text-brand-500 prose-a:text-brand-700 prose-strong:text-charcoal-950 prose-img:rounded-xl"
 						>
 							{@html marked.parse(course.course_description ?? '')}
 						</div>
@@ -381,10 +378,7 @@
 					</article>
 
 					<section class="rounded-2xl border border-charcoal-900/10 bg-card p-6 shadow-sm sm:p-8">
-						<p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-700">
-							// FAQ
-						</p>
-						<h2 class="mt-2 font-display text-2xl font-bold text-charcoal-950">
+						<h2 class="font-display text-2xl font-bold text-charcoal-950">
 							Frequently asked questions
 						</h2>
 						<Accordion.Root class="mt-4">
