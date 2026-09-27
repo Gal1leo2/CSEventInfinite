@@ -1,3 +1,8 @@
+# Vercel installs with pnpm 9, which treats this file as a workspace and requires
+# a packages list; '.' is just this app. allowBuilds is for newer local pnpm.
+packages:
+  - '.'
+
 allowBuilds:
   core-js: true
   esbuild: true
