@@ -1,9 +1,10 @@
-# Vercel installs with pnpm 9, which treats this file as a workspace and requires
-# a packages list; '.' is just this app. allowBuilds is for newer local pnpm.
+# Vercel installs with pnpm 10, which treats this file as a workspace and requires
+# a packages list; '.' is just this app.
 packages:
   - '.'
 
-allowBuilds:
-  core-js: true
-  esbuild: true
-  svelte-preprocess: true
+# Dependencies allowed to run install scripts (pnpm 10 blocks them by default).
+onlyBuiltDependencies:
+  - core-js
+  - esbuild
+  - svelte-preprocess
